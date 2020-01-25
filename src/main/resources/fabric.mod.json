@@ -4,13 +4,13 @@
   "version": "${version}",
 
   "name": "Textile Backup",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Small, configurable, fully server-side backup mod for Fabric",
   "authors": [
     "Szum123321"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/textile-backup",
+    "sources": "https://github.com/Szum123321/textile_backup"
   },
 
   "license": "GPLv3",
@@ -29,6 +29,6 @@
   "depends": {
     "fabricloader": ">=0.7.2",
     "fabric": "*",
-    "minecraft": "1.15.x"
+    "minecraft": "1.15.2"
   }
 }

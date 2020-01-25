@@ -1,6 +1,5 @@
 package net.szum123321.textile_backup.core;
 
-import jdk.internal.jline.internal.Nullable;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -23,7 +22,7 @@ public class BackupHelper {
                 .toFile();
     }
 
-    public static void log(String s, @Nullable ServerCommandSource ctx){
+    public static void log(String s, ServerCommandSource ctx){
         if(ctx != null)
             ctx.sendFeedback(new TranslatableText(s), true);
 
@@ -31,7 +30,7 @@ public class BackupHelper {
             TextileBackup.logger.info(s);
     }
 
-    public static void error(String s, @Nullable ServerCommandSource ctx){
+    public static void error(String s, ServerCommandSource ctx){
         if(ctx != null)
             ctx.sendFeedback(new TranslatableText(s), true);
 
