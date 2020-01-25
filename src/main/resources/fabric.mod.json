@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "textile_backup",
+  "version": "${version}",
+
+  "name": "Textile Backup",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "Szum123321"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "GPLv3",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.szum123321.textile_backup.TextileBackup"
+    ]
+  },
+  "mixins": [
+    "textile_backup.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.2",
+    "fabric": "*",
+    "minecraft": "1.15.x"
+  }
+}
