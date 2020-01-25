@@ -1,17 +1,19 @@
 # Textile Backup
 >Finally, a backup mod for fabric!
 
-[![Downloads](http://cf.way2muchnoise.eu/full_*_downloads.svg)
-![Available for](http://cf.way2muchnoise.eu/versions/*.svg)](https://www.curseforge.com/minecraft/mc-mods/*)
+[![Downloads](http://cf.way2muchnoise.eu/full_359893_downloads.svg)
+![Available for](http://cf.way2muchnoise.eu/versions/359893.svg)](https://www.curseforge.com/minecraft/mc-mods/textile-backup)
 
 Small, configurable, fully server-side backup mod for Fabric
 
-Commands look like that: /backup [operation]
+Commands look like that: /backup 'operation'.
+
 Available operations are: 
+
  * start - just starts backup
- * cleanup - forces cleanup procedure (deletes old backup according to config)
+ * cleanup - forces cleanup procedure (deletes old backups according to config)
  
-All of above can only be done by server admins(permission level 4)
+All of above can only be done by server admins(permission level 4) / player on single payer with cheats on
 
 Feel free to use this mod in your modpack or on server!
 

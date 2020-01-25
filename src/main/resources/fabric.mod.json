@@ -14,6 +14,7 @@
   },
 
   "license": "GPLv3",
+  "icon": "assets/textile_backup/textile_backup.png",
 
   "environment": "*",
   "entrypoints": {
