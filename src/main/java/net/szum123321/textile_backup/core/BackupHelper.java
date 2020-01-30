@@ -99,6 +99,11 @@ public class BackupHelper {
     }
 
     public static DateTimeFormatter getDateTimeFormatter(){
-        return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH:mm:ss");
+           String os = System.getProperty("os.name");
+        if (os.toLowerCase().startsWith("win")) {
+            return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss");
+        } else {
+            return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH:mm:ss");
+        }
     }
 }
