@@ -43,10 +43,12 @@ public class BackupHelper {
 
         StringBuilder builder = new StringBuilder();
         builder.append("Backup started by: ");
+
         if( ctx != null )
             builder.append(ctx.getName());
         else
             builder.append("SERVER");
+
         builder.append(" on: ");
         builder.append(getDateTimeFormatter().format(now));
 

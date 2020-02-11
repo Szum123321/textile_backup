@@ -1,5 +1,7 @@
 package net.szum123321.textile_backup.mixin;
 
+import net.fabricmc.fabric.impl.tag.extension.FabricTagHooks;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.szum123321.textile_backup.TextileBackup;
