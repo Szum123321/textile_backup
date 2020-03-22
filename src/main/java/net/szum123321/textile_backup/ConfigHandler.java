@@ -41,6 +41,9 @@ public class ConfigHandler {
     @Comment("\nMaximum age of backups to keep in seconds.\n if 0 then backups will not be deleted based on age \n")
     public int maxAge = 0;
 
+    @Comment("\nMaximum size of backup folder in kilo bytes. \n")
+    public int maxSize = 0;
+
     @Comment("\nCompression level \n0 - 9\n")
     public int compression = 1;
 

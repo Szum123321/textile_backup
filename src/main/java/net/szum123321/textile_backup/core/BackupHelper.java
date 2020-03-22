@@ -24,19 +24,20 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class BackupHelper {
 
     public static void log(String s, ServerCommandSource ctx){
         if(ctx != null)
-            ctx.sendFeedback(new TranslatableText(s), true);
+            ctx.sendFeedback(new TranslatableText(s), false);
 
         if(TextileBackup.config.log)
             TextileBackup.logger.info(s);
@@ -81,11 +82,13 @@ public class BackupHelper {
     public static void executeFileLimit(ServerCommandSource ctx){
         File root = getBackupRootPath();
 
+        FileFilter filter = f -> f.getName().endsWith("zip");
+
         if(root.isDirectory() && root.exists()){
             if(TextileBackup.config.maxAge > 0){
                 LocalDateTime now = LocalDateTime.now();
 
-                for(File f: Objects.requireNonNull(root.listFiles())){
+                Arrays.stream(root.listFiles()).forEach(f ->{
                     if(f.exists() && f.isFile()){
                         LocalDateTime creationTime = LocalDateTime.from(
                                 getDateTimeFormatter().parse(
@@ -98,20 +101,30 @@ public class BackupHelper {
                             f.delete();
                         }
                     }
-                }
+                });
             }
 
-            if(TextileBackup.config.backupsToKeep > 0 && Objects.requireNonNull(root.listFiles()).length > TextileBackup.config.backupsToKeep){
-                int var1 = Objects.requireNonNull(root.listFiles()).length - TextileBackup.config.backupsToKeep;
+            if(TextileBackup.config.backupsToKeep > 0 && root.listFiles().length > TextileBackup.config.backupsToKeep){
+                int var1 = root.listFiles().length - TextileBackup.config.backupsToKeep;
 
-                File[] files = root.listFiles();
+                File[] files = root.listFiles(filter);
                 assert files != null;
+
                 Arrays.sort(files);
 
                 for(int i = 0; i < var1; i++) {
                     log("Deleting: " + files[i].getName(), ctx);
                     files[i].delete();
                 }
+            }
+
+            if(TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize){
+                 Arrays.stream(root.listFiles()).sorted().forEach(e -> {
+                    if(FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize){
+                        log("Deleting: " + e.getName(), ctx);
+                        e.delete();
+                    }
+                });
             }
         }
     }
