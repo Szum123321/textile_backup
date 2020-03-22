@@ -18,7 +18,6 @@
 
 package net.szum123321.textile_backup.core;
 
-import jdk.internal.jline.internal.Nullable;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -51,7 +50,7 @@ public class BackupHelper {
             TextileBackup.logger.error(s);
     }
 
-    public static void create(MinecraftServer server, ServerCommandSource ctx, boolean save, @Nullable String comment) {
+    public static void create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
         LocalDateTime now = LocalDateTime.now();
 
         StringBuilder builder = new StringBuilder();

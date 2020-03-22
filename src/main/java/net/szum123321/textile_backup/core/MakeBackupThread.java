@@ -18,7 +18,6 @@
 
 package net.szum123321.textile_backup.core;
 
-import jdk.internal.jline.internal.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
@@ -30,9 +29,9 @@ import java.time.LocalDateTime;
 public class MakeBackupThread extends Thread {
     MinecraftServer server;
     ServerCommandSource ctx;
-    @Nullable String comment;
+    String comment;
 
-    public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx, @Nullable String comment){
+    public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx, String comment){
         this.server = server;
         this.ctx = ctx;
         this.comment = comment;
