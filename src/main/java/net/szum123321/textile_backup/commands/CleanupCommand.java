@@ -1,5 +1,5 @@
 /*
-  `A simple backup mod for Fabric
+    A simple backup mod for Fabric
     Copyright (C) 2020  Szum123321
 
     This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package net.szum123321.textile_backup.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.core.BackupHelper;
 
 public class CleanupCommand {

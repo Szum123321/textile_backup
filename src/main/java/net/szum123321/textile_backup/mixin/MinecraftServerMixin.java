@@ -44,13 +44,13 @@ public abstract class MinecraftServerMixin {
 
             lastBackup = timeReference;
 
-            BackupHelper.create((MinecraftServer)(Object)this, null, true);
+            BackupHelper.create((MinecraftServer)(Object)this, null, true, null);
         }
     }
 
     @Inject(method = "shutdown", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/MinecraftServer;save(ZZZ)Z"))
     public void onShutdown(CallbackInfo ci){
         if(TextileBackup.config.shutdownBackup)
-            BackupHelper.create((MinecraftServer)(Object)this, null, false);
+            BackupHelper.create((MinecraftServer)(Object)this, null, false, null);
     }
 }

@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -53,7 +54,7 @@ public class Compressor {
             IOUtils.copy(new FileInputStream(file), out);
             out.closeEntry();
         }else if(file.isDirectory() && file.listFiles() != null){
-            for(File f: file.listFiles()){
+            for(File f: Objects.requireNonNull(file.listFiles())){
                 if(f != null){
                     addToArchive(out, f, name);
                 }

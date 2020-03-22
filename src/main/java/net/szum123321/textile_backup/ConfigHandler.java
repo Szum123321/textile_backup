@@ -36,7 +36,7 @@ public class ConfigHandler {
     public String path = "backup/";
 
     @Comment("\nMaximum number of backups to keep. if 0 then no backup will be deleted\n")
-    public int backupsToKeep = 0;
+    public int backupsToKeep = 10;
 
     @Comment("\nMaximum age of backups to keep in seconds.\n if 0 then backups will not be deleted based on age \n")
     public int maxAge = 0;

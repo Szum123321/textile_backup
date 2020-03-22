@@ -18,6 +18,7 @@
 
 package net.szum123321.textile_backup.core;
 
+import jdk.internal.jline.internal.Nullable;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -29,28 +30,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class BackupHelper {
-    public static File getBackupRootPath(){
-        File path = new File(TextileBackup.config.path);
-
-        if(!path.exists()){
-            try{
-                path.mkdirs();
-            }catch(Exception e){
-                TextileBackup.logger.error(e.getMessage());
-
-                return FabricLoader
-                        .getInstance()
-                        .getGameDirectory()
-                        .toPath()
-                        .resolve(TextileBackup.config.path)
-                        .toFile();
-            }
-        }
-
-        return path;
-    }
 
     public static void log(String s, ServerCommandSource ctx){
         if(ctx != null)
@@ -68,7 +50,7 @@ public class BackupHelper {
             TextileBackup.logger.error(s);
     }
 
-    public static void create(MinecraftServer server, ServerCommandSource ctx, boolean save) {
+    public static void create(MinecraftServer server, ServerCommandSource ctx, boolean save, @Nullable String comment) {
         LocalDateTime now = LocalDateTime.now();
 
         StringBuilder builder = new StringBuilder();
@@ -89,7 +71,7 @@ public class BackupHelper {
         if(save)
             server.save(true, false, false);
 
-        MakeBackupThread thread = new MakeBackupThread(server, ctx);
+        MakeBackupThread thread = new MakeBackupThread(server, ctx, comment);
 
         thread.start();
 
@@ -98,37 +80,61 @@ public class BackupHelper {
 
     public static void executeFileLimit(ServerCommandSource ctx){
         File root = getBackupRootPath();
-        
-        if(root.isDirectory()){
+
+        if(root.isDirectory() && root.exists()){
             if(TextileBackup.config.maxAge > 0){
                 LocalDateTime now = LocalDateTime.now();
 
-                for(File f: root.listFiles()){
+                for(File f: Objects.requireNonNull(root.listFiles())){
                     if(f.exists() && f.isFile()){
-                        LocalDateTime time = LocalDateTime.from(
+                        LocalDateTime creationTime = LocalDateTime.from(
                                 getDateTimeFormatter().parse(
-                                        f.getName().split(".zip")[0]
+                                        f.getName().split(".zip")[0].split("#")[0]
                                 )
                         );
 
-                        if(now.toEpochSecond(ZoneOffset.UTC) - time.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge)
+                        if(now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
+                            log("Deleting: " + f.getName(), ctx);
                             f.delete();
+                        }
                     }
                 }
             }
 
-            if(TextileBackup.config.backupsToKeep > 0 && root.listFiles().length > TextileBackup.config.backupsToKeep){
-                int var1 = root.listFiles().length - TextileBackup.config.backupsToKeep;
+            if(TextileBackup.config.backupsToKeep > 0 && Objects.requireNonNull(root.listFiles()).length > TextileBackup.config.backupsToKeep){
+                int var1 = Objects.requireNonNull(root.listFiles()).length - TextileBackup.config.backupsToKeep;
 
-                File[] file = root.listFiles();
-                Arrays.sort(file);
+                File[] files = root.listFiles();
+                assert files != null;
+                Arrays.sort(files);
 
-                for(int i = 0; i < var1; i++){
-                    file[i].delete();
-
+                for(int i = 0; i < var1; i++) {
+                    log("Deleting: " + files[i].getName(), ctx);
+                    files[i].delete();
                 }
             }
         }
+    }
+
+    public static File getBackupRootPath(){
+        File path = new File(TextileBackup.config.path);
+
+        if(!path.exists()){
+            try{
+                path.mkdirs();
+            }catch(Exception e){
+                TextileBackup.logger.error(e.getMessage());
+
+                return FabricLoader
+                        .getInstance()
+                        .getGameDirectory()
+                        .toPath()
+                        .resolve(TextileBackup.config.path)
+                        .toFile();
+            }
+        }
+
+        return path;
     }
 
     public static DateTimeFormatter getDateTimeFormatter(){

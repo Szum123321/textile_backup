@@ -18,7 +18,9 @@
 
 package net.szum123321.textile_backup.commands;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.core.BackupHelper;
@@ -27,11 +29,19 @@ public class StartBackupCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register(){
         return CommandManager.literal("start")
                 .requires(ctx -> ctx.hasPermissionLevel(4))
-                .executes(ctx -> execute(ctx.getSource()));
+                .then(CommandManager.argument("Comment", StringArgumentType.word())
+                        .executes(StartBackupCommand::executeWithComment)
+                ).executes(ctx -> execute(ctx.getSource()));
+    }
+
+    private static int executeWithComment(CommandContext<ServerCommandSource> source){
+        BackupHelper.create(source.getSource().getMinecraftServer(), source.getSource(), true, StringArgumentType.getString(source, "Comment"));
+
+        return 1;
     }
 
     private static int execute(ServerCommandSource source){
-        BackupHelper.create(source.getMinecraftServer(), source, true);
+        BackupHelper.create(source.getMinecraftServer(), source, true, null);
 
         return 1;
     }

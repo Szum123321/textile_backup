@@ -18,6 +18,7 @@
 
 package net.szum123321.textile_backup.core;
 
+import jdk.internal.jline.internal.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
@@ -29,10 +30,12 @@ import java.time.LocalDateTime;
 public class MakeBackupThread extends Thread {
     MinecraftServer server;
     ServerCommandSource ctx;
+    @Nullable String comment;
 
-    public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx){
+    public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx, @Nullable String comment){
         this.server = server;
         this.ctx = ctx;
+        this.comment = comment;
     }
 
     @Override
@@ -41,6 +44,7 @@ public class MakeBackupThread extends Thread {
                 .getWorld(DimensionType.OVERWORLD)
                 .getSaveHandler()
                 .getWorldDir();
+
         File outFile = BackupHelper
                 .getBackupRootPath()
                 .toPath()
@@ -66,6 +70,6 @@ public class MakeBackupThread extends Thread {
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return BackupHelper.getDateTimeFormatter().format(now) + ".zip";
+        return BackupHelper.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", ""): "") + ".zip";
     }
 }
