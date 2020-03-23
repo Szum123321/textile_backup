@@ -21,6 +21,9 @@ package net.szum123321.textile_backup;
 import blue.endless.jankson.Comment;
 import io.github.cottonmc.cotton.config.annotations.ConfigFile;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @ConfigFile(name = TextileBackup.MOD_ID)
 public class ConfigHandler {
     @Comment("\nTime between backups in seconds\n")
@@ -35,10 +38,13 @@ public class ConfigHandler {
     @Comment("\nA path to backup folder\n")
     public String path = "backup/";
 
-    @Comment("\nMaximum number of backups to keep. if 0 then no backup will be deleted\n")
+    @Comment("\nShould every world has its won backup folder?\n")
+    public boolean perWorldBackup = false;
+
+    @Comment("\nMaximum number of backups to keep. if 0 then no backup will be deleted based on its amount\n")
     public int backupsToKeep = 10;
 
-    @Comment("\nMaximum age of backups to keep in seconds.\n if 0 then backups will not be deleted based on age \n")
+    @Comment("\nMaximum age of backups to keep in seconds.\n if 0 then backups will not be deleted based on its age \n")
     public int maxAge = 0;
 
     @Comment("\nMaximum size of backup folder in kilo bytes. \n")
@@ -49,4 +55,16 @@ public class ConfigHandler {
 
     @Comment("\nPrint info to game out\n")
     public boolean log = true;
+
+    @Comment("\nMinimal permission level required to run commands\n")
+    public int permissionLevel = 4;
+
+    @Comment("\nPlayers allowed to run backup commands without sufficient permission level\n")
+    public Set<String> whitelist = new HashSet<>();
+
+    @Comment("\nPlayers banned from running backup commands besides their sufficient permission level\n")
+    public Set<String> blacklist = new HashSet<>();
+
+    @Comment("\nFormat of date&time used to name backup files.\n")
+    public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
 }

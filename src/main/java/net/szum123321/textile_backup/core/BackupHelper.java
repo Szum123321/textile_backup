@@ -74,12 +74,10 @@ public class BackupHelper {
         MakeBackupThread thread = new MakeBackupThread(server, ctx, comment);
 
         thread.start();
-
-        executeFileLimit(ctx);
     }
 
-    public static void executeFileLimit(ServerCommandSource ctx){
-        File root = getBackupRootPath();
+    public static void executeFileLimit(ServerCommandSource ctx, String worldName){
+        File root = getBackupRootPath(worldName);
 
         FileFilter filter = f -> f.getName().endsWith("zip");
 
@@ -89,11 +87,25 @@ public class BackupHelper {
 
                 Arrays.stream(root.listFiles()).forEach(f ->{
                     if(f.exists() && f.isFile()){
-                        LocalDateTime creationTime = LocalDateTime.from(
-                                getDateTimeFormatter().parse(
-                                        f.getName().split(".zip")[0].split("#")[0]
-                                )
-                        );
+                        LocalDateTime creationTime;
+
+                        try {
+                            creationTime = LocalDateTime.from(
+                                    getDateTimeFormatter().parse(
+                                            f.getName().split(".zip")[0].split("#")[0]
+                                    )
+                            );
+                        }catch(Exception e){
+                            System.out.println(e.getClass());
+                            System.out.println(e.toString());
+
+                            creationTime = LocalDateTime.from(
+                                    getBackupDateTimeFormatter().parse(
+                                            f.getName().split(".zip")[0].split("#")[0]
+                                    )
+                            );
+
+                        }
 
                         if(now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
                             log("Deleting: " + f.getName(), ctx);
@@ -128,8 +140,11 @@ public class BackupHelper {
         }
     }
 
-    public static File getBackupRootPath(){
+    public static File getBackupRootPath(String worldName){
         File path = new File(TextileBackup.config.path);
+
+        if(TextileBackup.config.perWorldBackup)
+            path = path.toPath().resolve(worldName).toFile();
 
         if(!path.exists()){
             try{
@@ -150,8 +165,15 @@ public class BackupHelper {
     }
 
     public static DateTimeFormatter getDateTimeFormatter(){
-           String os = System.getProperty("os.name");
-        if (os.toLowerCase().startsWith("win")) {
+        if(TextileBackup.config.dateTimeFormat != null)
+            return DateTimeFormatter.ofPattern(TextileBackup.config.dateTimeFormat);
+        else
+            return getBackupDateTimeFormatter();
+    }
+
+    public static DateTimeFormatter getBackupDateTimeFormatter(){
+        String os = System.getProperty("os.name");
+        if(os.toLowerCase().startsWith("win")){
             return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss");
         } else {
             return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH:mm:ss");

@@ -38,7 +38,7 @@ public abstract class MinecraftServerMixin {
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci){
-        if(timeReference - lastBackup >= TextileBackup.config.backupInterval){
+        if(timeReference - lastBackup >= TextileBackup.config.backupInterval * 1000){
             if(getPlayerManager().getCurrentPlayerCount() == 0 && !TextileBackup.config.doBackupsOnEmptyServer)
                 return;
 

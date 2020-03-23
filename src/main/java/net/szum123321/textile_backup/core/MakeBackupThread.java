@@ -45,7 +45,7 @@ public class MakeBackupThread extends Thread {
                 .getWorldDir();
 
         File outFile = BackupHelper
-                .getBackupRootPath()
+                .getBackupRootPath(server.getLevelName())
                 .toPath()
                 .resolve(getFileName())
                 .toFile();
@@ -61,7 +61,7 @@ public class MakeBackupThread extends Thread {
 
         Compressor.createArchive(world, outFile, ctx);
 
-        BackupHelper.executeFileLimit(ctx);
+        BackupHelper.executeFileLimit(ctx, server.getLevelName());
 
         BackupHelper.log("Done!", ctx);
     }

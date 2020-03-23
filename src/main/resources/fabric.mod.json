@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "Textile Backup",
-  "description": "Small, configurable, fully server-side backup mod for Fabric",
+  "description": "Small, configurable, fully server-sided backup mod for Fabric",
   "authors": [
     "Szum123321"
   ],

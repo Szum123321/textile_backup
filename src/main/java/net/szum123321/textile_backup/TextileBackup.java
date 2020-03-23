@@ -25,8 +25,10 @@ import io.github.cottonmc.cotton.logging.ModLogger;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.server.command.ServerCommandSource;
+import net.szum123321.textile_backup.commands.BlacklistCommand;
 import net.szum123321.textile_backup.commands.CleanupCommand;
 import net.szum123321.textile_backup.commands.StartBackupCommand;
+import net.szum123321.textile_backup.commands.WhitelistCommand;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_ID = "textile_backup";
@@ -41,7 +43,6 @@ public class TextileBackup implements ModInitializer {
         logger.info("Loading TextileBackup by Szum123321");
 
         config = ConfigManager.loadConfig(ConfigHandler.class);
-        config.backupInterval *= 1000;
 
         registerCommands();
     }
@@ -49,8 +50,10 @@ public class TextileBackup implements ModInitializer {
     private void registerCommands(){
         CommandRegistry.INSTANCE.register(false, dispatcher -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
-                    .then(StartBackupCommand.register())
+                    .then(BlacklistCommand.register())
                     .then(CleanupCommand.register())
+                    .then(StartBackupCommand.register())
+                    .then(WhitelistCommand.register())
         ));
     }
 }
