@@ -21,7 +21,7 @@ Feel free to use this mod in your modpack or on server!
 
 ### Important
 
-* Time format deafutly used by this mod is: dd.MM.yyyy_HH-mm-ss although it is configurable
+* Time format defaultly used by this mod is: dd.MM.yyyy_HH-mm-ss although it is configurable
 * _This mod contains **Cotton Config** and its dependencies as jars in jar, which are property of **CottonMC**_
 
 If you have any suggestions or found a problem please report it on github.

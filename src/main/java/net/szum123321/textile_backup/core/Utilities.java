@@ -1,14 +1,14 @@
 package net.szum123321.textile_backup.core;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.TextileBackup;
 
 import java.time.format.DateTimeFormatter;
 
 public class Utilities {
 	public static DateTimeFormatter getDateTimeFormatter(){
-		if(TextileBackup.config.dateTimeFormat != null)
+		if(!TextileBackup.config.dateTimeFormat.equals(""))
 			return DateTimeFormatter.ofPattern(TextileBackup.config.dateTimeFormat);
 		else
 			return getBackupDateTimeFormatter();
@@ -25,7 +25,7 @@ public class Utilities {
 
 	public static void log(String s, ServerCommandSource ctx){
 		if(ctx != null)
-			ctx.sendFeedback(new TranslatableText(s), false);
+			ctx.sendFeedback(new LiteralText(s), false);
 
 		if(TextileBackup.config.log)
 			TextileBackup.logger.info(s);
@@ -33,7 +33,7 @@ public class Utilities {
 
 	public static void error(String s, ServerCommandSource ctx){
 		if(ctx != null)
-			ctx.sendFeedback(new TranslatableText(s), true);
+			ctx.sendFeedback(new LiteralText(s), true);
 
 		if(TextileBackup.config.log)
 			TextileBackup.logger.error(s);

@@ -21,7 +21,6 @@ package net.szum123321.textile_backup.core;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
 import org.apache.commons.io.FileUtils;
 
@@ -29,7 +28,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 public class BackupHelper {

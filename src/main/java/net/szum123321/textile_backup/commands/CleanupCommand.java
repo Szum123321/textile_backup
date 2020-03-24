@@ -21,22 +21,18 @@ package net.szum123321.textile_backup.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
-import net.szum123321.textile_backup.TextileBackup;
+import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.core.BackupHelper;
 
 public class CleanupCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register(){
         return CommandManager.literal("cleanup")
-                .requires(ctx -> TextileBackup.config.whitelist.contains(ctx.getName()) ||
-                        ctx.hasPermissionLevel(TextileBackup.config.permissionLevel) &&
-                                !TextileBackup.config.blacklist.contains(ctx.getName()))
                 .executes(ctx -> execute(ctx.getSource()));
     }
 
     private static int execute(ServerCommandSource source){
         BackupHelper.executeFileLimit(source, source.getMinecraftServer().getLevelName());
-        source.sendFeedback(new TranslatableText("Done"), false);
+        source.sendFeedback(new LiteralText("Done"), false);
 
         return 1;
     }

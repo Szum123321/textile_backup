@@ -23,22 +23,18 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.BackupHelper;
 
 public class StartBackupCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register(){
         return CommandManager.literal("start")
-                .requires(ctx -> TextileBackup.config.whitelist.contains(ctx.getName()) ||
-                        ctx.hasPermissionLevel(TextileBackup.config.permissionLevel) &&
-                                !TextileBackup.config.blacklist.contains(ctx.getName()))
-                .then(CommandManager.argument("Comment", StringArgumentType.word())
+                .then(CommandManager.argument("comment", StringArgumentType.string())
                         .executes(StartBackupCommand::executeWithComment)
                 ).executes(ctx -> execute(ctx.getSource()));
     }
 
-    private static int executeWithComment(CommandContext<ServerCommandSource> source){
-        BackupHelper.create(source.getSource().getMinecraftServer(), source.getSource(), true, StringArgumentType.getString(source, "Comment"));
+    private static int executeWithComment(CommandContext<ServerCommandSource> source) {
+        BackupHelper.create(source.getSource().getMinecraftServer(), source.getSource(), true, StringArgumentType.getString(source, "comment").replace("#", ""));
 
         return 1;
     }

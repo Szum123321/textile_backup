@@ -1,6 +1,5 @@
 package net.szum123321.textile_backup.commands;
 
-import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -9,6 +8,7 @@ import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
@@ -16,9 +16,6 @@ import net.szum123321.textile_backup.core.Utilities;
 public class WhitelistCommand {
 	public static LiteralArgumentBuilder<ServerCommandSource> register(){
 		return CommandManager.literal("whitelist")
-				.requires(ctx -> TextileBackup.config.whitelist.contains(ctx.getName()) ||
-						ctx.hasPermissionLevel(TextileBackup.config.permissionLevel) &&
-								!TextileBackup.config.blacklist.contains(ctx.getName()))
 				.then(CommandManager.literal("add")
 						.then(CommandManager.argument("player", EntityArgumentType.player())
 								.executes(WhitelistCommand::executeAdd)
@@ -33,7 +30,7 @@ public class WhitelistCommand {
 	}
 
 	private static int help(ServerCommandSource source){
-		source.sendFeedback(new TranslatableText("Available command are: add [player], remove [player], list."), false);
+		source.sendFeedback(new LiteralText("Available command are: add [player], remove [player], list."), false);
 
 		return 1;
 	}
@@ -57,7 +54,7 @@ public class WhitelistCommand {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(TextileBackup.config.whitelist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: {} is already whitelisted.", player.getEntityName()), false);
+			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already whitelisted.", player.getEntityName()), false);
 		}else{
 			TextileBackup.config.whitelist.add(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
@@ -85,7 +82,7 @@ public class WhitelistCommand {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!TextileBackup.config.whitelist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: {} newer was on the whitelist.", player.getEntityName()), false);
+			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was on the whitelist.", player.getEntityName()), false);
 		}else{
 			TextileBackup.config.whitelist.remove(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);

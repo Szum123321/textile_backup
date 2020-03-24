@@ -50,8 +50,17 @@ public class TextileBackup implements ModInitializer {
     private void registerCommands(){
         CommandRegistry.INSTANCE.register(false, dispatcher -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
-                        .requires(ctx -> ctx.hasPermissionLevel(1))
-                        .then(BlacklistCommand.register())
+                        .requires((ctx) -> {
+                                    try {
+                                        return (config.whitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
+                                                ctx.hasPermissionLevel(config.permissionLevel)) &&
+                                                !config.blacklist.contains(ctx.getEntityOrThrow().getEntityName());
+                                    }catch (Exception e){ //Command was called from server console.
+                                        System.out.println("Server!");
+                                        return true;
+                                    }
+                                }
+                        ).then(BlacklistCommand.register())
                         .then(CleanupCommand.register())
                         .then(StartBackupCommand.register())
                         .then(WhitelistCommand.register())
