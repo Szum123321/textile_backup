@@ -1,5 +1,6 @@
 package net.szum123321.textile_backup.commands;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -10,7 +11,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
-import sun.security.krb5.Config;
+import net.szum123321.textile_backup.core.Utilities;
 
 public class WhitelistCommand {
 	public static LiteralArgumentBuilder<ServerCommandSource> register(){
@@ -19,17 +20,16 @@ public class WhitelistCommand {
 						ctx.hasPermissionLevel(TextileBackup.config.permissionLevel) &&
 								!TextileBackup.config.blacklist.contains(ctx.getName()))
 				.then(CommandManager.literal("add")
-						.then(CommandManager.argument("Player", EntityArgumentType.player()))
-						.executes(WhitelistCommand::executeAdd)
-				)
-				.then(CommandManager.literal("remove")
-						.then(CommandManager.argument("Player", EntityArgumentType.player()))
-						.executes(WhitelistCommand::executeRemove)
-				)
-				.then(CommandManager.literal("list")
+						.then(CommandManager.argument("player", EntityArgumentType.player())
+								.executes(WhitelistCommand::executeAdd)
+						)
+				).then(CommandManager.literal("remove")
+						.then(CommandManager.argument("player", EntityArgumentType.player())
+								.executes(WhitelistCommand::executeRemove)
+						)
+				).then(CommandManager.literal("list")
 						.executes(ctx -> executeList(ctx.getSource()))
-				)
-				.executes(ctx -> help(ctx.getSource()));
+				).executes(ctx -> help(ctx.getSource()));
 	}
 
 	private static int help(ServerCommandSource source){
@@ -48,13 +48,13 @@ public class WhitelistCommand {
 			builder.append(", ");
 		}
 
-		source.sendFeedback(new TranslatableText(builder.toString()), false);
+		Utilities.log(builder.toString(), source);
 
 		return 1;
 	}
 
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "Player");
+		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(TextileBackup.config.whitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: {} is already whitelisted.", player.getEntityName()), false);
@@ -75,14 +75,14 @@ public class WhitelistCommand {
 
 			builder.append(" successfully.");
 
-			ctx.getSource().sendFeedback(new TranslatableText(builder.toString()), false);
+			Utilities.log(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
 	}
 
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "Player");
+		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!TextileBackup.config.whitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: {} newer was on the whitelist.", player.getEntityName()), false);
@@ -95,7 +95,7 @@ public class WhitelistCommand {
 			builder.append(player.getEntityName());
 			builder.append(" removed from the whitelist successfully.");
 
-			ctx.getSource().sendFeedback(new TranslatableText(builder.toString()), false);
+			Utilities.log(builder.toString(), ctx.getSource());
 		}
 
 		return 1;

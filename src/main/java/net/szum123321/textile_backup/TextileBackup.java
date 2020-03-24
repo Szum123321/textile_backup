@@ -50,10 +50,11 @@ public class TextileBackup implements ModInitializer {
     private void registerCommands(){
         CommandRegistry.INSTANCE.register(false, dispatcher -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
-                    .then(BlacklistCommand.register())
-                    .then(CleanupCommand.register())
-                    .then(StartBackupCommand.register())
-                    .then(WhitelistCommand.register())
+                        .requires(ctx -> ctx.hasPermissionLevel(1))
+                        .then(BlacklistCommand.register())
+                        .then(CleanupCommand.register())
+                        .then(StartBackupCommand.register())
+                        .then(WhitelistCommand.register())
         ));
     }
 }

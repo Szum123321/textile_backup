@@ -33,23 +33,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 public class BackupHelper {
-
-    public static void log(String s, ServerCommandSource ctx){
-        if(ctx != null)
-            ctx.sendFeedback(new TranslatableText(s), false);
-
-        if(TextileBackup.config.log)
-            TextileBackup.logger.info(s);
-    }
-
-    public static void error(String s, ServerCommandSource ctx){
-        if(ctx != null)
-            ctx.sendFeedback(new TranslatableText(s), true);
-
-        if(TextileBackup.config.log)
-            TextileBackup.logger.error(s);
-    }
-
     public static void create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -62,11 +45,11 @@ public class BackupHelper {
             builder.append("SERVER");
 
         builder.append(" on: ");
-        builder.append(getDateTimeFormatter().format(now));
+        builder.append(Utilities.getDateTimeFormatter().format(now));
 
-        log(builder.toString(), null);
+        Utilities.log(builder.toString(), null);
 
-        log("Saving server...", ctx);
+        Utilities.log("Saving server...", ctx);
 
         if(save)
             server.save(true, false, false);
@@ -91,7 +74,7 @@ public class BackupHelper {
 
                         try {
                             creationTime = LocalDateTime.from(
-                                    getDateTimeFormatter().parse(
+                                    Utilities.getDateTimeFormatter().parse(
                                             f.getName().split(".zip")[0].split("#")[0]
                                     )
                             );
@@ -100,7 +83,7 @@ public class BackupHelper {
                             System.out.println(e.toString());
 
                             creationTime = LocalDateTime.from(
-                                    getBackupDateTimeFormatter().parse(
+                                    Utilities.getBackupDateTimeFormatter().parse(
                                             f.getName().split(".zip")[0].split("#")[0]
                                     )
                             );
@@ -108,7 +91,7 @@ public class BackupHelper {
                         }
 
                         if(now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
-                            log("Deleting: " + f.getName(), ctx);
+                            Utilities.log("Deleting: " + f.getName(), ctx);
                             f.delete();
                         }
                     }
@@ -124,7 +107,7 @@ public class BackupHelper {
                 Arrays.sort(files);
 
                 for(int i = 0; i < var1; i++) {
-                    log("Deleting: " + files[i].getName(), ctx);
+                    Utilities.log("Deleting: " + files[i].getName(), ctx);
                     files[i].delete();
                 }
             }
@@ -132,7 +115,7 @@ public class BackupHelper {
             if(TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize){
                  Arrays.stream(root.listFiles()).sorted().forEach(e -> {
                     if(FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize){
-                        log("Deleting: " + e.getName(), ctx);
+                        Utilities.log("Deleting: " + e.getName(), ctx);
                         e.delete();
                     }
                 });
@@ -162,21 +145,5 @@ public class BackupHelper {
         }
 
         return path;
-    }
-
-    public static DateTimeFormatter getDateTimeFormatter(){
-        if(TextileBackup.config.dateTimeFormat != null)
-            return DateTimeFormatter.ofPattern(TextileBackup.config.dateTimeFormat);
-        else
-            return getBackupDateTimeFormatter();
-    }
-
-    public static DateTimeFormatter getBackupDateTimeFormatter(){
-        String os = System.getProperty("os.name");
-        if(os.toLowerCase().startsWith("win")){
-            return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss");
-        } else {
-            return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH:mm:ss");
-        }
     }
 }

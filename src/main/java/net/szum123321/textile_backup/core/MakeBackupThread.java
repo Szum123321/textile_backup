@@ -55,7 +55,7 @@ public class MakeBackupThread extends Thread {
         try {
             outFile.createNewFile();
         } catch (IOException e) {
-            BackupHelper.error("Error while trying to create backup file!\n" + e.getMessage(), ctx);
+            Utilities.error("Error while trying to create backup file!\n" + e.getMessage(), ctx);
             return;
         }
 
@@ -63,12 +63,12 @@ public class MakeBackupThread extends Thread {
 
         BackupHelper.executeFileLimit(ctx, server.getLevelName());
 
-        BackupHelper.log("Done!", ctx);
+		Utilities.log("Done!", ctx);
     }
 
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return BackupHelper.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", ""): "") + ".zip";
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", ""): "") + ".zip";
     }
 }

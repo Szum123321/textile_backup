@@ -32,7 +32,7 @@ import java.util.zip.ZipOutputStream;
 
 public class Compressor {
     public static void createArchive(File in, File out, ServerCommandSource ctx){
-        BackupHelper.log("Starting compression...", ctx);
+        Utilities.log("Starting compression...", ctx);
 
         try(ZipOutputStream arc = new ZipOutputStream(new FileOutputStream(out))) {
             arc.setLevel(TextileBackup.config.compression);
@@ -41,7 +41,7 @@ public class Compressor {
             TextileBackup.logger.error(e.getMessage());
         }
 
-        BackupHelper.log("Compression finished", ctx);
+        Utilities.log("Compression finished", ctx);
     }
 
     private static void addToArchive(ZipOutputStream out, File file, String dir) throws IOException {
