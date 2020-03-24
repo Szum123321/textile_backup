@@ -77,9 +77,6 @@ public class BackupHelper {
                                     )
                             );
                         }catch(Exception e){
-                            System.out.println(e.getClass());
-                            System.out.println(e.toString());
-
                             creationTime = LocalDateTime.from(
                                     Utilities.getBackupDateTimeFormatter().parse(
                                             f.getName().split(".zip")[0].split("#")[0]

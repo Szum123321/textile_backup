@@ -59,6 +59,9 @@ public class ConfigHandler {
     @Comment("\nMinimal permission level required to run commands\n")
     public int permissionLevel = 4;
 
+    @Comment("\nPlayer on singleplayer is always allowed to run command. Warning! On lan party everyone will be allowed to run it.\n")
+    public boolean alwaysSingleplayerAllowed = true;
+
     @Comment("\nPlayers allowed to run backup commands without sufficient permission level\n")
     public Set<String> whitelist = new HashSet<>();
 
