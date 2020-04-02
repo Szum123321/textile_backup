@@ -45,7 +45,7 @@ public class MakeBackupThread implements Runnable {
                 .getWorldDir();
 
         File outFile = BackupHelper
-                .getBackupRootPath(server.getLevelName())
+                .getBackupRootPath(server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName())
                 .toPath()
                 .resolve(getFileName())
                 .toFile();
@@ -61,7 +61,7 @@ public class MakeBackupThread implements Runnable {
 
         Compressor.createArchive(world, outFile, ctx);
 
-        BackupHelper.executeFileLimit(ctx, server.getLevelName());
+        BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
 
 		Utilities.log("Done!", ctx);
     }

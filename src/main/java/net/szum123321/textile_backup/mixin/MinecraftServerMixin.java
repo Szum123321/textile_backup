@@ -28,6 +28,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.function.BooleanSupplier;
+
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
     @Shadow private long timeReference;
@@ -37,7 +39,7 @@ public abstract class MinecraftServerMixin {
     private long lastBackup = 0;
 
     @Inject(method = "tick", at = @At("HEAD"))
-    public void tick(CallbackInfo ci){
+    public void tick(BooleanSupplier shouldKeepTicking, CallbackInfo ci){
         if(timeReference - lastBackup >= TextileBackup.config.backupInterval * 1000){
             if(getPlayerManager().getCurrentPlayerCount() == 0 && !TextileBackup.config.doBackupsOnEmptyServer)
                 return;
