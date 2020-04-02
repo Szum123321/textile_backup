@@ -52,7 +52,7 @@ public class BackupHelper {
         if(save)
             server.save(true, false, false);
 
-        MakeBackupThread thread = new MakeBackupThread(server, ctx, comment);
+        Thread thread = new Thread(new MakeBackupThread(server, ctx, comment));
 
         thread.start();
     }

@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Objects;
+import java.nio.file.Files;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,31 +34,34 @@ public class Compressor {
     public static void createArchive(File in, File out, ServerCommandSource ctx){
         Utilities.log("Starting compression...", ctx);
 
-        try(ZipOutputStream arc = new ZipOutputStream(new FileOutputStream(out))) {
+        try {
+            File input = in.getCanonicalFile();
+
+            ZipOutputStream arc = new ZipOutputStream(new FileOutputStream(out));
+
             arc.setLevel(TextileBackup.config.compression);
-            addToArchive(arc, in, ".");
+
+            int rootPathLength = input.toString().length() + 1;
+
+            Files.walk(input.toPath()).filter(path -> !path.equals(input.toPath()) && path.toFile().isFile()).forEach(path -> {
+                try{
+                    File file = path.toAbsolutePath().toFile();
+
+                    ZipEntry entry = new ZipEntry(file.getAbsolutePath().substring(rootPathLength));
+                    arc.putNextEntry(entry);
+                    entry.setSize(file.length());
+                    IOUtils.copy(new FileInputStream(file), arc);
+                    arc.closeEntry();
+                }catch (IOException e){
+                    TextileBackup.logger.error(e.getMessage());
+                }
+            });
+
+            arc.close();
         } catch (IOException e) {
             TextileBackup.logger.error(e.getMessage());
         }
 
         Utilities.log("Compression finished", ctx);
-    }
-
-    private static void addToArchive(ZipOutputStream out, File file, String dir) throws IOException {
-        String name = dir + File.separator + file.getName();
-
-        if(file.isFile()){
-            ZipEntry entry = new ZipEntry(name);
-            out.putNextEntry(entry);
-            entry.setSize(file.length());
-            IOUtils.copy(new FileInputStream(file), out);
-            out.closeEntry();
-        }else if(file.isDirectory() && file.listFiles() != null){
-            for(File f: Objects.requireNonNull(file.listFiles())){
-                if(f != null){
-                    addToArchive(out, f, name);
-                }
-            }
-        }
     }
 }

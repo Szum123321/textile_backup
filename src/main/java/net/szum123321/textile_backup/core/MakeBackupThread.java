@@ -26,10 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-public class MakeBackupThread extends Thread {
-    MinecraftServer server;
-    ServerCommandSource ctx;
-    String comment;
+public class MakeBackupThread implements Runnable {
+    private MinecraftServer server;
+    private ServerCommandSource ctx;
+    private String comment;
 
     public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx, String comment){
         this.server = server;

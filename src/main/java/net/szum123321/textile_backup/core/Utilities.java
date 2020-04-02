@@ -7,6 +7,11 @@ import net.szum123321.textile_backup.TextileBackup;
 import java.time.format.DateTimeFormatter;
 
 public class Utilities {
+	public static boolean isWindows(){
+		String os = System.getProperty("os.name");
+		return os.toLowerCase().startsWith("win");
+	}
+
 	public static DateTimeFormatter getDateTimeFormatter(){
 		if(!TextileBackup.config.dateTimeFormat.equals(""))
 			return DateTimeFormatter.ofPattern(TextileBackup.config.dateTimeFormat);
@@ -15,8 +20,7 @@ public class Utilities {
 	}
 
 	public static DateTimeFormatter getBackupDateTimeFormatter(){
-		String os = System.getProperty("os.name");
-		if(os.toLowerCase().startsWith("win")){
+		if(isWindows()){
 			return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss");
 		} else {
 			return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH:mm:ss");
