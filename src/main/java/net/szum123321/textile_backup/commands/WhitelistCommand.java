@@ -65,8 +65,8 @@ public class WhitelistCommand {
 			builder.append(player.getEntityName());
 			builder.append(" added to the whitelist");
 
-			if(TextileBackup.config.playerBlocklist.contains(player.getEntityName())){
-				TextileBackup.config.playerBlocklist.remove(player.getEntityName());
+			if(TextileBackup.config.playerBlacklist.contains(player.getEntityName())){
+				TextileBackup.config.playerBlacklist.remove(player.getEntityName());
 				builder.append(" and removed form the blacklist");
 			}
 

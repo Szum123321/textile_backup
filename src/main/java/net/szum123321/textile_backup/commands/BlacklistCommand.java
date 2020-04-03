@@ -40,7 +40,7 @@ public class BlacklistCommand {
 
 		builder.append("Currently on the blacklist are: ");
 
-		for(String name : TextileBackup.config.playerBlocklist){
+		for(String name : TextileBackup.config.playerBlacklist){
 			builder.append(name);
 			builder.append(", ");
 		}
@@ -53,10 +53,10 @@ public class BlacklistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(TextileBackup.config.playerBlocklist.contains(player.getEntityName())) {
+		if(TextileBackup.config.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already blacklisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.config.playerBlocklist.add(player.getEntityName());
+			TextileBackup.config.playerBlacklist.add(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
 
 			StringBuilder builder = new StringBuilder();
@@ -81,10 +81,10 @@ public class BlacklistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!TextileBackup.config.playerBlocklist.contains(player.getEntityName())) {
+		if(!TextileBackup.config.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was blacklisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.config.playerBlocklist.remove(player.getEntityName());
+			TextileBackup.config.playerBlacklist.remove(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
 
 			StringBuilder builder = new StringBuilder();

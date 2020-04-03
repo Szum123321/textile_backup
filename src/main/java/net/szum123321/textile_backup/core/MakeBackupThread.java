@@ -59,7 +59,7 @@ public class MakeBackupThread implements Runnable {
             return;
         }
 
-        Compressor.createArchive(world, outFile, ctx);
+        ZipCompressor.createArchive(world, outFile, ctx);
 
         BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
 

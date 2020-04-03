@@ -45,11 +45,11 @@ public class ConfigHandler {
     @Comment("\nShould every world has its won backup folder?\n")
     public boolean perWorldBackup = false;
 
-    @Comment("\nMaximum number of backups to keep. if 0 then no backup will be deleted based on its amount\n")
+    @Comment("\nMaximum number of backups to keep. If 0 then no backup will be deleted based on its amount\n")
     public int backupsToKeep = 10;
 
     @Comment("\nMaximum age of backups to keep in seconds.\n if 0 then backups will not be deleted based on its age \n")
-    public int maxAge = 0;
+    public long maxAge = 0;
 
     @Comment("\nMaximum size of backup folder in kilo bytes. \n")
     public int maxSize = 0;
@@ -70,7 +70,7 @@ public class ConfigHandler {
     public Set<String> playerWhitelist = new HashSet<>();
 
     @Comment("\nPlayers banned from running backup commands besides their sufficient permission level\n")
-    public Set<String> playerBlocklist = new HashSet<>();
+    public Set<String> playerBlacklist = new HashSet<>();
 
     @Comment("\nFormat of date&time used to name backup files.\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
