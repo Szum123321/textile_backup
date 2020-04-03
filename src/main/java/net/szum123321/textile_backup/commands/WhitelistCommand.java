@@ -40,7 +40,7 @@ public class WhitelistCommand {
 
 		builder.append("Currently on the whitelist are: ");
 
-		for(String name : TextileBackup.config.whitelist){
+		for(String name : TextileBackup.config.playerWhitelist){
 			builder.append(name);
 			builder.append(", ");
 		}
@@ -53,10 +53,10 @@ public class WhitelistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(TextileBackup.config.whitelist.contains(player.getEntityName())) {
+		if(TextileBackup.config.playerWhitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already whitelisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.config.whitelist.add(player.getEntityName());
+			TextileBackup.config.playerWhitelist.add(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
 
 			StringBuilder builder = new StringBuilder();
@@ -65,8 +65,8 @@ public class WhitelistCommand {
 			builder.append(player.getEntityName());
 			builder.append(" added to the whitelist");
 
-			if(TextileBackup.config.blacklist.contains(player.getEntityName())){
-				TextileBackup.config.blacklist.remove(player.getEntityName());
+			if(TextileBackup.config.playerBlocklist.contains(player.getEntityName())){
+				TextileBackup.config.playerBlocklist.remove(player.getEntityName());
 				builder.append(" and removed form the blacklist");
 			}
 
@@ -81,10 +81,10 @@ public class WhitelistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!TextileBackup.config.whitelist.contains(player.getEntityName())) {
+		if(!TextileBackup.config.playerWhitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was on the whitelist.", player.getEntityName()), false);
 		}else{
-			TextileBackup.config.whitelist.remove(player.getEntityName());
+			TextileBackup.config.playerWhitelist.remove(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
 			StringBuilder builder = new StringBuilder();
 

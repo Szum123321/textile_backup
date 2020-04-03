@@ -52,9 +52,9 @@ public class TextileBackup implements ModInitializer {
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
                                     try {
-                                        return ((config.whitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
+                                        return ((config.playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
                                                 ctx.hasPermissionLevel(config.permissionLevel)) &&
-                                                !config.blacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
+                                                !config.playerBlocklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
                                                 (ctx.getMinecraftServer().isSinglePlayer() &&
                                                 config.alwaysSingleplayerAllowed);
                                     }catch (Exception e){ //Command was called from server console.

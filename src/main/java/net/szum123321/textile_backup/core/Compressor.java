@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -40,10 +41,11 @@ public class Compressor {
             ZipOutputStream arc = new ZipOutputStream(new FileOutputStream(out));
 
             arc.setLevel(TextileBackup.config.compression);
+            arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
             int rootPathLength = input.toString().length() + 1;
 
-            Files.walk(input.toPath()).filter(path -> !path.equals(input.toPath()) && path.toFile().isFile()).forEach(path -> {
+            Files.walk(input.toPath()).filter(path -> !path.equals(input.toPath()) && path.toFile().isFile() && !TextileBackup.config.fileBlacklist.contains(path.toString().substring(rootPathLength))).forEach(path -> {
                 try{
                     File file = path.toAbsolutePath().toFile();
 

@@ -38,6 +38,10 @@ public class ConfigHandler {
     @Comment("\nA path to backup folder\n")
     public String path = "backup/";
 
+    @Comment("\nThis setting allows you to exclude files form being backuped.\n"+
+                "Be very careful when setting it, as it is easy to make your backuped world unusable!\n")
+    public Set<String> fileBlacklist = new HashSet<>();
+
     @Comment("\nShould every world has its won backup folder?\n")
     public boolean perWorldBackup = false;
 
@@ -63,10 +67,10 @@ public class ConfigHandler {
     public boolean alwaysSingleplayerAllowed = true;
 
     @Comment("\nPlayers allowed to run backup commands without sufficient permission level\n")
-    public Set<String> whitelist = new HashSet<>();
+    public Set<String> playerWhitelist = new HashSet<>();
 
     @Comment("\nPlayers banned from running backup commands besides their sufficient permission level\n")
-    public Set<String> blacklist = new HashSet<>();
+    public Set<String> playerBlocklist = new HashSet<>();
 
     @Comment("\nFormat of date&time used to name backup files.\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
