@@ -1,27 +1,27 @@
 /*
-    A simple backup mod for Fabric
-    Copyright (C) 2020  Szum123321
+ * Simple backup mod made for Fabric and ported to Forge
+ *     Copyright (C) 2020  Szum123321
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+package szum123321.textile_backup.core;
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
-package net.szum123321.textile_backup.core;
-
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.TextileBackup;
+import net.minecraftforge.fml.loading.FMLLoader;
+import szum123321.textile_backup.TextileBackup;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -31,7 +31,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 
 public class BackupHelper {
-    public static void create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
+    public static void create(MinecraftServer server, CommandSource ctx, boolean save, String comment) {
         LocalDateTime now = LocalDateTime.now();
 
         StringBuilder builder = new StringBuilder();
@@ -57,7 +57,7 @@ public class BackupHelper {
         thread.start();
     }
 
-    public static void executeFileLimit(ServerCommandSource ctx, String worldName){
+    public static void executeFileLimit(CommandSource ctx, String worldName){
         File root = getBackupRootPath(worldName);
 
         FileFilter filter = f -> f.getName().endsWith("zip");
@@ -130,10 +130,8 @@ public class BackupHelper {
             }catch(Exception e){
                 TextileBackup.logger.error(e.getMessage());
 
-                return FabricLoader
-                        .getInstance()
-                        .getGameDirectory()
-                        .toPath()
+                return FMLLoader
+                        .getGamePath()
                         .resolve(TextileBackup.config.path)
                         .toFile();
             }
