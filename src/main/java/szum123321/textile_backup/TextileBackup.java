@@ -46,12 +46,10 @@ public class TextileBackup {
 	}
 
 	public void setup(FMLCommonSetupEvent event){
-
 		MinecraftForge.EVENT_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(ServerBackupScheduler.class);
 
 		config = ConfigHandler.loadConfig();
-		logger.info("Now");
 	}
 
 	@SubscribeEvent

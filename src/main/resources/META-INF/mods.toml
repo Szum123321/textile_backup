@@ -1,17 +1,15 @@
 modLoader="javafml" #mandatory
 loaderVersion="[28,)" #mandatory (28 is current forge version)
-issueTrackerURL="http://my.issue.tracker/" #optional
+issueTrackerURL="https://github.com/Szum123321/textile_backup/issues" #optional
 
 [[mods]] #mandatory
-# The modid of the mod
 modId="textile_backup" #mandatory
-version="${file.jarVersion}" #mandatory
+version="[Forge]1.1.1-1.14.4" #mandatory
 displayName="Textile Backup" #mandatory
-# A URL to query for updates for this mod. See the JSON update specification <here>
 updateJSONURL="http://myurl.me/" #optional
-displayURL="http://example.com/" #optional
-logoFile="examplemod.png" #optional
-credits="Thanks for this example mod goes to Java" #optional
+displayURL="https://www.curseforge.com/minecraft/mc-mods/textile-backup" #optional
+logoFile="textile_backup.png" #optional
+credits="Made on request of one of curseforge users" #optional
 authors="Szum123321" #optional
 description='''
 

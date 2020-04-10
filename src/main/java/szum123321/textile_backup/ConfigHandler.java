@@ -65,19 +65,18 @@ public class ConfigHandler {
     public static ConfigData loadConfig(){
         File configFile = getConfigFile();
 
-        if(!configFile.exists()) {
-            TextileBackup.logger.info("Creating new config file");
+        if(!configFile.exists())
             saveConfig(new ConfigData());
-        }
 
         try {
             Jankson jankson = Jankson.builder().build();
             return jankson.fromJson(jankson.load(configFile), ConfigData.class);
-        } catch (IOException | SyntaxError e) {
+        } catch (IOException e) {
+            TextileBackup.logger.error(e.getMessage());
+        } catch(SyntaxError e) {
             TextileBackup.logger.error(e.getMessage());
         }
 
-        TextileBackup.logger.info("Loading default config!");
         return new ConfigData();
     }
 

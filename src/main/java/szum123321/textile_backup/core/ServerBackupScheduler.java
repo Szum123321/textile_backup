@@ -32,12 +32,9 @@ public class ServerBackupScheduler {
 	@SubscribeEvent
 	public static void onServerTick(TickEvent.ServerTickEvent event) {
 		if(event.phase == TickEvent.Phase.START) {
-			TextileBackup.logger.info("Diiff: " + (System.currentTimeMillis() - lastBackupTime));
 			if(System.currentTimeMillis() - lastBackupTime >= TextileBackup.config.backupInterval * 1000) {
 				if(server.getPlayerList().getCurrentPlayerCount() > 0 || TextileBackup.config.doBackupsOnEmptyServer)
 					BackupHelper.create(server, null, true, null);
-
-				TextileBackup.logger.info("Time: " + lastBackupTime);
 
 				lastBackupTime = System.currentTimeMillis();
 			}
@@ -48,9 +45,6 @@ public class ServerBackupScheduler {
 	public static void onServerStarted(FMLServerStartingEvent event) {
 		server = event.getServer();
 		lastBackupTime = System.currentTimeMillis();
-
-		TextileBackup.logger.info("Server Starting at: " + lastBackupTime);
-		TextileBackup.logger.info("Interval is: " + TextileBackup.config.backupInterval);
 	}
 
 	@SubscribeEvent
