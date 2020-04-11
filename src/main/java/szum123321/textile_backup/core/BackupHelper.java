@@ -50,7 +50,7 @@ public class BackupHelper {
         Utilities.log("Saving server...", ctx);
 
         if(save)
-            server.save(true, false, false);
+            server.save(false, true, false);
 
         Thread thread = new Thread(new MakeBackupThread(server, ctx, comment));
 
