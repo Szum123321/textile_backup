@@ -20,7 +20,6 @@ package szum123321.textile_backup.core;
 
 import net.minecraft.command.CommandSource;
 import szum123321.textile_backup.TextileBackup;
-import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +48,16 @@ public class ZipCompressor {
                     ZipEntry entry = new ZipEntry(file.getAbsolutePath().substring(rootPathLength));
                     arc.putNextEntry(entry);
                     entry.setSize(file.length());
-                    IOUtils.copy(new FileInputStream(file), arc);
+                    //I HATE FORGE!
+                    //IOUtils.copy(new FileInputStream(file), arc);
+                    FileInputStream fis = new FileInputStream(file);
+                    byte[] bytes = new byte[1024];
+                    int length;
+                    while((length = fis.read(bytes)) >= 0) {
+                        arc.write(bytes, 0, length);
+                    }
+                    fis.close();
+
                     arc.closeEntry();
                 }catch (IOException e){
                     TextileBackup.logger.error(e.getMessage());
