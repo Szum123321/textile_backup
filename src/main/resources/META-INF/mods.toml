@@ -4,7 +4,7 @@ issueTrackerURL="https://github.com/Szum123321/textile_backup/issues" #optional
 
 [[mods]] #mandatory
 modId="textile_backup" #mandatory
-version="[Forge]1.1.1-1.14.4" #mandatory
+version="1.1.1-1.14.4" #mandatory
 displayName="Textile Backup" #mandatory
 updateJSONURL="https://github.com/Szum123321/textile_backup/blob/Forge-1.14.4/update.json" #optional
 displayURL="https://www.curseforge.com/minecraft/mc-mods/textile-backup" #optional
