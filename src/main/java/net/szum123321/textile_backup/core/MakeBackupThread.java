@@ -21,6 +21,12 @@ package net.szum123321.textile_backup.core;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
+import net.szum123321.textile_backup.core.compressors.ZipCompressor;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.compressors.lz4.FramedLZ4CompressorOutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +65,29 @@ public class MakeBackupThread implements Runnable {
             return;
         }
 
-        ZipCompressor.createArchive(world, outFile, ctx);
+        switch (TextileBackup.config.format) {
+            case ZIP:
+                ZipCompressor.createArchive(world, outFile, ctx);
+                break;
+
+            case BZIP2:
+                GenericTarCompressor.createArchive(world, outFile, BZip2CompressorOutputStream.class, ctx);
+                break;
+
+            case GZIP:
+                GenericTarCompressor.createArchive(world, outFile, GzipCompressorOutputStream.class, ctx);
+                break;
+
+            case LZ4:
+                GenericTarCompressor.createArchive(world, outFile, FramedLZ4CompressorOutputStream.class, ctx);
+                break;
+
+            default:
+                Utilities.log("Error! No compression format specified! using default compressor!", ctx);
+                ZipCompressor.createArchive(world, outFile, ctx);
+                break;
+        }
+
 
         BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
 
@@ -69,6 +97,6 @@ public class MakeBackupThread implements Runnable {
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", ""): "") + ".zip";
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", ""): "") + TextileBackup.config.format.getExtension();
     }
 }

@@ -21,124 +21,155 @@ package net.szum123321.textile_backup.core;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.TextileBackup;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class BackupHelper {
-    public static void create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
-        LocalDateTime now = LocalDateTime.now();
+	public static Thread create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
+		LocalDateTime now = LocalDateTime.now();
 
-        StringBuilder builder = new StringBuilder();
-        builder.append("Backup started by: ");
+		StringBuilder builder = new StringBuilder();
+		builder.append("Backup started by: ");
 
-        if( ctx != null )
-            builder.append(ctx.getName());
-        else
-            builder.append("SERVER");
+		if (ctx != null)
+			builder.append(ctx.getName());
+		else
+			builder.append("SERVER");
 
-        builder.append(" on: ");
-        builder.append(Utilities.getDateTimeFormatter().format(now));
+		builder.append(" on: ");
+		builder.append(Utilities.getDateTimeFormatter().format(now));
 
-        Utilities.log(builder.toString(), null);
+		Utilities.log(builder.toString(), null);
 
-        Utilities.log("Saving server...", ctx);
+		Utilities.log("Saving server...", ctx);
 
-        if(save)
-            server.save(true, false, false);
+		if (save)
+			server.save(true, true, false);
 
-        Thread thread = new Thread(new MakeBackupThread(server, ctx, comment));
+		Thread thread = new Thread(new MakeBackupThread(server, ctx, comment));
 
-        thread.start();
-    }
+		thread.start();
 
-    public static void executeFileLimit(ServerCommandSource ctx, String worldName){
-        File root = getBackupRootPath(worldName);
+		return thread;
+	}
 
-        FileFilter filter = f -> f.getName().endsWith("zip");
+	public static void executeFileLimit(ServerCommandSource ctx, String worldName) {
+		File root = getBackupRootPath(worldName);
 
-        if(root.isDirectory() && root.exists()){
-            if(TextileBackup.config.maxAge > 0){
-                LocalDateTime now = LocalDateTime.now();
+		if (root.isDirectory() && root.exists()) {
+			if (TextileBackup.config.maxAge > 0) {
+				LocalDateTime now = LocalDateTime.now();
 
-                Arrays.stream(root.listFiles()).forEach(f ->{
-                    if(f.exists() && f.isFile()){
-                        LocalDateTime creationTime;
+				Arrays.stream(root.listFiles()).filter(f -> f.exists() && f.isFile()).forEach(f -> {
+					LocalDateTime creationTime = null;
 
-                        try {
-                            creationTime = LocalDateTime.from(
-                                    Utilities.getDateTimeFormatter().parse(
-                                            f.getName().split(".zip")[0].split("#")[0]
-                                    )
-                            );
-                        }catch(Exception e){
-                            creationTime = LocalDateTime.from(
-                                    Utilities.getBackupDateTimeFormatter().parse(
-                                            f.getName().split(".zip")[0].split("#")[0]
-                                    )
-                            );
+					try {
+						try {
+							FileTime ct = (FileTime) Files.getAttribute(f.toPath(), "creationTime");
 
-                        }
+							creationTime = LocalDateTime.ofInstant(ct.toInstant(), ZoneOffset.UTC);
+						} catch (IOException ignored) {
+							try {
+								creationTime = LocalDateTime.from(
+										Utilities.getDateTimeFormatter().parse(
+												f.getName().split(Objects.requireNonNull(getFileExtension(f)))[0].split("#")[0]
+										)
+								);
+							} catch (Exception ignored2) {
+								creationTime = LocalDateTime.from(
+										Utilities.getBackupDateTimeFormatter().parse(
+												f.getName().split(Objects.requireNonNull(getFileExtension(f)))[0].split("#")[0]
+										)
+								);
+							}
+						}
 
-                        if(now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
-                            Utilities.log("Deleting: " + f.getName(), ctx);
-                            f.delete();
-                        }
-                    }
-                });
-            }
+						if (now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
+							Utilities.log("Deleting: " + f.getName(), ctx);
+							f.delete();
+						}
+					} catch (NullPointerException ignored3) {
+					}
+				});
+			}
 
-            if(TextileBackup.config.backupsToKeep > 0 && root.listFiles().length > TextileBackup.config.backupsToKeep){
-                int var1 = root.listFiles().length - TextileBackup.config.backupsToKeep;
+			if (TextileBackup.config.backupsToKeep > 0 && root.listFiles().length > TextileBackup.config.backupsToKeep) {
+				int var1 = root.listFiles().length - TextileBackup.config.backupsToKeep;
 
-                File[] files = root.listFiles(filter);
-                assert files != null;
+				File[] files = root.listFiles();
+				assert files != null;
 
-                Arrays.sort(files);
+				Arrays.sort(files);
 
-                for(int i = 0; i < var1; i++) {
-                    Utilities.log("Deleting: " + files[i].getName(), ctx);
-                    files[i].delete();
-                }
-            }
+				for (int i = 0; i < var1; i++) {
+					Utilities.log("Deleting: " + files[i].getName(), ctx);
+					files[i].delete();
+				}
+			}
 
-            if(TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize){
-                 Arrays.stream(root.listFiles()).sorted().forEach(e -> {
-                    if(FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize){
-                        Utilities.log("Deleting: " + e.getName(), ctx);
-                        e.delete();
-                    }
-                });
-            }
-        }
-    }
+			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
+				Arrays.stream(root.listFiles()).filter(File::isFile).sorted().forEach(e -> {
+					if (FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
+						Utilities.log("Deleting: " + e.getName(), ctx);
+						e.delete();
+					}
+				});
+			}
+		}
+	}
 
-    public static File getBackupRootPath(String worldName){
-        File path = new File(TextileBackup.config.path);
+	private static String getFileExtension(File f) {
+		System.out.println(f.getName());
+		String[] parts = f.getName().split("\\.");
+		System.out.println(parts.length);
 
-        if(TextileBackup.config.perWorldBackup)
-            path = path.toPath().resolve(worldName).toFile();
+		switch (parts[parts.length - 1]) {
+			case "zip":
+				return ConfigHandler.ArchiveFormat.ZIP.getExtension();
+			case "bz2":
+				return ConfigHandler.ArchiveFormat.BZIP2.getExtension();
+			case "gz":
+				return ConfigHandler.ArchiveFormat.GZIP.getExtension();
+			case "lz4":
+				return ConfigHandler.ArchiveFormat.LZ4.getExtension();
 
-        if(!path.exists()){
-            try{
-                path.mkdirs();
-            }catch(Exception e){
-                TextileBackup.logger.error(e.getMessage());
+			default:
+				return null;
+		}
+	}
 
-                return FabricLoader
-                        .getInstance()
-                        .getGameDirectory()
-                        .toPath()
-                        .resolve(TextileBackup.config.path)
-                        .toFile();
-            }
-        }
 
-        return path;
-    }
+	public static File getBackupRootPath(String worldName) {
+		File path = new File(TextileBackup.config.path);
+
+		if (TextileBackup.config.perWorldBackup)
+			path = path.toPath().resolve(worldName).toFile();
+
+		if (!path.exists()) {
+			try {
+				path.mkdirs();
+			} catch (Exception e) {
+				TextileBackup.logger.error(e.getMessage());
+
+				return FabricLoader
+						.getInstance()
+						.getGameDirectory()
+						.toPath()
+						.resolve(TextileBackup.config.path)
+						.toFile();
+			}
+		}
+
+		return path;
+	}
 }

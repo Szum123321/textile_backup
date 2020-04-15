@@ -54,8 +54,15 @@ public class ConfigHandler {
     @Comment("\nMaximum size of backup folder in kilo bytes. \n")
     public int maxSize = 0;
 
-    @Comment("\nCompression level \n0 - 9\n")
+    @Comment("\nCompression level \n0 - 9\n Only available for zip compression.\n")
     public int compression = 1;
+
+    @Comment(value = "\nAvailable formats are:\n" +
+                    "ZIP - normal zip archive using standard deflate compression\n" +
+                    "BZIP2 - tar.bz2 archive using bzip2 compression\n" +
+                    "GIZP - tar.gz using gzip compression\n" +
+                    "LZ4 - tar.lz using lz4 compression\n")
+    public ArchiveFormat format = ArchiveFormat.ZIP;
 
     @Comment("\nPrint info to game out\n")
     public boolean log = true;
@@ -74,4 +81,21 @@ public class ConfigHandler {
 
     @Comment("\nFormat of date&time used to name backup files.\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
+
+    public enum ArchiveFormat {
+        ZIP(".zip"),
+        BZIP2(".tar.bz2"),
+        GZIP(".tar.gz"),
+        LZ4(".tar.lz4");
+
+        private String extension;
+
+        private ArchiveFormat(String extension){
+            this.extension = extension;
+        }
+
+        public String getExtension() {
+            return extension;
+        }
+    };
 }
