@@ -4,12 +4,22 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.TextileBackup;
 
+import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 
 public class Utilities {
 	public static boolean isWindows(){
 		String os = System.getProperty("os.name");
 		return os.toLowerCase().startsWith("win");
+	}
+
+	public static boolean isBlacklisted(Path path) {
+		for(String i : TextileBackup.config.fileBlacklist) {
+			if(path.startsWith(i))
+				return true;
+		}
+
+		return false;
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter(){

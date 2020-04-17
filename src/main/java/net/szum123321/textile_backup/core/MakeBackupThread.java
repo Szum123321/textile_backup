@@ -33,9 +33,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class MakeBackupThread implements Runnable {
-    private MinecraftServer server;
-    private ServerCommandSource ctx;
-    private String comment;
+    private final MinecraftServer server;
+    private final ServerCommandSource ctx;
+    private final String comment;
 
     public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx, String comment){
         this.server = server;
@@ -83,11 +83,10 @@ public class MakeBackupThread implements Runnable {
                 break;
 
             default:
-                Utilities.log("Error! No compression format specified! using default compressor!", ctx);
+                Utilities.log("Error! No correct compression format specified! using default compressor!", ctx);
                 ZipCompressor.createArchive(world, outFile, ctx);
                 break;
         }
-
 
         BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
 
@@ -97,6 +96,6 @@ public class MakeBackupThread implements Runnable {
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", ""): "") + TextileBackup.config.format.getExtension();
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.config.format.getExtension();
     }
 }

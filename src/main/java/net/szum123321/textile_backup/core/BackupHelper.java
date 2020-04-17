@@ -71,13 +71,13 @@ public class BackupHelper {
 				LocalDateTime now = LocalDateTime.now();
 
 				Arrays.stream(root.listFiles()).filter(f -> f.exists() && f.isFile()).forEach(f -> {
-					LocalDateTime creationTime = null;
+					LocalDateTime creationTime;
 
 					try {
 						try {
-							FileTime ct = (FileTime) Files.getAttribute(f.toPath(), "creationTime");
+							FileTime fileTime = (FileTime) Files.getAttribute(f.toPath(), "creationTime");
 
-							creationTime = LocalDateTime.ofInstant(ct.toInstant(), ZoneOffset.UTC);
+							creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.UTC);
 						} catch (IOException ignored) {
 							try {
 								creationTime = LocalDateTime.from(
@@ -98,8 +98,7 @@ public class BackupHelper {
 							Utilities.log("Deleting: " + f.getName(), ctx);
 							f.delete();
 						}
-					} catch (NullPointerException ignored3) {
-					}
+					} catch (NullPointerException ignored3) {}
 				});
 			}
 

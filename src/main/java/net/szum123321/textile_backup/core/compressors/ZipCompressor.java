@@ -21,7 +21,7 @@ package net.szum123321.textile_backup.core.compressors;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
-import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -31,39 +31,46 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 
 public class ZipCompressor {
-    public static void createArchive(File in, File out, ServerCommandSource ctx){
-        Utilities.log("Starting compression...", ctx);
+	public static void createArchive(File in, File out, ServerCommandSource ctx) {
+		Utilities.log("Starting compression...", ctx);
 
-        try (FileOutputStream fileOutputStream = new FileOutputStream(out);
-             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-             ZipArchiveOutputStream arc = new ZipArchiveOutputStream(bufferedOutputStream)){
+		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
+			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+			 ZipArchiveOutputStream arc = new ZipArchiveOutputStream(bufferedOutputStream)) {
 
-            arc.setMethod(ZipArchiveOutputStream.DEFLATED);
-            arc.setLevel(TextileBackup.config.compression);
-            arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
+			arc.setMethod(ZipArchiveOutputStream.DEFLATED);
+			arc.setUseZip64(Zip64Mode.AsNeeded);
+			arc.setLevel(TextileBackup.config.compression);
+			arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
-            File input = in.getCanonicalFile();
-            int rootPathLength = input.toString().length() + 1;
+			File input = in.getCanonicalFile();
+			int rootPathLength = input.toString().length() + 1;
 
-            Files.walk(input.toPath()).filter(path -> !path.equals(input.toPath()) && path.toFile().isFile() && !TextileBackup.config.fileBlacklist.contains(path.toString().substring(rootPathLength))).forEach(path -> {
-                File file = path.toAbsolutePath().toFile();
-                try (FileInputStream fstream = new FileInputStream(file)) {
-                    ZipArchiveEntry entry = new ZipArchiveEntry(file, file.getAbsolutePath().substring(rootPathLength));
-                    arc.putArchiveEntry(entry);
+			Files.walk(input.toPath()).filter(
+					path -> !path.equals(input.toPath()) &&
+							path.toFile().isFile() &&
+							!Utilities.isBlacklisted(input.toPath().relativize(path))
+			).forEach(path -> {
+				File file = path.toAbsolutePath().toFile();
 
-                    IOUtils.copy(fstream, arc);
+				try (FileInputStream fin = new FileInputStream(file);
+					 BufferedInputStream bfin = new BufferedInputStream(fin)) {
+					ZipArchiveEntry entry = new ZipArchiveEntry(file, file.getAbsolutePath().substring(rootPathLength));
 
-                    arc.closeArchiveEntry();
-                }catch (IOException e){
-                    TextileBackup.logger.error(e.getMessage());
-                }
-            });
+					arc.putArchiveEntry(entry);
+					IOUtils.copy(bfin, arc);
 
-            arc.finish();
-        } catch (IOException e) {
-            TextileBackup.logger.error(e.getMessage());
-        }
+					arc.closeArchiveEntry();
+				} catch (IOException e) {
+					TextileBackup.logger.error(e.getMessage());
+				}
+			});
 
-        Utilities.log("Compression finished", ctx);
-    }
+			arc.finish();
+		} catch (IOException e) {
+			TextileBackup.logger.error(e.getMessage());
+		}
+
+		Utilities.log("Compression finished", ctx);
+	}
 }
