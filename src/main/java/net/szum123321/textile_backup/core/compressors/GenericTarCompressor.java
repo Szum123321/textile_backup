@@ -8,24 +8,26 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
+
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 
 public class GenericTarCompressor {
-	public static void createArchive(File in, File out, Class<? extends CompressorOutputStream> CompressorStreamClass, ServerCommandSource ctx) {
+	public static void createArchive(File in, File out, Class<? extends OutputStream> CompressorStreamClass, ServerCommandSource ctx) {
 		Utilities.log("Starting compression...", ctx);
+
+		long start = System.nanoTime();
 
 		try (FileOutputStream outStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
-			 CompressorOutputStream compressorStream = CompressorStreamClass.getDeclaredConstructor(OutputStream.class).newInstance(bufferedOutputStream);// CompressorStreamClass.getConstructor().newInstance(bufferedOutputStream);
+			 OutputStream compressorStream = CompressorStreamClass.getDeclaredConstructor(OutputStream.class).newInstance(bufferedOutputStream);// CompressorStreamClass.getConstructor().newInstance(bufferedOutputStream);
 			 TarArchiveOutputStream arc = new TarArchiveOutputStream(compressorStream)) {
 
 			arc.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			arc.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 
 			File input = in.getCanonicalFile();
-			int rootPathLength = input.toString().length() + 1;
 
 			Files.walk(input.toPath()).filter(
 					path -> !path.equals(input.toPath()) &&
@@ -36,7 +38,7 @@ public class GenericTarCompressor {
 
 				try (FileInputStream fin = new FileInputStream(file);
 					 BufferedInputStream bfin = new BufferedInputStream(fin)){
-					ArchiveEntry entry = arc.createArchiveEntry(file, file.getAbsolutePath().substring(rootPathLength));
+					ArchiveEntry entry = arc.createArchiveEntry(file, input.toPath().relativize(path).toString());
 
 					arc.putArchiveEntry(entry);
 					IOUtils.copy(bfin, arc);
@@ -46,11 +48,14 @@ public class GenericTarCompressor {
 					TextileBackup.logger.error(e.getMessage());
 				}
 			});
+
 			arc.finish();
 		} catch (IOException | IllegalAccessException | NoSuchMethodException | InstantiationException | InvocationTargetException e) {
 			TextileBackup.logger.error(e.toString());
 		}
 
-		Utilities.log("Compression finished", ctx);
+		long end = System.nanoTime();
+
+		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
 	}
 }

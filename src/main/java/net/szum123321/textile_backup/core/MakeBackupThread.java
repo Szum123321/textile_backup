@@ -23,10 +23,11 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
-import net.szum123321.textile_backup.core.compressors.ZipCompressor;
+import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
+import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.compressors.lz4.FramedLZ4CompressorOutputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class MakeBackupThread implements Runnable {
 
         switch (TextileBackup.config.format) {
             case ZIP:
-                ZipCompressor.createArchive(world, outFile, ctx);
+                ParallelZipCompressor.createArchive(world, outFile, ctx);
                 break;
 
             case BZIP2:
@@ -75,16 +76,16 @@ public class MakeBackupThread implements Runnable {
                 break;
 
             case GZIP:
-                GenericTarCompressor.createArchive(world, outFile, GzipCompressorOutputStream.class, ctx);
+                GenericTarCompressor.createArchive(world, outFile, ParallelGZIPOutputStream.class, ctx);
                 break;
 
-            case LZ4:
-                GenericTarCompressor.createArchive(world, outFile, FramedLZ4CompressorOutputStream.class, ctx);
+            case LZMA:
+                GenericTarCompressor.createArchive(world, outFile, XZCompressorOutputStream.class, ctx);
                 break;
 
             default:
                 Utilities.log("Error! No correct compression format specified! using default compressor!", ctx);
-                ZipCompressor.createArchive(world, outFile, ctx);
+                ParallelZipCompressor.createArchive(world, outFile, ctx);
                 break;
         }
 

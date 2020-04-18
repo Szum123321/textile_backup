@@ -128,9 +128,7 @@ public class BackupHelper {
 	}
 
 	private static String getFileExtension(File f) {
-		System.out.println(f.getName());
 		String[] parts = f.getName().split("\\.");
-		System.out.println(parts.length);
 
 		switch (parts[parts.length - 1]) {
 			case "zip":
@@ -139,8 +137,8 @@ public class BackupHelper {
 				return ConfigHandler.ArchiveFormat.BZIP2.getExtension();
 			case "gz":
 				return ConfigHandler.ArchiveFormat.GZIP.getExtension();
-			case "lz4":
-				return ConfigHandler.ArchiveFormat.LZ4.getExtension();
+			case "xz":
+				return ConfigHandler.ArchiveFormat.LZMA.getExtension();
 
 			default:
 				return null;
@@ -149,7 +147,7 @@ public class BackupHelper {
 
 
 	public static File getBackupRootPath(String worldName) {
-		File path = new File(TextileBackup.config.path);
+		File path = new File(TextileBackup.config.path).getAbsoluteFile();
 
 		if (TextileBackup.config.perWorldBackup)
 			path = path.toPath().resolve(worldName).toFile();
