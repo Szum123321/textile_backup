@@ -21,15 +21,22 @@ package net.szum123321.textile_backup.core;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
+import net.szum123321.textile_backup.core.compressors.ParallelBZip2Compressor;
+import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
+import org.anarres.parallelgzip.ParallelGZIPOutputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
+import org.at4j.comp.bzip2.BZip2OutputStream;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class MakeBackupThread implements Runnable {
-    private MinecraftServer server;
-    private ServerCommandSource ctx;
-    private String comment;
+    private final MinecraftServer server;
+    private final ServerCommandSource ctx;
+    private final String comment;
 
     public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx, String comment){
         this.server = server;
@@ -59,7 +66,28 @@ public class MakeBackupThread implements Runnable {
             return;
         }
 
-        ZipCompressor.createArchive(world, outFile, ctx);
+        switch (TextileBackup.config.format) {
+            case ZIP:
+                ParallelZipCompressor.createArchive(world, outFile, ctx);
+                break;
+
+            case BZIP2:
+                ParallelBZip2Compressor.createArchive(world, outFile, ctx);
+                break;
+
+            case GZIP:
+                GenericTarCompressor.createArchive(world, outFile, ParallelGZIPOutputStream.class, ctx);
+                break;
+
+            case LZMA:
+                GenericTarCompressor.createArchive(world, outFile, XZCompressorOutputStream.class, ctx);
+                break;
+
+            default:
+                Utilities.log("Error! No correct compression format specified! using default compressor!", ctx);
+                ParallelZipCompressor.createArchive(world, outFile, ctx);
+                break;
+        }
 
         BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
 
@@ -69,6 +97,6 @@ public class MakeBackupThread implements Runnable {
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", ""): "") + ".zip";
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.config.format.getExtension();
     }
 }

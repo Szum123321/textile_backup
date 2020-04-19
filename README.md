@@ -15,14 +15,14 @@ Available operations are:
  * whitelist - here you can add, remove and list player that are allowed to run any operation within this mod despite not having high enough permission level*
  * whitelist - here you can add, remove and list player that are not allowed to run any operation within this mod despite having high enough permission level*
  
-All of above can only be done by server admins(permission level 4 - configurable*) / player on single player with cheats on.
+All of the above can only be done by server admins(permission level 4 - configurable*) or player on a single player.
 
-Feel free to use this mod in your modpack or on server!
+Feel free to use this mod in your modpack or on a server!
 
 ### Important
 
 * Time format defaultly used by this mod is: dd.MM.yyyy_HH-mm-ss although it is configurable*.
-* _This mod contains **Cotton Config** and its dependencies as jars in jar, which are property of **CottonMC**_.
+* _This mod contains **Cotton Config** and its dependencies as jars in a jar, which are property of **CottonMC**_.
 
 \* - feature available since 1.1.0
 
