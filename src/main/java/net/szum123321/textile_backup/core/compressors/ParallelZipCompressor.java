@@ -72,7 +72,6 @@ public class ParallelZipCompressor {
 
 		public InputStream get() {
 			try {
-				System.out.println("Creating: " + sourceFile);
 				stream = Files.newInputStream(sourceFile);
 			} catch (IOException e) {
 				e.printStackTrace();
