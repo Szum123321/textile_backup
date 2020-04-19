@@ -6,22 +6,24 @@ import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-
+import org.at4j.comp.bzip2.BZip2OutputStream;
+import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 
-public class GenericTarCompressor {
-	public static void createArchive(File in, File out, Class<? extends OutputStream> CompressorStreamClass, ServerCommandSource ctx) {
+public class ParallelBZip2Compressor {
+	public static void createArchive(File in, File out, ServerCommandSource ctx) {
 		Utilities.log("Starting compression...", ctx);
+
+		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(Runtime.getRuntime().availableProcessors());
 
 		long start = System.nanoTime();
 
-		try (FileOutputStream outStream = new FileOutputStream(out);
-			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
-			 OutputStream compressorStream = CompressorStreamClass.getDeclaredConstructor(OutputStream.class).newInstance(bufferedOutputStream);// CompressorStreamClass.getConstructor().newInstance(bufferedOutputStream);
-			 TarArchiveOutputStream arc = new TarArchiveOutputStream(compressorStream)) {
+		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
+			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+			 BZip2OutputStream bZip2OutputStream = new BZip2OutputStream(bufferedOutputStream, settings);
+			 TarArchiveOutputStream arc = new TarArchiveOutputStream(bZip2OutputStream)) {
 
 			arc.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			arc.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
@@ -49,8 +51,8 @@ public class GenericTarCompressor {
 			});
 
 			arc.finish();
-		} catch (IOException | IllegalAccessException | NoSuchMethodException | InstantiationException | InvocationTargetException e) {
-			TextileBackup.logger.error(e.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		long end = System.nanoTime();

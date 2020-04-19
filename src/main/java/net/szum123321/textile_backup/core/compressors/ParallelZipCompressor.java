@@ -24,7 +24,7 @@ public class ParallelZipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx) {
 		Utilities.log("Starting compression...", ctx);
 
-		long start = System.nanoTime();;
+		long start = System.nanoTime();
 
 		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
@@ -39,15 +39,15 @@ public class ParallelZipCompressor {
 
 			File input = in.getCanonicalFile();
 
-			Files.walk(input.toPath()).filter(
-					path -> !path.equals(input.toPath()) &&
-							path.toFile().isFile() &&
-							!Utilities.isBlacklisted(input.toPath().relativize(path))
+			Files.walk(input.toPath()
+			).filter(path -> !path.equals(input.toPath()) &&
+					path.toFile().isFile() &&
+					!Utilities.isBlacklisted(input.toPath().relativize(path))
 			).forEach(p -> {
-					ZipArchiveEntry entry = new ZipArchiveEntry(input.toPath().relativize(p).toString());
-					entry.setMethod(ZipEntry.DEFLATED);
-					FileInputStreamSupplier supplier = new FileInputStreamSupplier(p);
-					scatterZipCreator.addArchiveEntry(entry, supplier);
+				ZipArchiveEntry entry = new ZipArchiveEntry(input.toPath().relativize(p).toString());
+				entry.setMethod(ZipEntry.DEFLATED);
+				FileInputStreamSupplier supplier = new FileInputStreamSupplier(p);
+				scatterZipCreator.addArchiveEntry(entry, supplier);
 			});
 
 			scatterZipCreator.writeTo(arc);

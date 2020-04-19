@@ -41,6 +41,7 @@ dependencies {
 	include "org.tukaani:xz:1.8"
 
 	modCompile 'com.github.shevek:parallelgzip:master-SNAPSHOT'
+	include 'com.github.shevek:parallelgzip:master-SNAPSHOT'
 }
 
 processResources {

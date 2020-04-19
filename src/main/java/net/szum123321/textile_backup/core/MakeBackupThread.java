@@ -23,11 +23,11 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
+import net.szum123321.textile_backup.core.compressors.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
 import org.anarres.parallelgzip.ParallelGZIPOutputStream;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
+import org.at4j.comp.bzip2.BZip2OutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class MakeBackupThread implements Runnable {
                 break;
 
             case BZIP2:
-                GenericTarCompressor.createArchive(world, outFile, BZip2CompressorOutputStream.class, ctx);
+                ParallelBZip2Compressor.createArchive(world, outFile, ctx);
                 break;
 
             case GZIP:
