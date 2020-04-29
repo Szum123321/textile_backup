@@ -84,14 +84,14 @@ public class MakeBackupThread implements Runnable {
                 break;
 
             default:
-                Utilities.log("Error! No correct compression format specified! using default compressor!", ctx);
+                Utilities.log(ctx, "message.creator_thread.no_compressor");
                 ParallelZipCompressor.createArchive(world, outFile, ctx);
                 break;
         }
 
         BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
 
-		Utilities.log("Done!", ctx);
+		Utilities.log(ctx, "message.general.success");
     }
 
     private String getFileName(){

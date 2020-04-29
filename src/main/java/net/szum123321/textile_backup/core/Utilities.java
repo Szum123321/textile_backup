@@ -2,6 +2,7 @@ package net.szum123321.textile_backup.core;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
 
 import java.nio.file.Path;
@@ -37,12 +38,12 @@ public class Utilities {
 		}
 	}
 
-	public static void log(String s, ServerCommandSource ctx){
+	public static void log(ServerCommandSource ctx, String key, Object... args){
 		if(ctx != null)
-			ctx.sendFeedback(new LiteralText(s), false);
+			ctx.sendFeedback(new TranslatableText(key, args), false);
 
 		if(TextileBackup.config.log)
-			TextileBackup.logger.info(s);
+			TextileBackup.logger.info(new TranslatableText(key, args).asString());
 	}
 
 	public static void error(String s, ServerCommandSource ctx){

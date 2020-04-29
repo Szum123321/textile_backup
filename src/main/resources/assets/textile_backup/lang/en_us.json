@@ -1,0 +1,29 @@
+{
+	"command.blacklist.help": "Available command are: add [player], remove [player], list.",
+	"command.blacklist.list": "On the blacklist are: %s",
+	"command.blacklist.add.success": "Player: %s added to the blacklist.",
+	"command.blacklist.add.success_and_whitelist_removed": "Player: %s added to the blacklist and removed from the whitelist.",
+	"command.blacklist.add.already": "Player: %s is already blacklisted.",
+	"command.blacklist.remove.success": "Player: %s removed from the blacklist.",
+	"command.blacklist.remove.already": "Player: %s newer was blacklisted.",
+
+	"command.whitelist.help": "Available command are: add [player], remove [player], list.",
+	"command.whitelist.list": "On the whitelist are: ",
+	"command.whitelist.add.success": "Player: %s added to the whitelist.",
+	"command.whitelist.success_and_whitelist_removed": "Player: %s added to the whitelist and removed from the blacklist.",
+	"command.whitelist.add.already": "Player: %s is already whitelisted.",
+	"command.whitelist.remove.success": "Player: %s removed from the whitelist.",
+	"command.whitelist.remove.already": "Player: %s newer was whitelisted.",
+
+	"argument.file.notexists": "File: %s does not exists!",
+
+	"message.compression.start": "Starting compression...",
+	"message.compression.time": "Compression took: %ss",
+
+	"message.creator.start": "Backup started by: %s on: %s",
+	"message.creator.delete_file": "Deleting: %s",
+
+	"message.creator_thread.no_compressor": "Error! No correct compression format specified! using default compressor!",
+
+	"message.general.success": "Done!"
+}

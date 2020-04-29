@@ -13,6 +13,8 @@ import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
 
+import java.util.Iterator;
+
 public class WhitelistCommand {
 	public static LiteralArgumentBuilder<ServerCommandSource> register(){
 		return CommandManager.literal("whitelist")
@@ -30,7 +32,7 @@ public class WhitelistCommand {
 	}
 
 	private static int help(ServerCommandSource source){
-		source.sendFeedback(new LiteralText("Available command are: add [player], remove [player], list."), false);
+		source.sendFeedback(new TranslatableText("command.whitelist.help"), false);
 
 		return 1;
 	}
@@ -38,14 +40,16 @@ public class WhitelistCommand {
 	private static int executeList(ServerCommandSource source){
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("Currently on the whitelist are: ");
+		Iterator<String> iterator = TextileBackup.config.playerWhitelist.iterator();
 
-		for(String name : TextileBackup.config.playerWhitelist){
-			builder.append(name);
-			builder.append(", ");
+		while (iterator.hasNext()) {
+			builder.append(iterator.next());
+
+			if(iterator.hasNext())
+				builder.append(", ");
 		}
 
-		Utilities.log(builder.toString(), source);
+		Utilities.log(source, "command.whitelist.list", builder.toString());
 
 		return 1;
 	}
@@ -54,25 +58,18 @@ public class WhitelistCommand {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(TextileBackup.config.playerWhitelist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already whitelisted.", player.getEntityName()), false);
+			ctx.getSource().sendFeedback(new TranslatableText("command.whitelist.add.already", player.getEntityName()), false);
 		}else{
 			TextileBackup.config.playerWhitelist.add(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
 
-			StringBuilder builder = new StringBuilder();
-
-			builder.append("Player: ");
-			builder.append(player.getEntityName());
-			builder.append(" added to the whitelist");
 
 			if(TextileBackup.config.playerBlacklist.contains(player.getEntityName())){
 				TextileBackup.config.playerBlacklist.remove(player.getEntityName());
-				builder.append(" and removed form the blacklist");
+				Utilities.log(ctx.getSource(), "command.whitelist.success_and_whitelist_removed", player.getName());
+			} else {
+				Utilities.log(ctx.getSource(), "command.whitelist.success", player.getName());
 			}
-
-			builder.append(" successfully.");
-
-			Utilities.log(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
@@ -82,17 +79,12 @@ public class WhitelistCommand {
 		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!TextileBackup.config.playerWhitelist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was on the whitelist.", player.getEntityName()), false);
+			ctx.getSource().sendFeedback(new TranslatableText("command.whitelist.remove.already", player.getEntityName()), false);
 		}else{
 			TextileBackup.config.playerWhitelist.remove(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
-			StringBuilder builder = new StringBuilder();
 
-			builder.append("Player: ");
-			builder.append(player.getEntityName());
-			builder.append(" removed from the whitelist successfully.");
-
-			Utilities.log(builder.toString(), ctx.getSource());
+			Utilities.log(ctx.getSource(), "command.whitelist.remove.success", player.getName());
 		}
 
 		return 1;

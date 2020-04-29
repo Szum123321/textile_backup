@@ -38,20 +38,12 @@ public class BackupHelper {
 	public static Thread create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
 		LocalDateTime now = LocalDateTime.now();
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("Backup started by: ");
-
 		if (ctx != null)
-			builder.append(ctx.getName());
+			Utilities.log(null, "message.creator.start", ctx.getName(), Utilities.getDateTimeFormatter().format(now));
 		else
-			builder.append("SERVER");
+			Utilities.log(null, "message.creator.start", "SERVER", Utilities.getDateTimeFormatter().format(now));
 
-		builder.append(" on: ");
-		builder.append(Utilities.getDateTimeFormatter().format(now));
-
-		Utilities.log(builder.toString(), null);
-
-		Utilities.log("Saving server...", ctx);
+		//Utilities.log("Saving server...", ctx);
 
 		if (save)
 			server.save(true, true, false);
@@ -95,7 +87,7 @@ public class BackupHelper {
 						}
 
 						if (now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
-							Utilities.log("Deleting: " + f.getName(), ctx);
+							Utilities.log(ctx, "message.creator.delete_file", f.getName());
 							f.delete();
 						}
 					} catch (NullPointerException ignored3) {}
@@ -111,16 +103,16 @@ public class BackupHelper {
 				Arrays.sort(files);
 
 				for (int i = 0; i < var1; i++) {
-					Utilities.log("Deleting: " + files[i].getName(), ctx);
+					Utilities.log(ctx, "message.creator.delete_file", files[i].getName());
 					files[i].delete();
 				}
 			}
 
 			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-				Arrays.stream(root.listFiles()).filter(File::isFile).sorted().forEach(e -> {
+				Arrays.stream(root.listFiles()).filter(File::isFile).sorted().forEach(f -> {
 					if (FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-						Utilities.log("Deleting: " + e.getName(), ctx);
-						e.delete();
+						Utilities.log(ctx, "message.creator.delete_file", f.getName());
+						f.delete();
 					}
 				});
 			}

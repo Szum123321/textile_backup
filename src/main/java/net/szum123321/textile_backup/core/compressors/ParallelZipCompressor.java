@@ -22,7 +22,7 @@ import java.util.zip.ZipEntry;
 
 public class ParallelZipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx) {
-		Utilities.log("Starting compression...", ctx);
+		Utilities.log(ctx, "message.compression.start");
 
 		long start = System.nanoTime();
 
@@ -59,7 +59,7 @@ public class ParallelZipCompressor {
 
 		long end = System.nanoTime();
 
-		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.log(ctx, "message.compression.time", Math.round((end - start) / 10000000.0) / 100.0);
 	}
 
 	static class FileInputStreamSupplier implements InputStreamSupplier {

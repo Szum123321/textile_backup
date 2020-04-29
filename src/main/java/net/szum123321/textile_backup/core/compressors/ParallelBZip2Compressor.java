@@ -14,9 +14,10 @@ import java.nio.file.Files;
 
 public class ParallelBZip2Compressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx) {
-		Utilities.log("Starting compression...", ctx);
+		Utilities.log(ctx, "message.compression.start");
 
 		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(Runtime.getRuntime().availableProcessors());
+
 
 		long start = System.nanoTime();
 
@@ -57,6 +58,6 @@ public class ParallelBZip2Compressor {
 
 		long end = System.nanoTime();
 
-		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.log(ctx, "message.compression.time", Math.round((end - start) / 10000000.0) / 100.0);
 	}
 }

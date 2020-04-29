@@ -14,7 +14,7 @@ import java.nio.file.Files;
 
 public class GenericTarCompressor {
 	public static void createArchive(File in, File out, Class<? extends OutputStream> CompressorStreamClass, ServerCommandSource ctx) {
-		Utilities.log("Starting compression...", ctx);
+		Utilities.log(ctx, "message.compression.start");
 
 		long start = System.nanoTime();
 
@@ -55,6 +55,6 @@ public class GenericTarCompressor {
 
 		long end = System.nanoTime();
 
-		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.log(ctx, "message.compression.time", Math.round((end - start) / 10000000.0) / 100.0);
 	}
 }
