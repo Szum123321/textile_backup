@@ -51,7 +51,7 @@ public class MakeBackupThread implements Runnable {
                 .getSaveHandler()
                 .getWorldDir();
 
-        File outFile = BackupHelper
+        File outFile = Utilities
                 .getBackupRootPath(server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName())
                 .toPath()
                 .resolve(getFileName())
@@ -97,6 +97,6 @@ public class MakeBackupThread implements Runnable {
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.config.format.getExtension();
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "+" + comment.replace("+", "") : "") + TextileBackup.config.format.getExtension();
     }
 }

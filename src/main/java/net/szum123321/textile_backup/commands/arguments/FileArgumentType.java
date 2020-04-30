@@ -1,48 +1,59 @@
-package net.szum123321.textile_backup.commands;
+package net.szum123321.textile_backup.commands.arguments;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.RestoreHelper;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class FileArgumentType implements ArgumentType<String> {
 	private Collection<String> availableFiles;
-	public static final DynamicCommandExceptionType NONEXISTANT_FILE_EXCEPTION = new DynamicCommandExceptionType((object) -> new TranslatableText("argument.file.notexist",(String)object));
+	public static final DynamicCommandExceptionType NONEXISTANT_FILE_EXCEPTION = new DynamicCommandExceptionType((object) -> new TranslatableText("argument.file.notexists", object));
 
-	public FileArgumentType(Collection<String> availableFiles) {
-		this.availableFiles = availableFiles;
+	public static FileArgumentType file() {
+		return new FileArgumentType();
 	}
 
-	public static String getString(final CommandContext<?> context, final String name) {
+	private FileArgumentType() {
+	}
+
+	public static String getFile(final CommandContext<?> context, final String name) {
 		return context.getArgument(name, String.class);
 	}
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-		return CommandSource.suggestMatching(availableFiles, builder);
+		if(context.getSource() instanceof CommandSource) {
+			availableFiles = RestoreHelper.getAvailableBackups(TextileBackup.worldPath.getName());
+
+			for (String file : availableFiles) {
+				if(file.startsWith(builder.getRemaining()))
+					builder.suggest(file);
+			}
+
+			return builder.buildFuture();
+		}
+
+		return Suggestions.empty();
 	}
 
 	@Override
 	public String parse(StringReader reader) throws CommandSyntaxException {
-		String s = reader.readString();
+		String f = reader.readUnquotedString();
 
-		if(!availableFiles.contains(s))
-			throw NONEXISTANT_FILE_EXCEPTION.create(s);
+		if(!availableFiles.contains(f))
+			throw NONEXISTANT_FILE_EXCEPTION.create(f);
 
-		return s;
+		return f;
 	}
 
 	@Override

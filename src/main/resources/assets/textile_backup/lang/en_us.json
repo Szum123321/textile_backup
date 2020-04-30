@@ -15,6 +15,14 @@
 	"command.whitelist.remove.success": "Player: %s removed from the whitelist.",
 	"command.whitelist.remove.already": "Player: %s newer was whitelisted.",
 
+	"command.list.success": "Files are: %s",
+	"command.list.none": "Sorry, but you do not have any backups available.",
+
+	"command.restore.help": "",
+
+	"command.intermediate_restore.help": "This command is not meant to be called by a user.",
+	"command.intermediate_restore.abort": "Abording restore action!",
+
 	"argument.file.notexists": "File: %s does not exists!",
 
 	"message.compression.start": "Starting compression...",
@@ -25,5 +33,7 @@
 
 	"message.creator_thread.no_compressor": "Error! No correct compression format specified! using default compressor!",
 
-	"message.general.success": "Done!"
+	"message.general.success": "Done!",
+	"message.general.yes": "Yes",
+	"message.general.no": "No"
 }
