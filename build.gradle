@@ -30,7 +30,7 @@ dependencies {
 
 	modCompile "io.github.cottonmc.cotton:cotton-config:1.0.0-rc.7"
 
-	include "io.github.cottonmc:Jankson-Fabric:2.0.0+j1.2.0"
+	include "io.github.cottonmc:Jankson-Fabric:2.0.1+j1.2.0"
 	include "io.github.cottonmc.cotton:cotton-logging:1.0.0-rc.4"
 	include "io.github.cottonmc.cotton:cotton-config:1.0.0-rc.7"
 
