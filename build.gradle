@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.2.6-SNAPSHOT'
+	id 'fabric-loom' version '0.2.7-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -17,7 +17,6 @@ repositories{
 	maven { url 'http://server.bbkr.space:8081/artifactory/libs-release' }
 	maven { url 'https://jitpack.io' }
 }
-
 
 dependencies {
 	//to change the versions see the gradle.properties file
