@@ -50,13 +50,6 @@ public class TextileBackup implements ModInitializer {
         config = ConfigManager.loadConfig(ConfigHandler.class);
 
         registerCommands();
-
-        ServerStartCallback.EVENT.register(server -> {
-            LevelStorage.Session session = ((MinecraftServerSessionAccessor)server).getSession();
-
-            System.out.println(session.getDirectory(class_5218.field_24188).toAbsolutePath());
-            System.out.println(session.method_27424(DimensionType.OVERWORLD).toPath().toAbsolutePath());
-        });
     }
 
     private void registerCommands(){
