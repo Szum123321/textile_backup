@@ -1,13 +1,22 @@
 package net.szum123321.textile_backup.core;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.server.dedicated.MinecraftDedicatedServer;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 
 public class Utilities {
+	public static String getLevelName(MinecraftServer server) {
+		return 	((MinecraftServerSessionAccessor)server).getSession().readLevelProperties().getLevelName();
+	}
+
 	public static boolean isWindows(){
 		String os = System.getProperty("os.name");
 		return os.toLowerCase().startsWith("win");

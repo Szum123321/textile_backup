@@ -18,6 +18,7 @@
 
 package net.szum123321.textile_backup.core;
 
+import net.minecraft.class_5218;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
@@ -25,6 +26,7 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
 import net.szum123321.textile_backup.core.compressors.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
+import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 import org.at4j.comp.bzip2.BZip2OutputStream;
@@ -46,13 +48,12 @@ public class MakeBackupThread implements Runnable {
 
     @Override
     public void run() {
-        File world = server
-                .getWorld(DimensionType.OVERWORLD)
-                .getSaveHandler()
-                .getWorldDir();
+        File world = ((MinecraftServerSessionAccessor)server)
+                .getSession()
+                .getDirectory(class_5218.field_24188).toFile();
 
         File outFile = BackupHelper
-                .getBackupRootPath(server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName())
+                .getBackupRootPath(Utilities.getLevelName(server))
                 .toPath()
                 .resolve(getFileName())
                 .toFile();
@@ -89,7 +90,7 @@ public class MakeBackupThread implements Runnable {
                 break;
         }
 
-        BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
+        BackupHelper.executeFileLimit(ctx, Utilities.getLevelName(server));
 
 		Utilities.log("Done!", ctx);
     }

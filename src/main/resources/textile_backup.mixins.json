@@ -3,7 +3,8 @@
   "package": "net.szum123321.textile_backup.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "MinecraftServerMixin"
+    "MinecraftServerMixin",
+    "MinecraftServerSessionAccessor"
   ],
   "client": [
   ],

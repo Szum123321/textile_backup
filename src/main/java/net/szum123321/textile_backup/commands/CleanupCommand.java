@@ -21,8 +21,8 @@ package net.szum123321.textile_backup.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.core.BackupHelper;
+import net.szum123321.textile_backup.core.Utilities;
 
 public class CleanupCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register(){
@@ -31,7 +31,8 @@ public class CleanupCommand {
     }
 
     private static int execute(ServerCommandSource source){
-        BackupHelper.executeFileLimit(source, source.getMinecraftServer().getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
+
+        BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getMinecraftServer()));
 
         return 1;
     }
