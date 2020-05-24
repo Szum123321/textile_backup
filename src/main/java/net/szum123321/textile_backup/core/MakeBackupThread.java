@@ -48,7 +48,7 @@ public class MakeBackupThread implements Runnable {
     public void run() {
         File world = ((MinecraftServerSessionAccessor)server)
                 .getSession()
-                .method_27424(DimensionType.OVERWORLD);
+                .method_27424(DimensionType.OVERWORLD_REGISTRY_KEY);
 
         File outFile = BackupHelper
                 .getBackupRootPath(Utilities.getLevelName(server))
