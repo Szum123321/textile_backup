@@ -13,8 +13,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 
 public class GenericTarCompressor {
-	public static void createArchive(File in, File out, Class<? extends OutputStream> CompressorStreamClass, ServerCommandSource ctx) {
-		Utilities.log(ctx, "message.compression.start");
+	public static void createArchive(File in, File out, Class<? extends OutputStream> CompressorStreamClass, ServerCommandSource ctx, int coreLimit) {
+		Utilities.log("Starting compression...", ctx);
 
 		long start = System.nanoTime();
 

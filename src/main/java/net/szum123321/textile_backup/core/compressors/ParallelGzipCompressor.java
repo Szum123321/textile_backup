@@ -3,28 +3,24 @@ package net.szum123321.textile_backup.core.compressors;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
+import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.at4j.comp.bzip2.BZip2OutputStream;
-import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
 
 import java.io.*;
 import java.nio.file.Files;
 
-public class ParallelBZip2Compressor {
+public class ParallelGzipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
 		Utilities.log("Starting compression...", ctx);
 
-		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit);
-
-
 		long start = System.nanoTime();
 
-		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
-			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-			 BZip2OutputStream bZip2OutputStream = new BZip2OutputStream(bufferedOutputStream, settings);
-			 TarArchiveOutputStream arc = new TarArchiveOutputStream(bZip2OutputStream)) {
+		try (FileOutputStream outStream = new FileOutputStream(out);
+			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
+			 ParallelGZIPOutputStream gzipOutputStream = new ParallelGZIPOutputStream(bufferedOutputStream, coreLimit);
+			 TarArchiveOutputStream arc = new TarArchiveOutputStream(gzipOutputStream)) {
 
 			arc.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			arc.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
@@ -53,11 +49,11 @@ public class ParallelBZip2Compressor {
 
 			arc.finish();
 		} catch (IOException e) {
-			e.printStackTrace();
+			TextileBackup.logger.error(e.toString());
 		}
 
 		long end = System.nanoTime();
 
-		Utilities.log(ctx, "message.compression.time", Math.round((end - start) / 10000000.0) / 100.0);
+		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
 	}
 }

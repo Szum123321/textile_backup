@@ -3,6 +3,7 @@ package net.szum123321.textile_backup.core.compressors;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor.FileInputStreamSupplier;
 import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 /*
@@ -21,8 +23,8 @@ import java.util.zip.ZipEntry;
 */
 
 public class ParallelZipCompressor {
-	public static void createArchive(File in, File out, ServerCommandSource ctx) {
-		Utilities.log(ctx, "message.compression.start");
+	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
+		Utilities.log("Starting compression...", ctx);
 
 		long start = System.nanoTime();
 
@@ -30,7 +32,7 @@ public class ParallelZipCompressor {
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 			 ZipArchiveOutputStream arc = new ZipArchiveOutputStream(bufferedOutputStream)) {
 
-			ParallelScatterZipCreator scatterZipCreator = new ParallelScatterZipCreator();
+			ParallelScatterZipCreator scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(coreLimit));
 
 			arc.setMethod(ZipArchiveOutputStream.DEFLATED);
 			arc.setUseZip64(Zip64Mode.AsNeeded);
@@ -43,7 +45,7 @@ public class ParallelZipCompressor {
 			).filter(path -> !path.equals(input.toPath()) &&
 					path.toFile().isFile() &&
 					!Utilities.isBlacklisted(input.toPath().relativize(path))
-			).forEach(p -> {
+			).collect(Collectors.toList()).parallelStream().forEach(p -> {
 				ZipArchiveEntry entry = new ZipArchiveEntry(input.toPath().relativize(p).toString());
 				entry.setMethod(ZipEntry.DEFLATED);
 				FileInputStreamSupplier supplier = new FileInputStreamSupplier(p);

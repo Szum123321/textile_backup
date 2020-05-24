@@ -66,6 +66,9 @@ public class ConfigHandler {
                     "LZMA - tar.xz using lzma compression\n")
     public ArchiveFormat format = ArchiveFormat.ZIP;
 
+    @Comment("\nLimit how many cores can be used for compression.\n")
+    public int compressionCoreCountLimit = 0;
+
     @Comment("\nPrint info to game out\n")
     public boolean log = true;
 

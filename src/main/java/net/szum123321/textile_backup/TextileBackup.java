@@ -23,8 +23,7 @@ import io.github.cottonmc.cotton.config.ConfigManager;
 import io.github.cottonmc.cotton.logging.ModLogger;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.server.ServerStartCallback;
-import net.fabricmc.fabric.api.event.server.ServerTickCallback;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.dimension.DimensionType;
@@ -60,7 +59,7 @@ public class TextileBackup implements ModInitializer {
     }
 
     private void registerCommands(){
-        CommandRegistry.INSTANCE.register(false, dispatcher -> dispatcher.register(
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
                                     try {

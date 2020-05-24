@@ -8,6 +8,7 @@ import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
@@ -55,7 +56,7 @@ public class WhitelistCommand {
 	}
 
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(TextileBackup.config.playerWhitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("command.whitelist.add.already", player.getEntityName()), false);
@@ -70,13 +71,19 @@ public class WhitelistCommand {
 			} else {
 				Utilities.log(ctx.getSource(), "command.whitelist.success", player.getName());
 			}
+
+			builder.append(" successfully.");
+
+			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+
+			Utilities.log(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
 	}
 
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!TextileBackup.config.playerWhitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("command.whitelist.remove.already", player.getEntityName()), false);
@@ -84,7 +91,9 @@ public class WhitelistCommand {
 			TextileBackup.config.playerWhitelist.remove(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
 
-			Utilities.log(ctx.getSource(), "command.whitelist.remove.success", player.getName());
+			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+
+			Utilities.log(builder.toString(), ctx.getSource());
 		}
 
 		return 1;

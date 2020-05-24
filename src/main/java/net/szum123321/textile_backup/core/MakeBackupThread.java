@@ -24,10 +24,9 @@ import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
 import net.szum123321.textile_backup.core.compressors.ParallelBZip2Compressor;
+import net.szum123321.textile_backup.core.compressors.ParallelGzipCompressor;
 import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
-import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
-import org.at4j.comp.bzip2.BZip2OutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,13 +45,10 @@ public class MakeBackupThread implements Runnable {
 
     @Override
     public void run() {
-        File world = server
-                .getWorld(DimensionType.OVERWORLD)
-                .getSaveHandler()
-                .getWorldDir();
+        File world = server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDir();
 
-        File outFile = Utilities
-                .getBackupRootPath(server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName())
+        File outFile = BackupHelper
+                .getBackupRootPath(Utilities.getLevelName(server))
                 .toPath()
                 .resolve(getFileName())
                 .toFile();
@@ -66,30 +62,39 @@ public class MakeBackupThread implements Runnable {
             return;
         }
 
+        int coreCount;
+
+        if(TextileBackup.config.compressionCoreCountLimit <= 0) {
+            coreCount = Runtime.getRuntime().availableProcessors();
+        } else {
+            coreCount = Math.min(TextileBackup.config.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
+        }
+
         switch (TextileBackup.config.format) {
             case ZIP:
-                ParallelZipCompressor.createArchive(world, outFile, ctx);
+                ParallelZipCompressor.createArchive(world, outFile, ctx, coreCount);
                 break;
 
             case BZIP2:
-                ParallelBZip2Compressor.createArchive(world, outFile, ctx);
+                ParallelBZip2Compressor.createArchive(world, outFile, ctx, coreCount);
                 break;
 
             case GZIP:
-                GenericTarCompressor.createArchive(world, outFile, ParallelGZIPOutputStream.class, ctx);
+                ParallelGzipCompressor.createArchive(world, outFile, ctx, coreCount);
                 break;
 
             case LZMA:
-                GenericTarCompressor.createArchive(world, outFile, XZCompressorOutputStream.class, ctx);
+                GenericTarCompressor.createArchive(world, outFile, XZCompressorOutputStream.class, ctx, coreCount);
                 break;
 
             default:
-                Utilities.log(ctx, "message.creator_thread.no_compressor");
-                ParallelZipCompressor.createArchive(world, outFile, ctx);
+                Utilities.log("Error! No correct compression format specified! using default compressor!", ctx);
+                ParallelZipCompressor.createArchive(world, outFile, ctx, coreCount);
+
                 break;
         }
 
-        BackupHelper.executeFileLimit(ctx, server.getWorld(DimensionType.OVERWORLD).getLevelProperties().getLevelName());
+        BackupHelper.executeFileLimit(ctx, Utilities.getLevelName(server));
 
 		Utilities.log(ctx, "message.general.success");
     }

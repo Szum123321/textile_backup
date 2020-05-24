@@ -8,6 +8,8 @@ import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
@@ -54,7 +56,7 @@ public class BlacklistCommand {
 	}
 
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(TextileBackup.config.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("command.blacklist.add.already", player.getEntityName()), false);
@@ -68,13 +70,19 @@ public class BlacklistCommand {
 			} else {
 				Utilities.log(ctx.getSource(), "command.blacklist.add.success", player.getName());
 			}
+
+			builder.append(" successfully.");
+
+			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+
+			Utilities.log(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
 	}
 
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		PlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!TextileBackup.config.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("command.blacklist.remove.already", player.getEntityName()), false);
@@ -82,7 +90,15 @@ public class BlacklistCommand {
 			TextileBackup.config.playerBlacklist.remove(player.getEntityName());
 			ConfigManager.saveConfig(TextileBackup.config);
 
-			Utilities.log(ctx.getSource(), "command.blacklist.remove.success", player.getName());
+			StringBuilder builder = new StringBuilder();
+
+			builder.append("Player: ");
+			builder.append(player.getEntityName());
+			builder.append(" removed from the blacklist successfully.");
+
+			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+
+			Utilities.log(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
