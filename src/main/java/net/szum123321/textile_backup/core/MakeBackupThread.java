@@ -26,7 +26,6 @@ import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
 import net.szum123321.textile_backup.core.compressors.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.compressors.ParallelGzipCompressor;
 import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
-import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
 import java.io.File;
@@ -46,9 +45,7 @@ public class MakeBackupThread implements Runnable {
 
     @Override
     public void run() {
-        File world = ((MinecraftServerSessionAccessor)server)
-                .getSession()
-                .method_27424(DimensionType.OVERWORLD_REGISTRY_KEY);
+        File world = server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDir();
 
         File outFile = BackupHelper
                 .getBackupRootPath(Utilities.getLevelName(server))

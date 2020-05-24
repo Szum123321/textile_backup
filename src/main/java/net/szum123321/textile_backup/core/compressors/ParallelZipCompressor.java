@@ -3,6 +3,7 @@ package net.szum123321.textile_backup.core.compressors;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor.FileInputStreamSupplier;
 import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
