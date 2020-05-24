@@ -55,6 +55,6 @@ public class GenericTarCompressor {
 
 		long end = System.nanoTime();
 
-		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.log(ctx, "message.compression.time", Math.round((end - start) / 10000000.0) / 100.0);
 	}
 }

@@ -35,6 +35,8 @@ public class ConfigHandler {
     @Comment("\nShould backups be made on server shutdown\n")
     public boolean shutdownBackup = true;
 
+    public int restoreDelay = 10;
+
     @Comment("\nA path to backup folder\n")
     public String path = "backup/";
 

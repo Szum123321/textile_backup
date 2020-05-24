@@ -26,16 +26,21 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.commands.BlacklistCommand;
-import net.szum123321.textile_backup.commands.CleanupCommand;
-import net.szum123321.textile_backup.commands.StartBackupCommand;
-import net.szum123321.textile_backup.commands.WhitelistCommand;
+import net.minecraft.world.dimension.DimensionType;
+import net.szum123321.textile_backup.commands.*;
+import net.szum123321.textile_backup.core.RestoreScheduler;
+
+import java.io.File;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_ID = "textile_backup";
     public static ModLogger logger;
 
     public static ConfigHandler config;
+
+    public static RestoreScheduler restoreScheduler;
+
+    public static File worldPath;
 
     @Override
     public void onInitialize() {
@@ -45,7 +50,12 @@ public class TextileBackup implements ModInitializer {
 
         config = ConfigManager.loadConfig(ConfigHandler.class);
 
+        restoreScheduler = new RestoreScheduler();
+
         registerCommands();
+
+        ServerTickCallback.EVENT.register(e -> restoreScheduler.tick(e));
+        ServerStartCallback.EVENT.register(e -> worldPath = e.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDir());
     }
 
     private void registerCommands(){
@@ -66,6 +76,9 @@ public class TextileBackup implements ModInitializer {
                         .then(CleanupCommand.register())
                         .then(StartBackupCommand.register())
                         .then(WhitelistCommand.register())
+                        .then(RestoreBackupCommand.register())
+                        .then(ListBackupsCommand.register())
+                        .then(IntermediateRestoreCommand.register())
         ));
     }
 }

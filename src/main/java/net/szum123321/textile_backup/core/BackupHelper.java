@@ -38,20 +38,12 @@ public class BackupHelper {
 	public static Thread create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
 		LocalDateTime now = LocalDateTime.now();
 
-		StringBuilder builder = new StringBuilder();
-		builder.append("Backup started by: ");
-
 		if (ctx != null)
-			builder.append(ctx.getName());
+			Utilities.log(null, "message.creator.start", ctx.getName(), Utilities.getDateTimeFormatter().format(now));
 		else
-			builder.append("SERVER");
+			Utilities.log(null, "message.creator.start", "SERVER", Utilities.getDateTimeFormatter().format(now));
 
-		builder.append(" on: ");
-		builder.append(Utilities.getDateTimeFormatter().format(now));
-
-		Utilities.log(builder.toString(), null);
-
-		Utilities.log("Saving server...", ctx);
+		//Utilities.log("Saving server...", ctx);
 
 		if (save)
 			server.save(true, true, false);
@@ -64,7 +56,7 @@ public class BackupHelper {
 	}
 
 	public static void executeFileLimit(ServerCommandSource ctx, String worldName) {
-		File root = getBackupRootPath(worldName);
+		File root = Utilities.getBackupRootPath(worldName);
 
 		if (root.isDirectory() && root.exists()) {
 			if (TextileBackup.config.maxAge > 0) {
@@ -82,20 +74,20 @@ public class BackupHelper {
 							try {
 								creationTime = LocalDateTime.from(
 										Utilities.getDateTimeFormatter().parse(
-												f.getName().split(Objects.requireNonNull(getFileExtension(f)))[0].split("#")[0]
+												f.getName().split(Objects.requireNonNull(Utilities.getFileExtension(f)))[0].replace('#', '+').split("\\+")[0]
 										)
 								);
 							} catch (Exception ignored2) {
 								creationTime = LocalDateTime.from(
 										Utilities.getBackupDateTimeFormatter().parse(
-												f.getName().split(Objects.requireNonNull(getFileExtension(f)))[0].split("#")[0]
+												f.getName().split(Objects.requireNonNull(Utilities.getFileExtension(f)))[0].replace('#', '+').split("\\+")[0]
 										)
 								);
 							}
 						}
 
 						if (now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
-							Utilities.log("Deleting: " + f.getName(), ctx);
+							Utilities.log(ctx, "message.creator.delete_file", f.getName());
 							f.delete();
 						}
 					} catch (NullPointerException ignored3) {}
@@ -111,62 +103,19 @@ public class BackupHelper {
 				Arrays.sort(files);
 
 				for (int i = 0; i < var1; i++) {
-					Utilities.log("Deleting: " + files[i].getName(), ctx);
+					Utilities.log(ctx, "message.creator.delete_file", files[i].getName());
 					files[i].delete();
 				}
 			}
 
 			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-				Arrays.stream(root.listFiles()).filter(File::isFile).sorted().forEach(e -> {
+				Arrays.stream(root.listFiles()).filter(File::isFile).sorted().forEach(f -> {
 					if (FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-						Utilities.log("Deleting: " + e.getName(), ctx);
-						e.delete();
+						Utilities.log(ctx, "message.creator.delete_file", f.getName());
+						f.delete();
 					}
 				});
 			}
 		}
-	}
-
-	private static String getFileExtension(File f) {
-		String[] parts = f.getName().split("\\.");
-
-		switch (parts[parts.length - 1]) {
-			case "zip":
-				return ConfigHandler.ArchiveFormat.ZIP.getExtension();
-			case "bz2":
-				return ConfigHandler.ArchiveFormat.BZIP2.getExtension();
-			case "gz":
-				return ConfigHandler.ArchiveFormat.GZIP.getExtension();
-			case "xz":
-				return ConfigHandler.ArchiveFormat.LZMA.getExtension();
-
-			default:
-				return null;
-		}
-	}
-
-
-	public static File getBackupRootPath(String worldName) {
-		File path = new File(TextileBackup.config.path).getAbsoluteFile();
-
-		if (TextileBackup.config.perWorldBackup)
-			path = path.toPath().resolve(worldName).toFile();
-
-		if (!path.exists()) {
-			try {
-				path.mkdirs();
-			} catch (Exception e) {
-				TextileBackup.logger.error(e.getMessage());
-
-				return FabricLoader
-						.getInstance()
-						.getGameDirectory()
-						.toPath()
-						.resolve(TextileBackup.config.path)
-						.toFile();
-			}
-		}
-
-		return path;
 	}
 }

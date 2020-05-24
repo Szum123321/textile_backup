@@ -90,17 +90,18 @@ public class MakeBackupThread implements Runnable {
             default:
                 Utilities.log("Error! No correct compression format specified! using default compressor!", ctx);
                 ParallelZipCompressor.createArchive(world, outFile, ctx, coreCount);
+
                 break;
         }
 
         BackupHelper.executeFileLimit(ctx, Utilities.getLevelName(server));
 
-		Utilities.log("Done!", ctx);
+		Utilities.log(ctx, "message.general.success");
     }
 
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.config.format.getExtension();
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "+" + comment.replace("+", "") : "") + TextileBackup.config.format.getExtension();
     }
 }

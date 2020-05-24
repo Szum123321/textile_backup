@@ -18,6 +18,7 @@ public class ParallelBZip2Compressor {
 
 		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit);
 
+
 		long start = System.nanoTime();
 
 		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
@@ -57,6 +58,6 @@ public class ParallelBZip2Compressor {
 
 		long end = System.nanoTime();
 
-		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.log(ctx, "message.compression.time", Math.round((end - start) / 10000000.0) / 100.0);
 	}
 }

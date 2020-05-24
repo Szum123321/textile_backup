@@ -1,0 +1,19 @@
+{
+	"command.blacklist.help": "Dostępne komendy to: add [gracz], remove [gracz], list.",
+	"command.blacklist.list": "Na czarnej liście są: %s",
+	"command.blacklist.add.success": "Gracz: %s dodany na czarną listę.",
+	"command.blacklist.add.success_and_whitelist_removed": "Gracz: %s dodany na czarną listę i usunięty z białej.",
+	"command.blacklist.add.already": "Gracz: %s jest już na czrnej liście.",
+	"command.blacklist.remove.success": "Gracz: %s usunięty z czarnej listy.",
+	"command.blacklist.remove.already": "Gracza: %s nie było na czarnej liście.",
+
+	"command.whitelist.help": "Dostępne komendy to: add [gracz], remove [gracz], list.",
+	"command.whitelist.list": "Na białej liście są: %s",
+	"command.whitelist.add.success": "Gracz: %s dodany na białą listę.",
+	"command.whitelist.success_and_whitelist_removed": "Gracz: %s dodany na białą listę i usunięty z czarnej.",
+	"command.whitelist.add.already": "Gracz: %s jest już na białej liście.",
+	"command.whitelist.remove.success": "Gracz: %s usunięty z białej listy.",
+	"command.whitelist.remove.already": "Gracza: %s nie było na białej liście.",
+
+	"argument.file.notexists": "Plik: %s nie istnieje!"
+}
