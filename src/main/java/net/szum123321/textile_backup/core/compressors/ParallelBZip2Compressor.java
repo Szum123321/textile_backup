@@ -13,10 +13,10 @@ import java.io.*;
 import java.nio.file.Files;
 
 public class ParallelBZip2Compressor {
-	public static void createArchive(File in, File out, ServerCommandSource ctx) {
+	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
 		Utilities.log("Starting compression...", ctx);
 
-		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(Runtime.getRuntime().availableProcessors());
+		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit);
 
 		long start = System.nanoTime();
 

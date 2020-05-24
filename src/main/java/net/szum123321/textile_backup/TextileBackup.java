@@ -23,17 +23,13 @@ import io.github.cottonmc.cotton.config.ConfigManager;
 import io.github.cottonmc.cotton.logging.ModLogger;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.server.ServerStartCallback;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.registry.CommandRegistry;
-import net.minecraft.class_5218;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.level.storage.LevelStorage;
 import net.szum123321.textile_backup.commands.BlacklistCommand;
 import net.szum123321.textile_backup.commands.CleanupCommand;
 import net.szum123321.textile_backup.commands.StartBackupCommand;
 import net.szum123321.textile_backup.commands.WhitelistCommand;
-import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_ID = "textile_backup";
@@ -53,7 +49,7 @@ public class TextileBackup implements ModInitializer {
     }
 
     private void registerCommands(){
-        CommandRegistry.INSTANCE.register(false, dispatcher -> dispatcher.register(
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
                                     try {

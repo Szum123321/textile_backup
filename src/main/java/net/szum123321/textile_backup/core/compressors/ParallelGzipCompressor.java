@@ -3,25 +3,24 @@ package net.szum123321.textile_backup.core.compressors;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
+import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
-
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 
-public class GenericTarCompressor {
-	public static void createArchive(File in, File out, Class<? extends OutputStream> CompressorStreamClass, ServerCommandSource ctx, int coreLimit) {
+public class ParallelGzipCompressor {
+	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
 		Utilities.log("Starting compression...", ctx);
 
 		long start = System.nanoTime();
 
 		try (FileOutputStream outStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
-			 OutputStream compressorStream = CompressorStreamClass.getDeclaredConstructor(OutputStream.class).newInstance(bufferedOutputStream);// CompressorStreamClass.getConstructor().newInstance(bufferedOutputStream);
-			 TarArchiveOutputStream arc = new TarArchiveOutputStream(compressorStream)) {
+			 ParallelGZIPOutputStream gzipOutputStream = new ParallelGZIPOutputStream(bufferedOutputStream, coreLimit);
+			 TarArchiveOutputStream arc = new TarArchiveOutputStream(gzipOutputStream)) {
 
 			arc.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			arc.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
@@ -49,7 +48,7 @@ public class GenericTarCompressor {
 			});
 
 			arc.finish();
-		} catch (IOException | IllegalAccessException | NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+		} catch (IOException e) {
 			TextileBackup.logger.error(e.toString());
 		}
 
