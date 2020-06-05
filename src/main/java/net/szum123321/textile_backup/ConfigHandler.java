@@ -59,7 +59,7 @@ public class ConfigHandler {
 
     @Comment(value = "\nAvailable formats are:\n" +
                     "ZIP - normal zip archive using standard deflate compression\n" +
-                    "GIZP - tar.gz using gzip compression\n" +
+                    "GZIP - tar.gz using gzip compression\n" +
                     "BZIP2 - tar.bz2 archive using bzip2 compression\n" +
                     "LZMA - tar.xz using lzma compression\n")
     public ArchiveFormat format = ArchiveFormat.ZIP;
