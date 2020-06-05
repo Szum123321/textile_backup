@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Utilities {
 	public static String getLevelName(MinecraftServer server) {
-		return 	((MinecraftServerSessionAccessor)server).getSession().readLevelProperties().getLevelName();
+		return 	((MinecraftServerSessionAccessor)server).getSession().getDirectoryName();
 	}
 
 	public static boolean isWindows(){

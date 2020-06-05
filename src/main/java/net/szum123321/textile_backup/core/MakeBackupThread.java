@@ -20,6 +20,8 @@ package net.szum123321.textile_backup.core;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
@@ -46,9 +48,10 @@ public class MakeBackupThread implements Runnable {
 
     @Override
     public void run() {
-        File world = ((MinecraftServerSessionAccessor)server)
+        File world = ((MinecraftServerSessionAccessor)server) // I'm lost.
                 .getSession()
-                .method_27424(DimensionType.OVERWORLD_REGISTRY_KEY);
+                .method_27424(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+
 
         File outFile = BackupHelper
                 .getBackupRootPath(Utilities.getLevelName(server))
