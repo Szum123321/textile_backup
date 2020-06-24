@@ -98,7 +98,9 @@ public class BackupHelper {
 							Utilities.log("Deleting: " + f.getName(), ctx);
 							f.delete();
 						}
-					} catch (NullPointerException ignored3) {}
+					} catch (NullPointerException ignored3) {
+						Utilities.error("File: " + f.getName() + ", was not deleted beacuse could not parse date and time. Please delete it by hand.", ctx);
+					}
 				});
 			}
 

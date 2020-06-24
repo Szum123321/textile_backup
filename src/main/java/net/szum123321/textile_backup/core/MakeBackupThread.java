@@ -48,7 +48,7 @@ public class MakeBackupThread implements Runnable {
 
     @Override
     public void run() {
-        File world = ((MinecraftServerSessionAccessor)server) // I'm lost.
+        File world = ((MinecraftServerSessionAccessor)server)
                 .getSession()
                 .method_27424(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
 

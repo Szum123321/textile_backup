@@ -26,35 +26,35 @@ import java.util.Set;
 
 @ConfigFile(name = TextileBackup.MOD_ID)
 public class ConfigHandler {
-    @Comment("\nTime between backups in seconds\n")
+    @Comment("\nTime between automatic backups in seconds\n")
     public long backupInterval = 3600;
 
-    @Comment("\nShould backups be done even if there is no players?\n")
+    @Comment("\nShould backups be done even if there are no players?\n")
     public boolean doBackupsOnEmptyServer = false;
 
-    @Comment("\nShould backups be made on server shutdown\n")
+    @Comment("\nShould backup be made on server shutdown\n")
     public boolean shutdownBackup = true;
 
     @Comment("\nA path to backup folder\n")
     public String path = "backup/";
 
     @Comment("\nThis setting allows you to exclude files form being backuped.\n"+
-                "Be very careful when setting it, as it is easy to make your backuped world unusable!\n")
+                "Be very careful when setting it, as it is easy corrupt your world!\n")
     public Set<String> fileBlacklist = new HashSet<>();
 
     @Comment("\nShould every world has its won backup folder?\n")
     public boolean perWorldBackup = false;
 
-    @Comment("\nMaximum number of backups to keep. If 0 then no backup will be deleted based on its amount\n")
+    @Comment("\nMaximum number of backups to keep. If set to 0 then no backup will be deleted based their its amount\n")
     public int backupsToKeep = 10;
 
-    @Comment("\nMaximum age of backups to keep in seconds.\n if 0 then backups will not be deleted based on its age \n")
+    @Comment("\nMaximum age of backups to keep in seconds.\n If set to 0 then backups will not be deleted based their its age \n")
     public long maxAge = 0;
 
-    @Comment("\nMaximum size of backup folder in kilo bytes. \n")
+    @Comment("\nMaximum size of backup folder in kilo bytes (1024).\n")
     public int maxSize = 0;
 
-    @Comment("\nCompression level \n0 - 9\n Only available for zip compression.\n")
+    @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
     public int compression = 6;
 
     @Comment(value = "\nAvailable formats are:\n" +
@@ -82,7 +82,9 @@ public class ConfigHandler {
     @Comment("\nPlayers banned from running backup commands besides their sufficient permission level\n")
     public Set<String> playerBlacklist = new HashSet<>();
 
-    @Comment("\nFormat of date&time used to name backup files.\n")
+    @Comment("\nFormat of date&time used to name backup files.\n" +
+            "Remember not to use '#' symbol and any other character that is not allowed by your operating system such as:\n" +
+            "':', '\\', etc\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
 
     public enum ArchiveFormat {

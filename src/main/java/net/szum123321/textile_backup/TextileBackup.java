@@ -58,7 +58,7 @@ public class TextileBackup implements ModInitializer {
                                                 !config.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
                                                 (ctx.getMinecraftServer().isSinglePlayer() &&
                                                 config.alwaysSingleplayerAllowed);
-                                    }catch (Exception e){ //Command was called from server console.
+                                    } catch (Exception e) { //Command was called from server console.
                                         return true;
                                     }
                                 }
