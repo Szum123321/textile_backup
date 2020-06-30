@@ -13,9 +13,11 @@ import java.nio.file.Files;
 
 public class ParallelGzipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
-		Utilities.log("Starting compression...", ctx);
+		Utilities.info("Starting compression...", ctx);
 
 		long start = System.nanoTime();
+
+		TextileBackup.LOGGER.debug("Compression starts at: {}", start);
 
 		try (FileOutputStream outStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
@@ -43,17 +45,21 @@ public class ParallelGzipCompressor {
 
 					arc.closeArchiveEntry();
 				} catch (IOException e) {
-					TextileBackup.logger.error(e.getMessage());
+					TextileBackup.LOGGER.error("An exception occurred while trying to compress file: " + path, e);
+
+					Utilities.sendError("Something went wrong while compressing files!", ctx);
 				}
 			});
 
 			arc.finish();
 		} catch (IOException e) {
-			TextileBackup.logger.error(e.toString());
+			TextileBackup.LOGGER.error("An exception happened!", e);
+
+			Utilities.sendError("Something went wrong while compressing files!", ctx);
 		}
 
 		long end = System.nanoTime();
 
-		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.info("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
 	}
 }

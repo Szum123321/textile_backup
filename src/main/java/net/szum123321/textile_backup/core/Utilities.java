@@ -46,19 +46,17 @@ public class Utilities {
 		return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss");
 	}
 
-	public static void log(String s, ServerCommandSource ctx){
+	public static void info(String s, ServerCommandSource ctx){
 		if(ctx != null)
 			ctx.sendFeedback(new LiteralText(s), false);
 
 		if(TextileBackup.config.log)
-			TextileBackup.logger.info(s);
+			TextileBackup.LOGGER.info(s);
 	}
 
-	public static void error(String s, ServerCommandSource ctx){
-		if(ctx != null)
-			ctx.sendFeedback(new LiteralText(s).styled(style -> style.withColor(Formatting.RED)), true);
-
-		if(TextileBackup.config.log)
-			TextileBackup.logger.error(s);
+	public static void sendError(String message, ServerCommandSource source) {
+		if(source != null) {
+			source.sendFeedback(new LiteralText(message).styled(style -> style.withColor(Formatting.RED)), false);
+		}
 	}
 }

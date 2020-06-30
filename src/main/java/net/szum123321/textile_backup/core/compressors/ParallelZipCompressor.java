@@ -23,9 +23,11 @@ import java.util.zip.ZipEntry;
 
 public class ParallelZipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
-		Utilities.log("Starting compression...", ctx);
+		Utilities.info("Starting compression...", ctx);
 
 		long start = System.nanoTime();
+
+		TextileBackup.LOGGER.debug("Compression starts at: {}", start);
 
 		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
@@ -55,12 +57,14 @@ public class ParallelZipCompressor {
 
 			arc.finish();
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			TextileBackup.logger.error(e.getMessage());
+			TextileBackup.LOGGER.error("An exception happened!", e);
+
+			Utilities.sendError("Something went wrong while compressing files!", ctx);;
 		}
 
 		long end = System.nanoTime();
 
-		Utilities.log("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.info("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
 	}
 
 	static class FileInputStreamSupplier implements InputStreamSupplier {
@@ -75,8 +79,9 @@ public class ParallelZipCompressor {
 			try {
 				stream = Files.newInputStream(sourceFile);
 			} catch (IOException e) {
-				e.printStackTrace();
+				TextileBackup.LOGGER.error("An exception occurred while trying to create input stream!", e);
 			}
+
 			return stream;
 		}
 	}

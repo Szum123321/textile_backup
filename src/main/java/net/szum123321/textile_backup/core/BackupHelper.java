@@ -49,9 +49,9 @@ public class BackupHelper {
 		builder.append(" on: ");
 		builder.append(Utilities.getDateTimeFormatter().format(now));
 
-		Utilities.log(builder.toString(), null);
+		Utilities.info(builder.toString(), null);
 
-		Utilities.log("Saving server...", ctx);
+		Utilities.info("Saving server...", ctx);
 
 		if (save)
 			server.save(true, true, false);
@@ -95,11 +95,13 @@ public class BackupHelper {
 						}
 
 						if (now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
-							Utilities.log("Deleting: " + f.getName(), ctx);
+							Utilities.info("Deleting: " + f.getName(), ctx);
 							f.delete();
 						}
-					} catch (NullPointerException ignored3) {
-						Utilities.error("File: " + f.getName() + ", was not deleted beacuse could not parse date and time. Please delete it by hand.", ctx);
+					} catch (NullPointerException e) {
+						TextileBackup.LOGGER.error("File: {}, was not deleted because could not parse date and time. Please delete it by hand.", f.getName());
+
+						Utilities.sendError("File: " + f.getName() + ", was not deleted because could not parse date and time. Please delete it by hand.", ctx);
 					}
 				});
 			}
@@ -113,7 +115,7 @@ public class BackupHelper {
 				Arrays.sort(files);
 
 				for (int i = 0; i < var1; i++) {
-					Utilities.log("Deleting: " + files[i].getName(), ctx);
+					Utilities.info("Deleting: " + files[i].getName(), ctx);
 					files[i].delete();
 				}
 			}
@@ -121,7 +123,7 @@ public class BackupHelper {
 			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
 				Arrays.stream(root.listFiles()).filter(File::isFile).sorted().forEach(e -> {
 					if (FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-						Utilities.log("Deleting: " + e.getName(), ctx);
+						Utilities.info("Deleting: " + e.getName(), ctx);
 						e.delete();
 					}
 				});
@@ -158,7 +160,7 @@ public class BackupHelper {
 			try {
 				path.mkdirs();
 			} catch (Exception e) {
-				TextileBackup.logger.error(e.getMessage());
+				TextileBackup.LOGGER.error("An exception occurred!", e);
 
 				return FabricLoader
 						.getInstance()

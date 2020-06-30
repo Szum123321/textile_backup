@@ -25,13 +25,12 @@ import net.szum123321.textile_backup.core.BackupHelper;
 import net.szum123321.textile_backup.core.Utilities;
 
 public class CleanupCommand {
-    public static LiteralArgumentBuilder<ServerCommandSource> register(){
+    public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("cleanup")
                 .executes(ctx -> execute(ctx.getSource()));
     }
 
-    private static int execute(ServerCommandSource source){
-
+    private static int execute(ServerCommandSource source) {
         BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getMinecraftServer()));
 
         return 1;

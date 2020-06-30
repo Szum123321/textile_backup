@@ -20,29 +20,25 @@ package net.szum123321.textile_backup;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.cottonmc.cotton.config.ConfigManager;
-import io.github.cottonmc.cotton.logging.ModLogger;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.BlacklistCommand;
 import net.szum123321.textile_backup.commands.CleanupCommand;
 import net.szum123321.textile_backup.commands.StartBackupCommand;
 import net.szum123321.textile_backup.commands.WhitelistCommand;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_ID = "textile_backup";
-    public static ModLogger logger;
+    public static final Logger LOGGER = LogManager.getFormatterLogger("Textile Backup");
 
     public static ConfigHandler config;
 
     @Override
     public void onInitialize() {
-        logger = new ModLogger(this.getClass());
-
-        logger.info("Loading TextileBackup by Szum123321");
-
         config = ConfigManager.loadConfig(ConfigHandler.class);
 
         registerCommands();
@@ -58,7 +54,7 @@ public class TextileBackup implements ModInitializer {
                                                 !config.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
                                                 (ctx.getMinecraftServer().isSinglePlayer() &&
                                                 config.alwaysSingleplayerAllowed);
-                                    } catch (Exception e) { //Command was called from server console.
+                                    } catch (Exception ignored) { //Command was called from server console.
                                         return true;
                                     }
                                 }

@@ -24,12 +24,11 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.core.compressors.GenericTarCompressor;
+import net.szum123321.textile_backup.core.compressors.LZMACompressor;
 import net.szum123321.textile_backup.core.compressors.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.compressors.ParallelGzipCompressor;
 import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
-import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,10 +47,13 @@ public class MakeBackupThread implements Runnable {
 
     @Override
     public void run() {
+        Utilities.info("Starting backup", ctx);
+
         File world = ((MinecraftServerSessionAccessor)server)
                 .getSession()
                 .method_27424(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
 
+        TextileBackup.LOGGER.trace("Minecraft world is: {}", world);
 
         File outFile = BackupHelper
                 .getBackupRootPath(Utilities.getLevelName(server))
@@ -59,12 +61,17 @@ public class MakeBackupThread implements Runnable {
                 .resolve(getFileName())
                 .toFile();
 
+        TextileBackup.LOGGER.trace("Outfile is: {}", outFile);
+
         outFile.getParentFile().mkdirs();
 
         try {
             outFile.createNewFile();
         } catch (IOException e) {
-            Utilities.error("Error while trying to create backup file!\n" + e.getMessage(), ctx);
+            TextileBackup.LOGGER.error("An exception occurred when trying to create new backup file!", e);
+
+            Utilities.sendError("An exception occurred when trying to create new backup file!", ctx);
+
             return;
         }
 
@@ -75,6 +82,8 @@ public class MakeBackupThread implements Runnable {
         } else {
             coreCount = Math.min(TextileBackup.config.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
         }
+
+        TextileBackup.LOGGER.trace("Running compression on {} threads", coreCount);
 
         switch (TextileBackup.config.format) {
             case ZIP:
@@ -90,18 +99,20 @@ public class MakeBackupThread implements Runnable {
                 break;
 
             case LZMA:
-                GenericTarCompressor.createArchive(world, outFile, XZCompressorOutputStream.class, ctx, coreCount);
+                LZMACompressor.createArchive(world, outFile, ctx); // Always single-threaded ):
                 break;
 
             default:
-                Utilities.log("Error! No correct compression format specified! using default compressor!", ctx);
+                TextileBackup.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", TextileBackup.config.format);
+
+                Utilities.sendError("Error! No correct compression format specified! using default compressor!", ctx);
                 ParallelZipCompressor.createArchive(world, outFile, ctx, coreCount);
                 break;
         }
 
         BackupHelper.executeFileLimit(ctx, Utilities.getLevelName(server));
 
-		Utilities.log("Done!", ctx);
+		Utilities.info("Done!", ctx);
     }
 
     private String getFileName(){
