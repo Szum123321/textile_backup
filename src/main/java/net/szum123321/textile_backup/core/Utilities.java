@@ -16,12 +16,23 @@ public class Utilities {
 	}
 
 	public static boolean isBlacklisted(Path path) {
+		if(isWindows()) { //hotfix!
+			if (path.getFileName().toString().equals("session.lock")) {
+				TextileBackup.LOGGER.trace("Skipping session.lock");
+				return true;
+			}
+		}
+
 		for(String i : TextileBackup.config.fileBlacklist) {
 			if(path.startsWith(i))
 				return true;
 		}
 
 		return false;
+	}
+
+	public static boolean isWindows() {
+		return System.getProperty("os.name").toLowerCase().contains("win");
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter(){
