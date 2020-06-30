@@ -5,7 +5,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.cottonmc.cotton.config.ConfigManager;
 import net.minecraft.command.arguments.EntityArgumentType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,7 +14,7 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
 
 public class BlacklistCommand {
-	public static LiteralArgumentBuilder<ServerCommandSource> register(){
+	public static LiteralArgumentBuilder<ServerCommandSource> register() {
 		return CommandManager.literal("blacklist")
 				.then(CommandManager.literal("add")
 						.then(CommandManager.argument("player", EntityArgumentType.player())
@@ -30,13 +29,13 @@ public class BlacklistCommand {
 				).executes(ctx -> help(ctx.getSource()));
 	}
 
-	private static int help(ServerCommandSource source){
+	private static int help(ServerCommandSource source) {
 		source.sendFeedback(new LiteralText("Available command are: add [player], remove [player], list."), false);
 
 		return 1;
 	}
 
-	private static int executeList(ServerCommandSource source){
+	private static int executeList(ServerCommandSource source) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("Currently on the blacklist are: ");
@@ -46,7 +45,7 @@ public class BlacklistCommand {
 			builder.append(", ");
 		}
 
-		Utilities.log(builder.toString(), source);
+		source.sendFeedback(new LiteralText(builder.toString()), false);
 
 		return 1;
 	}
@@ -75,7 +74,7 @@ public class BlacklistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.log(builder.toString(), ctx.getSource());
+			Utilities.info(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
@@ -98,7 +97,7 @@ public class BlacklistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.log(builder.toString(), ctx.getSource());
+			Utilities.info(builder.toString(), ctx.getSource());
 		}
 
 		return 1;

@@ -5,7 +5,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.cottonmc.cotton.config.ConfigManager;
 import net.minecraft.command.arguments.EntityArgumentType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -46,7 +45,7 @@ public class WhitelistCommand {
 			builder.append(", ");
 		}
 
-		Utilities.log(builder.toString(), source);
+		source.sendFeedback(new LiteralText(builder.toString()), false);
 
 		return 1;
 	}
@@ -75,7 +74,7 @@ public class WhitelistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.log(builder.toString(), ctx.getSource());
+			Utilities.info(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
@@ -97,7 +96,7 @@ public class WhitelistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.log(builder.toString(), ctx.getSource());
+			Utilities.info(builder.toString(), ctx.getSource());
 		}
 
 		return 1;
