@@ -51,7 +51,7 @@ public class MakeBackupThread implements Runnable {
 
         File world = ((MinecraftServerSessionAccessor)server)
                 .getSession()
-                .method_27424(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+                .getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
 
         TextileBackup.LOGGER.trace("Minecraft world is: {}", world);
 

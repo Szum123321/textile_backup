@@ -4,11 +4,19 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
+import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 public class Utilities {
 	public static String getLevelName(MinecraftServer server) {
@@ -33,6 +41,55 @@ public class Utilities {
 
 	public static boolean isWindows() {
 		return System.getProperty("os.name").toLowerCase().contains("win");
+	}
+
+	public static Optional<String> getFileExtension(File f) {
+		String[] parts = f.getName().split("\\.");
+
+		switch (parts[parts.length - 1]) {
+			case "zip":
+				return Optional.of(ConfigHandler.ArchiveFormat.ZIP.getExtension());
+			case "bz2":
+				return Optional.of(ConfigHandler.ArchiveFormat.BZIP2.getExtension());
+			case "gz":
+				return Optional.of(ConfigHandler.ArchiveFormat.GZIP.getExtension());
+			case "xz":
+				return Optional.of(ConfigHandler.ArchiveFormat.LZMA.getExtension());
+
+			default:
+				return Optional.empty();
+		}
+	}
+
+	public static Optional<LocalDateTime> getFileCreationTime(File file) {
+		LocalDateTime creationTime = null;
+
+		try {
+			FileTime fileTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+			creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
+		} catch (IOException ignored) {}
+
+		if(creationTime == null) {
+			try {
+				creationTime = LocalDateTime.from(
+						Utilities.getDateTimeFormatter().parse(
+								file.getName().split(getFileExtension(file).orElseThrow())[0].split("#")[0]
+						)
+				);
+			} catch (Exception ignored2) {}
+		}
+
+		if(creationTime == null) {
+			try {
+				creationTime = LocalDateTime.from(
+						Utilities.getBackupDateTimeFormatter().parse(
+								file.getName().split(getFileExtension(file).orElseThrow())[0].split("#")[0]
+						)
+				);
+			} catch (Exception ignored3){}
+		}
+
+		return Optional.ofNullable(creationTime);
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter(){
