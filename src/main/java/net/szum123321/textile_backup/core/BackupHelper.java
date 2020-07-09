@@ -21,18 +21,15 @@ package net.szum123321.textile_backup.core;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.TextileBackup;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BackupHelper {
 	public static Thread create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
@@ -66,89 +63,55 @@ public class BackupHelper {
 	public static void executeFileLimit(ServerCommandSource ctx, String worldName) {
 		File root = getBackupRootPath(worldName);
 
-		if (root.isDirectory() && root.exists()) {
-			if (TextileBackup.config.maxAge > 0) {
-				LocalDateTime now = LocalDateTime.now();
+		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
+			if (TextileBackup.config.maxAge > 0) { // delete files older that configured
+				final LocalDateTime now = LocalDateTime.now();
 
-				Arrays.stream(root.listFiles()).filter(f -> f.exists() && f.isFile()).forEach(f -> {
-					LocalDateTime creationTime;
-
-					try {
-						try {
-							FileTime fileTime = (FileTime) Files.getAttribute(f.toPath(), "creationTime");
-
-							creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.UTC);
-						} catch (IOException ignored) {
-							try {
-								creationTime = LocalDateTime.from(
-										Utilities.getDateTimeFormatter().parse(
-												f.getName().split(Objects.requireNonNull(getFileExtension(f)))[0].split("#")[0]
-										)
-								);
-							} catch (Exception ignored2) {
-								creationTime = LocalDateTime.from(
-										Utilities.getBackupDateTimeFormatter().parse(
-												f.getName().split(Objects.requireNonNull(getFileExtension(f)))[0].split("#")[0]
-										)
-								);
-							}
-						}
-
-						if (now.toEpochSecond(ZoneOffset.UTC) - creationTime.toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge) {
-							Utilities.info("Deleting: " + f.getName(), ctx);
-							f.delete();
-						}
-					} catch (NullPointerException e) {
-						TextileBackup.LOGGER.error("File: {}, was not deleted because could not parse date and time. Please delete it by hand.", f.getName());
-
-						Utilities.sendError("File: " + f.getName() + ", was not deleted because could not parse date and time. Please delete it by hand.", ctx);
-					}
-				});
+				Arrays.stream(root.listFiles())
+						.filter(BackupHelper::isFileOk)
+						.filter(f -> Utilities.getFileCreationTime(f).isPresent())  // We check if we can get file's creation date so that the next line won't throw an exception
+						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge)
+						.forEach(f -> {
+							if(f.delete())
+								Utilities.info("Deleting: " + f.getName(), ctx);
+							else
+								Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+						});
 			}
 
 			if (TextileBackup.config.backupsToKeep > 0 && root.listFiles().length > TextileBackup.config.backupsToKeep) {
-				int var1 = root.listFiles().length - TextileBackup.config.backupsToKeep;
+				AtomicInteger i = new AtomicInteger(root.listFiles().length);
 
-				File[] files = root.listFiles();
-				assert files != null;
+				Arrays.stream(root.listFiles())
+						.filter(BackupHelper::isFileOk)
+						.takeWhile(f -> i.get() > TextileBackup.config.backupsToKeep)
+						.forEach(f -> {
+							if(f.delete())
+								Utilities.info("Deleting: " + f.getName(), ctx);
+							else
+								Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
 
-				Arrays.sort(files);
-
-				for (int i = 0; i < var1; i++) {
-					Utilities.info("Deleting: " + files[i].getName(), ctx);
-					files[i].delete();
-				}
+							i.getAndDecrement();
+						});
 			}
 
 			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-				Arrays.stream(root.listFiles()).filter(File::isFile).sorted().forEach(e -> {
-					if (FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-						Utilities.info("Deleting: " + e.getName(), ctx);
-						e.delete();
-					}
-				});
+				Arrays.stream(root.listFiles())
+						.filter(BackupHelper::isFileOk)
+						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
+						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
+						.takeWhile(f -> FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize)
+						.forEach(f -> {
+							if(f.delete())
+								Utilities.info("Deleting: " + f.getName(), ctx);
+							else
+								Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+						});
 			}
 		}
 	}
 
-	private static String getFileExtension(File f) {
-		String[] parts = f.getName().split("\\.");
-
-		switch (parts[parts.length - 1]) {
-			case "zip":
-				return ConfigHandler.ArchiveFormat.ZIP.getExtension();
-			case "bz2":
-				return ConfigHandler.ArchiveFormat.BZIP2.getExtension();
-			case "gz":
-				return ConfigHandler.ArchiveFormat.GZIP.getExtension();
-			case "xz":
-				return ConfigHandler.ArchiveFormat.LZMA.getExtension();
-
-			default:
-				return null;
-		}
-	}
-
+	private static boolean isFileOk(File f) {return f.exists() && f.isFile(); }
 
 	public static File getBackupRootPath(String worldName) {
 		File path = new File(TextileBackup.config.path).getAbsoluteFile();
