@@ -84,6 +84,8 @@ public class BackupHelper {
 
 				Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
+						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
+						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.takeWhile(f -> i.get() > TextileBackup.config.backupsToKeep)
 						.forEach(f -> {
 							if(f.delete())
