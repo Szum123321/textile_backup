@@ -45,13 +45,14 @@ public class ConfigHandler {
     @Comment("\nShould every world has its won backup folder?\n")
     public boolean perWorldBackup = false;
 
-    @Comment("\nMaximum number of backups to keep. If set to 0 then no backup will be deleted based their its amount\n")
+    @Comment("\nMaximum number of backups to keep. If set to 0 then no backup will be deleted based their amount\n")
     public int backupsToKeep = 10;
 
-    @Comment("\nMaximum age of backups to keep in seconds.\n If set to 0 then backups will not be deleted based their its age \n")
+    @Comment("\nMaximum age of backups to keep in seconds.\n If set to 0 then backups will not be deleted based their age \n")
     public long maxAge = 0;
 
-    @Comment("\nMaximum size of backup folder in kilo bytes (1024).\n")
+    @Comment("\nMaximum size of backup folder in kilo bytes (1024).\n" +
+            "If set to 0 then backups will not be deleted\n")
     public int maxSize = 0;
 
     @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
