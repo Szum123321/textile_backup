@@ -66,7 +66,7 @@ public class Utilities {
 
 		try {
 			FileTime fileTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
-			creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.UTC);
+			creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
 		} catch (IOException ignored) {}
 
 		if(creationTime == null) {
