@@ -86,7 +86,7 @@ public class ConfigHandler {
     @Comment("\nFormat of date&time used to name backup files.\n" +
             "Remember not to use '#' symbol and any other character that is not allowed by your operating system such as:\n" +
             "':', '\\', etc\n")
-    public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
+    public String dateTimeFormat = "yyyy-MM-dd_HH-mm-ss";
 
     public enum ArchiveFormat {
         ZIP(".zip"),
