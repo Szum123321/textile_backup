@@ -29,7 +29,11 @@ public class BackupScheduler {
                 scheduled = true;
             }
         } else if(!TextileBackup.config.doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
-            scheduled = false;
+            if(scheduled && nextBackup >= now) {
+                TextileBackup.executorSerivece.submit(BackupHelper.create(server, null, true, null));
+
+                scheduled = false;
+            }
         }
     }
 }
