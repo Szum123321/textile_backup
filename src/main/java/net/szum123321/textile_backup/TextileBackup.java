@@ -23,7 +23,6 @@ import io.github.cottonmc.cotton.config.ConfigManager;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.BlacklistCommand;
@@ -34,6 +33,7 @@ import net.szum123321.textile_backup.core.BackupScheduler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -50,12 +50,15 @@ public class TextileBackup implements ModInitializer {
     public void onInitialize() {
         config = ConfigManager.loadConfig(ConfigHandler.class);
 
-        registerCommands();
+        Optional<String> errorMessage = config.sanitize();
+
+        if(errorMessage.isPresent()) {
+            LOGGER.fatal("TextileBackup config file has wrong settings! \n" + errorMessage.get());
+            System.exit(1);
+        }
 
         ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
-    }
 
-    private void registerCommands(){
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
@@ -64,7 +67,7 @@ public class TextileBackup implements ModInitializer {
                                                 ctx.hasPermissionLevel(config.permissionLevel)) &&
                                                 !config.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
                                                 (ctx.getMinecraftServer().isSinglePlayer() &&
-                                                config.alwaysSingleplayerAllowed);
+                                                        config.alwaysSingleplayerAllowed);
                                     } catch (Exception ignored) { //Command was called from server console.
                                         return true;
                                     }

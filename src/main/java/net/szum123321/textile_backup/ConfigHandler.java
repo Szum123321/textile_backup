@@ -87,9 +87,23 @@ public class ConfigHandler {
     public Set<String> playerBlacklist = new HashSet<>();
 
     @Comment("\nFormat of date&time used to name backup files.\n" +
-            "Remember not to use '#' symbol and any other character that is not allowed by your operating system such as:\n" +
-            "':', '\\', etc\n")
+            "Remember not to use '#' symbol or any other character that is not allowed by your operating system such as:\n" +
+            "':', '\\', etc...\n" +
+            "For more info: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
+
+    public Optional<String> sanitize() {
+        if(compressionCoreCountLimit > Runtime.getRuntime().availableProcessors())
+            return Optional.of("compressionCoreCountLimit is too big! Your system only has: " + Runtime.getRuntime().availableProcessors() + " cores!");
+
+        try {
+            DateTimeFormatter.ofPattern(dateTimeFormat);
+        } catch (IllegalArgumentException e) {
+            return Optional.of("dateTimeFormat is wrong!\n" + e.getMessage() + "\n See: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html");
+        }
+
+        return Optional.empty();
+    }
 
     public enum ArchiveFormat {
         ZIP(".zip"),
