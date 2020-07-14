@@ -57,7 +57,8 @@ public class TextileBackup implements ModInitializer {
             System.exit(1);
         }
 
-        ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
+        if(TextileBackup.config.backupInterval > 0)
+            ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")

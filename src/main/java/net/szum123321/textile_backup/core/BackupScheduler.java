@@ -15,9 +15,6 @@ public class BackupScheduler {
     }
 
     public void tick(MinecraftServer server) {
-        if(TextileBackup.config.backupInterval <= 0)
-            return;
-
         long now = Instant.now().getEpochSecond();
 
         if(TextileBackup.config.doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
