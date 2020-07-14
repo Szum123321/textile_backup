@@ -21,18 +21,21 @@ package net.szum123321.textile_backup;
 import blue.endless.jankson.Comment;
 import io.github.cottonmc.cotton.config.annotations.ConfigFile;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @ConfigFile(name = TextileBackup.MOD_ID)
 public class ConfigHandler {
-    @Comment("\nTime between automatic backups in seconds\n")
+    @Comment("\nTime between automatic backups in seconds\n" +
+            "When set to 0 backups will not be performed automatically\n")
     public long backupInterval = 3600;
 
     @Comment("\nShould backups be done even if there are no players?\n")
     public boolean doBackupsOnEmptyServer = false;
 
-    @Comment("\nShould backup be made on server shutdown\n")
+    @Comment("\nShould backup be made on server shutdown?\n")
     public boolean shutdownBackup = true;
 
     @Comment("\nA path to backup folder\n")
@@ -84,9 +87,23 @@ public class ConfigHandler {
     public Set<String> playerBlacklist = new HashSet<>();
 
     @Comment("\nFormat of date&time used to name backup files.\n" +
-            "Remember not to use '#' symbol and any other character that is not allowed by your operating system such as:\n" +
-            "':', '\\', etc\n")
+            "Remember not to use '#' symbol or any other character that is not allowed by your operating system such as:\n" +
+            "':', '\\', etc...\n" +
+            "For more info: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
+
+    public Optional<String> sanitize() {
+        if(compressionCoreCountLimit > Runtime.getRuntime().availableProcessors())
+            return Optional.of("compressionCoreCountLimit is too big! Your system only has: " + Runtime.getRuntime().availableProcessors() + " cores!");
+
+        try {
+            DateTimeFormatter.ofPattern(dateTimeFormat);
+        } catch (IllegalArgumentException e) {
+            return Optional.of("dateTimeFormat is wrong!\n" + e.getMessage() + "\n See: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html");
+        }
+
+        return Optional.empty();
+    }
 
     public enum ArchiveFormat {
         ZIP(".zip"),
