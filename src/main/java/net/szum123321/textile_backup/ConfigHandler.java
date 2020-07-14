@@ -21,12 +21,15 @@ package net.szum123321.textile_backup;
 import blue.endless.jankson.Comment;
 import io.github.cottonmc.cotton.config.annotations.ConfigFile;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @ConfigFile(name = TextileBackup.MOD_ID)
 public class ConfigHandler {
-    @Comment("\nTime between automatic backups in seconds\n")
+    @Comment("\nTime between automatic backups in seconds\n" +
+            "When set to 0 backups will not be performed automatically\n")
     public long backupInterval = 3600;
 
     @Comment("\nShould backups be done even if there are no players?\n")
