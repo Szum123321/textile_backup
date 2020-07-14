@@ -32,7 +32,7 @@ public class ConfigHandler {
     @Comment("\nShould backups be done even if there are no players?\n")
     public boolean doBackupsOnEmptyServer = false;
 
-    @Comment("\nShould backup be made on server shutdown\n")
+    @Comment("\nShould backup be made on server shutdown?\n")
     public boolean shutdownBackup = true;
 
     @Comment("\nA path to backup folder\n")

@@ -23,13 +23,19 @@ import io.github.cottonmc.cotton.config.ConfigManager;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.BlacklistCommand;
 import net.szum123321.textile_backup.commands.CleanupCommand;
 import net.szum123321.textile_backup.commands.StartBackupCommand;
 import net.szum123321.textile_backup.commands.WhitelistCommand;
+import net.szum123321.textile_backup.core.BackupScheduler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_ID = "textile_backup";
@@ -37,11 +43,16 @@ public class TextileBackup implements ModInitializer {
 
     public static ConfigHandler config;
 
+    public static final BackupScheduler scheduler = new BackupScheduler();
+    public static final ExecutorService executorSerivece = Executors.newSingleThreadExecutor();
+
     @Override
     public void onInitialize() {
         config = ConfigManager.loadConfig(ConfigHandler.class);
 
         registerCommands();
+
+        ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
     }
 
     private void registerCommands(){

@@ -23,6 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.BackupHelper;
 
 public class StartBackupCommand {
@@ -34,13 +35,27 @@ public class StartBackupCommand {
     }
 
     private static int executeWithComment(CommandContext<ServerCommandSource> source) {
-        BackupHelper.create(source.getSource().getMinecraftServer(), source.getSource(), true, StringArgumentType.getString(source, "comment").replace("#", ""));
+        TextileBackup.executorSerivece.submit(
+                BackupHelper.create(
+                        source.getSource().getMinecraftServer(),
+                        source.getSource(),
+                        true,
+                        StringArgumentType.getString(source, "comment").replace("#", "")
+                )
+        );
 
         return 1;
     }
 
     private static int execute(ServerCommandSource source){
-        BackupHelper.create(source.getMinecraftServer(), source,true, null);
+        TextileBackup.executorSerivece.submit(
+                BackupHelper.create(
+                        source.getMinecraftServer(),
+                        source,
+                        true,
+                        null
+                )
+        );
 
         return 1;
     }

@@ -32,7 +32,7 @@ import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BackupHelper {
-	public static Thread create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
+	public static Runnable create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
 		LocalDateTime now = LocalDateTime.now();
 
 		StringBuilder builder = new StringBuilder();
@@ -53,11 +53,7 @@ public class BackupHelper {
 		if (save)
 			server.save(true, true, false);
 
-		Thread thread = new Thread(new MakeBackupThread(server, ctx, comment));
-
-		thread.start();
-
-		return thread;
+		return new MakeBackupRunnable(server, ctx, comment);
 	}
 
 	public static void executeFileLimit(ServerCommandSource ctx, String worldName) {

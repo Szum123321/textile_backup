@@ -32,6 +32,7 @@ import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
+/*
     @Shadow private long timeReference;
 
     @Shadow public abstract PlayerManager getPlayerManager();
@@ -49,15 +50,11 @@ public abstract class MinecraftServerMixin {
             BackupHelper.create((MinecraftServer)(Object)this, null, true, null);
         }
     }
-
+*/
     @Inject(method = "shutdown", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/MinecraftServer;save(ZZZ)Z"))
     public void onShutdown(CallbackInfo ci){
         if(TextileBackup.config.shutdownBackup) {
-            try {
-                BackupHelper.create((MinecraftServer) (Object) this, null, false, "shutdown").join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            BackupHelper.create((MinecraftServer) (Object) this, null, false, "shutdown").run();
         }
     }
 }

@@ -34,12 +34,12 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-public class MakeBackupThread implements Runnable {
+public class MakeBackupRunnable implements Runnable {
     private final MinecraftServer server;
     private final ServerCommandSource ctx;
     private final String comment;
 
-    public MakeBackupThread(MinecraftServer server, ServerCommandSource ctx, String comment){
+    public MakeBackupRunnable(MinecraftServer server, ServerCommandSource ctx, String comment){
         this.server = server;
         this.ctx = ctx;
         this.comment = comment;
