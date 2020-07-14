@@ -35,7 +35,7 @@ public class StartBackupCommand {
     }
 
     private static int executeWithComment(CommandContext<ServerCommandSource> source) {
-        TextileBackup.executorSerivece.submit(
+        TextileBackup.executorService.submit(
                 BackupHelper.create(
                         source.getSource().getMinecraftServer(),
                         source.getSource(),
@@ -48,7 +48,7 @@ public class StartBackupCommand {
     }
 
     private static int execute(ServerCommandSource source){
-        TextileBackup.executorSerivece.submit(
+        TextileBackup.executorService.submit(
                 BackupHelper.create(
                         source.getMinecraftServer(),
                         source,

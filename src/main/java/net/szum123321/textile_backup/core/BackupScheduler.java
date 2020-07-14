@@ -22,8 +22,8 @@ public class BackupScheduler {
 
         if(TextileBackup.config.doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
             if(scheduled) {
-                if(nextBackup >= now) {
-                    TextileBackup.executorSerivece.submit(BackupHelper.create(server, null, true, null));
+                if(nextBackup <= now) {
+                    TextileBackup.executorService.submit(BackupHelper.create(server, null, true, null));
 
                     nextBackup = now + TextileBackup.config.backupInterval;
                 }
@@ -32,8 +32,8 @@ public class BackupScheduler {
                 scheduled = true;
             }
         } else if(!TextileBackup.config.doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
-            if(scheduled && nextBackup >= now) {
-                TextileBackup.executorSerivece.submit(BackupHelper.create(server, null, true, null));
+            if(scheduled && nextBackup <= now) {
+                TextileBackup.executorService.submit(BackupHelper.create(server, null, true, null));
 
                 scheduled = false;
             }

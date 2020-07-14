@@ -44,7 +44,7 @@ public class TextileBackup implements ModInitializer {
     public static ConfigHandler config;
 
     public static final BackupScheduler scheduler = new BackupScheduler();
-    public static final ExecutorService executorSerivece = Executors.newSingleThreadExecutor();
+    public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     public void onInitialize() {
