@@ -23,6 +23,7 @@ import io.github.cottonmc.cotton.config.ConfigManager;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.BlacklistCommand;
@@ -59,6 +60,8 @@ public class TextileBackup implements ModInitializer {
 
         if(TextileBackup.config.backupInterval > 0)
             ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
+
+        ServerLifecycleEvents.SERVER_STOPPED.register(ignored -> executorService.shutdown());
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
