@@ -29,8 +29,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
     @Inject(method = "shutdown", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/MinecraftServer;save(ZZZ)Z"))
-    public void onShutdown(CallbackInfo ci){
-        if(TextileBackup.config.shutdownBackup)
+    public void onFinalWorldSave(CallbackInfo ci) {
+        if (TextileBackup.config.shutdownBackup)
             TextileBackup.executorService.submit(BackupHelper.create((MinecraftServer) (Object) this, null, false, "shutdown"));
     }
 }
