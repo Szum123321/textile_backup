@@ -45,7 +45,7 @@ public class TextileBackup implements ModInitializer {
     public static ConfigHandler config;
 
     public static final BackupScheduler scheduler = new BackupScheduler();
-    public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    public static ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     public void onInitialize() {
@@ -60,6 +60,11 @@ public class TextileBackup implements ModInitializer {
 
         if(TextileBackup.config.backupInterval > 0)
             ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
+
+        ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
+            if(executorService.isShutdown())
+                executorService = Executors.newSingleThreadExecutor();
+        });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(ignored -> executorService.shutdown());
 
