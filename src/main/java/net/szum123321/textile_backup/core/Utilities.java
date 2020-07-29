@@ -104,7 +104,7 @@ public class Utilities {
 	}
 
 	public static void info(String s, ServerCommandSource ctx){
-		if(ctx != null)
+		if(ctx != null && ctx.getEntity() != null)
 			ctx.sendFeedback(new LiteralText(s), false);
 
 		if(TextileBackup.config.log)
