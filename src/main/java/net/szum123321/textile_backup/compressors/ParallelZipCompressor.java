@@ -9,6 +9,8 @@ import org.apache.commons.compress.parallel.InputStreamSupplier;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
@@ -24,9 +26,7 @@ public class ParallelZipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
 		Utilities.info("Starting compression...", ctx);
 
-		long start = System.nanoTime();
-
-		TextileBackup.LOGGER.debug("Compression starts at: {}", start);
+		Instant start = Instant.now();
 
 		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
@@ -56,14 +56,11 @@ public class ParallelZipCompressor {
 
 			arc.finish();
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			TextileBackup.LOGGER.error("An exception happened!", e);
-
+			TextileBackup.LOGGER.error("An exception occured!", e);
 			Utilities.sendError("Something went wrong while compressing files!", ctx);
 		}
 
-		long end = System.nanoTime();
-
-		Utilities.info("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.info("Compression took: " + Utilities.formatDuration(Duration.between(start, Instant.now())) + " seconds.", ctx);
 	}
 
 	static class FileInputStreamSupplier implements InputStreamSupplier {

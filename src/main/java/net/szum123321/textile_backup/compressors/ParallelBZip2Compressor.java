@@ -11,6 +11,8 @@ import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.Instant;
 
 public class ParallelBZip2Compressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
@@ -18,7 +20,7 @@ public class ParallelBZip2Compressor {
 
 		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit);
 
-		long start = System.nanoTime();
+		Instant start = Instant.now();
 
 		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
@@ -47,7 +49,6 @@ public class ParallelBZip2Compressor {
 					arc.closeArchiveEntry();
 				} catch (IOException e) {
 					TextileBackup.LOGGER.error("An exception occurred while trying to compress: " + path.getFileName(), e);
-
 					Utilities.sendError("Something went wrong while compressing files!", ctx);
 				}
 			});
@@ -55,12 +56,9 @@ public class ParallelBZip2Compressor {
 			arc.finish();
 		} catch (IOException e) {
 			TextileBackup.LOGGER.error("An exception occurred!", e);
-
 			Utilities.sendError("Something went wrong while compressing files!", ctx);
 		}
 
-		long end = System.nanoTime();
-
-		Utilities.info("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.info("Compression took: " + Utilities.formatDuration(Duration.between(start, Instant.now())) + " seconds.", ctx);
 	}
 }

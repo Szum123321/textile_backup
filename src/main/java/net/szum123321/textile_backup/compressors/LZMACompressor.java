@@ -11,12 +11,14 @@ import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.Instant;
 
 public class LZMACompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx) {
 		Utilities.info("Starting compression...", ctx);
 
-		long start = System.nanoTime();
+		Instant start = Instant.now();
 
 		try (FileOutputStream outStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
@@ -45,7 +47,6 @@ public class LZMACompressor {
 					arc.closeArchiveEntry();
 				} catch (IOException e) {
 					TextileBackup.LOGGER.error("An exception occurred while trying to compress: " + path.getFileName(), e);
-
 					Utilities.sendError("Something went wrong while compressing files!", ctx);
 				}
 			});
@@ -53,12 +54,9 @@ public class LZMACompressor {
 			arc.finish();
 		} catch (IOException e) {
 			TextileBackup.LOGGER.error("An exception occurred!", e);
-
 			Utilities.sendError("Something went wrong while compressing files!", ctx);
 		}
 
-		long end = System.nanoTime();
-
-		Utilities.info("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.info("Compression took: " + Utilities.formatDuration(Duration.between(start, Instant.now())) + " seconds.", ctx);
 	}
 }

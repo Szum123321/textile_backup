@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -105,6 +107,19 @@ public class Utilities {
 
 	public static DateTimeFormatter getBackupDateTimeFormatter() {
 		return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss");
+	}
+
+	public static String formatDuration(Duration duration) {
+		DateTimeFormatter formatter;
+
+		if(duration.toHours() > 0)
+			formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+		else if(duration.toMinutes() > 0)
+			formatter = DateTimeFormatter.ofPattern("mm:ss.SSS");
+		else
+			formatter = DateTimeFormatter.ofPattern("ss.SSS");
+
+		return LocalTime.ofNanoOfDay(duration.toNanos()).format(formatter);
 	}
 
 	public static void info(String s, ServerCommandSource ctx){

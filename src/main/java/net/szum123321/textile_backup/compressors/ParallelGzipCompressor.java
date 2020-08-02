@@ -10,14 +10,14 @@ import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.Instant;
 
 public class ParallelGzipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
 		Utilities.info("Starting compression...", ctx);
 
-		long start = System.nanoTime();
-
-		TextileBackup.LOGGER.debug("Compression starts at: {}", start);
+		Instant start = Instant.now();
 
 		try (FileOutputStream outStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
@@ -46,7 +46,6 @@ public class ParallelGzipCompressor {
 					arc.closeArchiveEntry();
 				} catch (IOException e) {
 					TextileBackup.LOGGER.error("An exception occurred while trying to compress file: " + path, e);
-
 					Utilities.sendError("Something went wrong while compressing files!", ctx);
 				}
 			});
@@ -54,12 +53,9 @@ public class ParallelGzipCompressor {
 			arc.finish();
 		} catch (IOException e) {
 			TextileBackup.LOGGER.error("An exception happened!", e);
-
 			Utilities.sendError("Something went wrong while compressing files!", ctx);
 		}
 
-		long end = System.nanoTime();
-
-		Utilities.info("Compression took: " + ((end - start) / 1000000000.0) + "s", ctx);
+		Utilities.info("Compression took: " + Utilities.formatDuration(Duration.between(start, Instant.now())) + " seconds.", ctx);
 	}
 }
