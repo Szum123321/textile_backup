@@ -1,28 +1,27 @@
-package net.szum123321.textile_backup.core.compressors;
+package net.szum123321.textile_backup.compressors;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
-import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
+
 
 import java.io.*;
 import java.nio.file.Files;
 
-public class ParallelGzipCompressor {
-	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
+public class LZMACompressor {
+	public static void createArchive(File in, File out, ServerCommandSource ctx) {
 		Utilities.info("Starting compression...", ctx);
 
 		long start = System.nanoTime();
 
-		TextileBackup.LOGGER.debug("Compression starts at: {}", start);
-
 		try (FileOutputStream outStream = new FileOutputStream(out);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
-			 ParallelGZIPOutputStream gzipOutputStream = new ParallelGZIPOutputStream(bufferedOutputStream, coreLimit);
-			 TarArchiveOutputStream arc = new TarArchiveOutputStream(gzipOutputStream)) {
+			 XZCompressorOutputStream compressorStream = new XZCompressorOutputStream(bufferedOutputStream);// CompressorStreamClass.getConstructor().newInstance(bufferedOutputStream);
+			 TarArchiveOutputStream arc = new TarArchiveOutputStream(compressorStream)) {
 
 			arc.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			arc.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
@@ -45,7 +44,7 @@ public class ParallelGzipCompressor {
 
 					arc.closeArchiveEntry();
 				} catch (IOException e) {
-					TextileBackup.LOGGER.error("An exception occurred while trying to compress file: " + path, e);
+					TextileBackup.LOGGER.error("An exception occurred while trying to compress: " + path.getFileName(), e);
 
 					Utilities.sendError("Something went wrong while compressing files!", ctx);
 				}
@@ -53,7 +52,7 @@ public class ParallelGzipCompressor {
 
 			arc.finish();
 		} catch (IOException e) {
-			TextileBackup.LOGGER.error("An exception happened!", e);
+			TextileBackup.LOGGER.error("An exception occurred!", e);
 
 			Utilities.sendError("Something went wrong while compressing files!", ctx);
 		}

@@ -1,4 +1,4 @@
-package net.szum123321.textile_backup.core.compressors;
+package net.szum123321.textile_backup.compressors;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;

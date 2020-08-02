@@ -24,10 +24,10 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.core.compressors.LZMACompressor;
-import net.szum123321.textile_backup.core.compressors.ParallelBZip2Compressor;
-import net.szum123321.textile_backup.core.compressors.ParallelGzipCompressor;
-import net.szum123321.textile_backup.core.compressors.ParallelZipCompressor;
+import net.szum123321.textile_backup.compressors.LZMACompressor;
+import net.szum123321.textile_backup.compressors.ParallelBZip2Compressor;
+import net.szum123321.textile_backup.compressors.ParallelGzipCompressor;
+import net.szum123321.textile_backup.compressors.ParallelZipCompressor;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 
 import java.io.File;
