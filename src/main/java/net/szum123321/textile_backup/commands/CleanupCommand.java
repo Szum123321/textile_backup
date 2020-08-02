@@ -21,6 +21,7 @@ package net.szum123321.textile_backup.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.core.BackupHelper;
 import net.szum123321.textile_backup.core.Utilities;
 
@@ -31,7 +32,9 @@ public class CleanupCommand {
     }
 
     private static int execute(ServerCommandSource source) {
-        BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getMinecraftServer()));
+        int a = BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getMinecraftServer()));
+
+        source.sendFeedback(new LiteralText("Deleted: " + a + " files."), false);
 
         return 1;
     }

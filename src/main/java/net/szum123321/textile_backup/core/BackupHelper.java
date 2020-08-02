@@ -29,6 +29,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BackupHelper {
 	public static Runnable create(BackupContext ctx) {
@@ -57,8 +58,9 @@ public class BackupHelper {
 		return new MakeBackupRunnable(ctx);
 	}
 
-	public static void executeFileLimit(ServerCommandSource ctx, String worldName) {
+	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
 		File root = getBackupRootPath(worldName);
+		AtomicInteger deletedFiles = new AtomicInteger();
 
 		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
 			if (TextileBackup.config.maxAge > 0) { // delete files older that configured
@@ -69,10 +71,12 @@ public class BackupHelper {
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())  // We check if we can get file's creation date so that the next line won't throw an exception
 						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge)
 						.forEach(f -> {
-							if(f.delete())
+							if(f.delete()) {
 								Utilities.info("Deleting: " + f.getName(), ctx);
-							else
+								deletedFiles.getAndIncrement();
+							} else {
 								Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+							}
 						});
 			}
 
@@ -90,6 +94,7 @@ public class BackupHelper {
 
 					if(f.delete()) {
 						Utilities.info("Deleting: " + f.getName(), ctx);
+						deletedFiles.getAndIncrement();
 					} else {
 						Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
 					}
@@ -110,12 +115,15 @@ public class BackupHelper {
 
 					if(f.delete()) {
 						Utilities.info("Deleting: " + f.getName(), ctx);
+						deletedFiles.getAndIncrement();
 					} else {
 						Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
 					}
 				}
 			}
 		}
+
+		return deletedFiles.get();
 	}
 
 	private static boolean isFileOk(File f) {return f.exists() && f.isFile(); }
