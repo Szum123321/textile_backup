@@ -24,38 +24,46 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.BackupContext;
 import net.szum123321.textile_backup.core.BackupHelper;
 
 public class StartBackupCommand {
-    public static LiteralArgumentBuilder<ServerCommandSource> register(){
+    public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("start")
                 .then(CommandManager.argument("comment", StringArgumentType.string())
                         .executes(StartBackupCommand::executeWithComment)
                 ).executes(ctx -> execute(ctx.getSource()));
     }
 
-    private static int executeWithComment(CommandContext<ServerCommandSource> source) {
-        TextileBackup.executorService.submit(
-                BackupHelper.create(
-                        source.getSource().getMinecraftServer(),
-                        source.getSource(),
-                        true,
-                        StringArgumentType.getString(source, "comment").replace("#", "")
-                )
-        );
+    private static int executeWithComment(CommandContext<ServerCommandSource> ctx) {
+        if(!TextileBackup.executorService.isShutdown())
+            TextileBackup.executorService.submit(
+                    BackupHelper.create(
+                            new BackupContext.Builder()
+                                    .setCommandSource(ctx.getSource())
+                                    .setServer(ctx.getSource().getMinecraftServer())
+                                    .setComment(StringArgumentType.getString(ctx, "comment"))
+                                    .guessInitiator()
+                                    .setSave()
+                                    .build()
+                    )
+            );
 
         return 1;
     }
 
     private static int execute(ServerCommandSource source){
-        TextileBackup.executorService.submit(
-                BackupHelper.create(
-                        source.getMinecraftServer(),
-                        source,
-                        true,
-                        null
-                )
-        );
+        if(!TextileBackup.executorService.isShutdown())
+            TextileBackup.executorService.submit(
+                    BackupHelper.create(
+                            new BackupContext.Builder()
+                                    .setCommandSource(source)
+                                    .setServer(source.getMinecraftServer())
+                                    .guessInitiator()
+                                    .setSave()
+                                    .build()
+                    )
+            );
 
         return 1;
     }

@@ -20,6 +20,7 @@ package net.szum123321.textile_backup.mixin;
 
 import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.BackupContext;
 import net.szum123321.textile_backup.core.BackupHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,6 +32,14 @@ public abstract class MinecraftServerMixin {
     @Inject(method = "shutdown", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/MinecraftServer;save(ZZZ)Z"))
     public void onFinalWorldSave(CallbackInfo ci) {
         if (TextileBackup.config.shutdownBackup)
-            TextileBackup.executorService.submit(BackupHelper.create((MinecraftServer) (Object) this, null, false, "shutdown"));
+            TextileBackup.executorService.submit(
+                    BackupHelper.create(
+                        new BackupContext.Builder()
+                                .setServer((MinecraftServer)(Object) this)
+                                .setInitiator(BackupContext.BackupInitiator.Shutdown)
+                                .setComment("shutdown")
+                                .build()
+                        )
+            );
     }
 }

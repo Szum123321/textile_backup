@@ -36,18 +36,18 @@ import java.time.LocalDateTime;
 
 public class MakeBackupRunnable implements Runnable {
     private final MinecraftServer server;
-    private final ServerCommandSource ctx;
+    private final ServerCommandSource commandSource;
     private final String comment;
 
-    public MakeBackupRunnable(MinecraftServer server, ServerCommandSource ctx, String comment){
-        this.server = server;
-        this.ctx = ctx;
-        this.comment = comment;
+    public MakeBackupRunnable(BackupContext context){
+        this.server = context.getServer();
+        this.commandSource = context.getCommandSource();
+        this.comment = context.getComment();
     }
 
     @Override
     public void run() {
-        Utilities.info("Starting backup", ctx);
+        Utilities.info("Starting backup", commandSource);
 
         File world = ((MinecraftServerSessionAccessor)server)
                 .getSession()
@@ -70,7 +70,7 @@ public class MakeBackupRunnable implements Runnable {
         } catch (IOException e) {
             TextileBackup.LOGGER.error("An exception occurred when trying to create new backup file!", e);
 
-            Utilities.sendError("An exception occurred when trying to create new backup file!", ctx);
+            Utilities.sendError("An exception occurred when trying to create new backup file!", commandSource);
 
             return;
         }
@@ -83,36 +83,36 @@ public class MakeBackupRunnable implements Runnable {
             coreCount = Math.min(TextileBackup.config.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
         }
 
-        TextileBackup.LOGGER.trace("Running compression on {} threads", coreCount);
+        TextileBackup.LOGGER.trace("Running compression on {} threads. Available cores = {}", coreCount, Runtime.getRuntime().availableProcessors());
 
         switch (TextileBackup.config.format) {
             case ZIP:
-                ParallelZipCompressor.createArchive(world, outFile, ctx, coreCount);
+                ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
                 break;
 
             case BZIP2:
-                ParallelBZip2Compressor.createArchive(world, outFile, ctx, coreCount);
+                ParallelBZip2Compressor.createArchive(world, outFile, commandSource, coreCount);
                 break;
 
             case GZIP:
-                ParallelGzipCompressor.createArchive(world, outFile, ctx, coreCount);
+                ParallelGzipCompressor.createArchive(world, outFile, commandSource, coreCount);
                 break;
 
             case LZMA:
-                LZMACompressor.createArchive(world, outFile, ctx); // Always single-threaded ):
+                LZMACompressor.createArchive(world, outFile, commandSource); // Always single-threaded ):
                 break;
 
             default:
                 TextileBackup.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", TextileBackup.config.format);
+                Utilities.sendError("Error! No correct compression format specified! Using default compressor!", commandSource);
 
-                Utilities.sendError("Error! No correct compression format specified! using default compressor!", ctx);
-                ParallelZipCompressor.createArchive(world, outFile, ctx, coreCount);
+                ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
                 break;
         }
 
-        BackupHelper.executeFileLimit(ctx, Utilities.getLevelName(server));
+        BackupHelper.executeFileLimit(commandSource, Utilities.getLevelName(server));
 
-		Utilities.info("Done!", ctx);
+		Utilities.info("Done!", commandSource);
     }
 
     private String getFileName(){

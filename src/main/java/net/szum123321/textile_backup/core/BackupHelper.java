@@ -19,7 +19,6 @@
 package net.szum123321.textile_backup.core;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import org.apache.commons.io.FileUtils;
@@ -32,28 +31,30 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 public class BackupHelper {
-	public static Runnable create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
-		LocalDateTime now = LocalDateTime.now();
-
+	public static Runnable create(BackupContext ctx) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Backup started by: ");
 
-		if (ctx != null)
-			builder.append(ctx.getName());
-		else
-			builder.append("SERVER");
+		builder.append("Backup started ");
+
+		builder.append(ctx.getInitiator().getPrefix());
+
+		if(ctx.startedByPlayer()) {
+			builder.append(ctx.getCommandSource().getDisplayName().getString());
+		} else {
+			builder.append(ctx.getInitiator().getName());
+		}
 
 		builder.append(" on: ");
-		builder.append(Utilities.getDateTimeFormatter().format(now));
+		builder.append(Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
 		Utilities.info(builder.toString(), null);
 
-		Utilities.info("Saving server...", ctx);
+		if (ctx.shouldSave()) {
+			Utilities.info("Saving server...", ctx.getCommandSource());
+			ctx.getServer().save(true, true, false);
+		}
 
-		if (save)
-			server.save(true, true, false);
-
-		return new MakeBackupRunnable(server, ctx, comment);
+		return new MakeBackupRunnable(ctx);
 	}
 
 	public static void executeFileLimit(ServerCommandSource ctx, String worldName) {
@@ -92,12 +93,13 @@ public class BackupHelper {
 					} else {
 						Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
 					}
+
 					i--;
 				}
 			}
 
 			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-				Iterator<File> it =Arrays.stream(root.listFiles())
+				Iterator<File> it = Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
