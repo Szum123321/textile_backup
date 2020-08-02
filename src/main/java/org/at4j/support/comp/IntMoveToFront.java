@@ -135,10 +135,7 @@ public class IntMoveToFront
 	public int decode(int index)
 	{
 		int val = m_alphabet[index];
-		for (int j = index; j > 0; j--)
-		{
-			m_alphabet[j] = m_alphabet[j - 1];
-		}
+		System.arraycopy(m_alphabet, 0, m_alphabet, 1, index);
 		m_alphabet[0] = val;
 		return val;
 	}
@@ -165,10 +162,7 @@ public class IntMoveToFront
 		{
 			int index = in[i];
 			int val = m_alphabet[index];
-			for (int j = index; j > 0; j--)
-			{
-				m_alphabet[j] = m_alphabet[j - 1];
-			}
+			System.arraycopy(m_alphabet, 0, m_alphabet, 1, index);
 			m_alphabet[0] = val;
 			out[i] = val;
 		}

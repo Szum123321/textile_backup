@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 final class SingleObserverErrorState implements ErrorState
 {
-	private final AtomicReference<Throwable> m_exception = new AtomicReference<Throwable>();
+	private final AtomicReference<Throwable> m_exception = new AtomicReference<>();
 
 	public void checkAndClearErrors(Object ownerToken) throws Error, RuntimeException, IOException
 	{

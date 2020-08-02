@@ -44,16 +44,7 @@ final class BlockEncoderRunnable implements Runnable
 			m_encoder.setScratchpad(((EncodingThread) Thread.currentThread()).getScratchpad());
 			m_encoder.encode();
 		}
-		catch (IOException e)
-		{
-
-			((EncodingThread) Thread.currentThread()).getErrorState().registerError(e, m_errorOwner);
-		}
-		catch (RuntimeException e)
-		{
-			((EncodingThread) Thread.currentThread()).getErrorState().registerError(e, m_errorOwner);
-		}
-		catch (Error e)
+		catch (IOException | Error | RuntimeException e)
 		{
 
 			((EncodingThread) Thread.currentThread()).getErrorState().registerError(e, m_errorOwner);

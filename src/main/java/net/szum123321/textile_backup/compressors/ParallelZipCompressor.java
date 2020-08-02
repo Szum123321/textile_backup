@@ -58,7 +58,7 @@ public class ParallelZipCompressor {
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			TextileBackup.LOGGER.error("An exception happened!", e);
 
-			Utilities.sendError("Something went wrong while compressing files!", ctx);;
+			Utilities.sendError("Something went wrong while compressing files!", ctx);
 		}
 
 		long end = System.nanoTime();

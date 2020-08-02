@@ -606,13 +606,7 @@ final class ThreeWayRadixQuicksort
 	 */
 	private void addRangeToStack(final int bucketStartPos, final int bucketLen, final int depth)
 	{
-		if (bucketLen < 2)
-		{
-			// Already sorted
-			return;
-		}
-		else
-		{
+		if(bucketLen >= 2) {
 			m_sortStack[++m_sortStackPointer] = new QuickSortRangeInfo(bucketStartPos, bucketLen, depth);
 		}
 	}

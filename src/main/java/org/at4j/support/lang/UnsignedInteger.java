@@ -18,8 +18,6 @@
  */
 package org.at4j.support.lang;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 
 /**
@@ -232,7 +230,7 @@ public final class UnsignedInteger implements Serializable, Comparable<UnsignedI
 
 	public int compareTo(UnsignedInteger i2)
 	{
-		return Long.valueOf(longValue()).compareTo(Long.valueOf(i2.longValue()));
+		return Long.valueOf(longValue()).compareTo(i2.longValue());
 	}
 
 	@Override

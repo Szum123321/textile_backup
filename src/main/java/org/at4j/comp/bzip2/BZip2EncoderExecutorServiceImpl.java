@@ -65,7 +65,7 @@ final class BZip2EncoderExecutorServiceImpl implements BZip2EncoderExecutorServi
 
 	BZip2EncoderExecutorServiceImpl(int noThreads, ErrorState es)
 	{
-		m_executor = new ThreadPoolExecutor(noThreads, noThreads, 100, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1), new EncodingThreadFactory(es), ShoehornInJobRejectedExecutionHandler.INSTANCE);
+		m_executor = new ThreadPoolExecutor(noThreads, noThreads, 100, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1), new EncodingThreadFactory(es), ShoehornInJobRejectedExecutionHandler.INSTANCE);
 		m_errorState = es;
 	}
 

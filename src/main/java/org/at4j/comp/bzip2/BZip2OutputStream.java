@@ -159,9 +159,8 @@ public class BZip2OutputStream extends OutputStream
 	private void writeEosBlock() throws IOException
 	{
 		// Write the end of stream magic
-		for (int i = 0; i < EOS_MAGIC.length; i++)
-		{
-			m_wrapped.writeBitsLittleEndian(EOS_MAGIC[i] & 0xFF, 8);
+		for (byte b : EOS_MAGIC) {
+			m_wrapped.writeBitsLittleEndian(b & 0xFF, 8);
 		}
 		// Write file checksum
 		m_wrapped.writeBitsLittleEndian(m_blockOutputStream.getFileChecksum(), 32);
@@ -262,16 +261,6 @@ public class BZip2OutputStream extends OutputStream
 	public boolean equals(Object o)
 	{
 		return this == o;
-	}
-
-	/**
-	 * Close the stream if the client has been sloppy about it.
-	 */
-	@Override
-	protected void finalize() throws Throwable
-	{
-		close();
-		super.finalize();
 	}
 
 	/**

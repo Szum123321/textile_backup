@@ -231,7 +231,7 @@ final class HighValueBranchHuffmanTree
 		final int d2 = w2 & 0xFF;
 		final int ww1 = w1 & 0xFFFFFF00;
 		final int ww2 = w2 & 0xFFFFFF00;
-		return (ww1 + ww2) | (1 + (d1 > d2 ? d1 : d2));
+		return (ww1 + ww2) | (1 + (Math.max(d1, d2)));
 	}
 
 	int getMinLength()

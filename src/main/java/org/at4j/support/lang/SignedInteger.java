@@ -186,7 +186,7 @@ public class SignedInteger implements Comparable<SignedInteger>
 
 	public int compareTo(SignedInteger l2)
 	{
-		return Integer.valueOf(m_value).compareTo(Integer.valueOf(l2.m_value));
+		return Integer.valueOf(m_value).compareTo(l2.m_value);
 	}
 
 	@Override

@@ -35,7 +35,7 @@ final class EncodedBlockWriter
 {
 	// All variables are protected by this object's intrinsic lock
 	private final BitOutput m_out;
-	private final Map<Integer, EncodedBlockData> m_savedBlocks = new HashMap<Integer, EncodedBlockData>();
+	private final Map<Integer, EncodedBlockData> m_savedBlocks = new HashMap<>();
 	// This latch is used to signal to the bzip2 output stream when this writer
 	// is finished.
 	private final CountDownLatch m_doneLatch = new CountDownLatch(1);
@@ -119,19 +119,7 @@ final class EncodedBlockWriter
 				saveBlock(blockNo, blockData);
 			}
 		}
-		catch (Error e)
-		{
-			m_hasError = true;
-			m_doneLatch.countDown();
-			throw e;
-		}
-		catch (RuntimeException e)
-		{
-			m_hasError = true;
-			m_doneLatch.countDown();
-			throw e;
-		}
-		catch (IOException e)
+		catch (Error | RuntimeException | IOException e)
 		{
 			m_hasError = true;
 			m_doneLatch.countDown();

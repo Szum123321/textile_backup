@@ -202,7 +202,7 @@ public class SignedLong implements Comparable<SignedLong>
 
 	public int compareTo(SignedLong l2)
 	{
-		return Long.valueOf(m_value).compareTo(Long.valueOf(l2.m_value));
+		return Long.valueOf(m_value).compareTo(l2.m_value);
 	}
 
 	@Override

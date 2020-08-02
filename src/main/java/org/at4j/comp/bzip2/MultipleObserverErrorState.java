@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 final class MultipleObserverErrorState implements ErrorState
 {
-	private Map<Object, Throwable> m_errors = new ConcurrentHashMap<Object, Throwable>(4);
+	private Map<Object, Throwable> m_errors = new ConcurrentHashMap<>(4);
 
 	public void checkAndClearErrors(Object ownerToken) throws Error, RuntimeException, IOException
 	{

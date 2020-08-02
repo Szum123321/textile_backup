@@ -18,8 +18,6 @@
  */
 package org.at4j.support.lang;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 

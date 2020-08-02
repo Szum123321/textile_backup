@@ -138,10 +138,7 @@ public class ByteMoveToFront
 	public byte decode(int index)
 	{
 		byte val = m_alphabet[index];
-		for (int j = index; j > 0; j--)
-		{
-			m_alphabet[j] = m_alphabet[j - 1];
-		}
+		System.arraycopy(m_alphabet, 0, m_alphabet, 1, index);
 		m_alphabet[0] = val;
 		return val;
 	}
