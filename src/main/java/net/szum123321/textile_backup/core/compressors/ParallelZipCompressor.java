@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 /*
@@ -42,16 +41,16 @@ public class ParallelZipCompressor {
 
 			File input = in.getCanonicalFile();
 
-			Files.walk(input.toPath()
-			).filter(path -> !path.equals(input.toPath()) &&
-					path.toFile().isFile() &&
-					!Utilities.isBlacklisted(input.toPath().relativize(path))
-			).collect(Collectors.toList()).parallelStream().forEach(p -> {
-				ZipArchiveEntry entry = new ZipArchiveEntry(input.toPath().relativize(p).toString());
-				entry.setMethod(ZipEntry.DEFLATED);
-				FileInputStreamSupplier supplier = new FileInputStreamSupplier(p);
-				scatterZipCreator.addArchiveEntry(entry, supplier);
-			});
+			Files.walk(input.toPath())
+					.filter(path -> !path.equals(input.toPath()))
+					.filter(path -> path.toFile().isFile())
+					.filter(path -> !Utilities.isBlacklisted(input.toPath().relativize(path)))
+					.forEach(p -> {
+						ZipArchiveEntry entry = new ZipArchiveEntry(input.toPath().relativize(p).toString());
+						entry.setMethod(ZipEntry.DEFLATED);
+						FileInputStreamSupplier supplier = new FileInputStreamSupplier(p);
+						scatterZipCreator.addArchiveEntry(entry, supplier);
+					});
 
 			scatterZipCreator.writeTo(arc);
 
