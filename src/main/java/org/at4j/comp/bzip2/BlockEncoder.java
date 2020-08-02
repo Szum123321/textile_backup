@@ -179,9 +179,9 @@ final class BlockEncoder
 	{
 		byte[] res = m_scratchpad.m_sequenceMap;
 		byte index = 0;
-		for (int i : symbols)
+		for (byte i : symbols)
 		{
-			res[symbols[i] & 0xFF] = index++;
+			res[i & 0xFF] = index++;
 		}
 		return res;
 	}
@@ -754,7 +754,7 @@ final class BlockEncoder
 	private void writeBlockHeader(final int blockChecksum, int bwFirstPointer, boolean[] seenDifferentBytes, MTFAndRLEResult mtfrle, HuffmanTreesAndUsage htau) throws IOException
 	{
 		// Block magic
-		for (int b : BLOCK_MAGIC) {
+		for (byte b : BLOCK_MAGIC) {
 			m_out.writeBitsLittleEndian(b & 0xFF, 8);
 		}
 		// Checksum

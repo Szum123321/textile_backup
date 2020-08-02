@@ -264,6 +264,17 @@ public class BZip2OutputStream extends OutputStream
 	}
 
 	/**
+	 * Close the stream if the client has been sloppy about it.
+	 */
+	@Override
+	protected void finalize() throws Throwable
+	{
+		close();
+		super.finalize();
+	}
+
+
+	/**
 	 * Create a {@link BZip2EncoderExecutorService} that can be shared between
 	 * several {@link BZip2OutputStream}:s to spread the bzip2 encoding work
 	 * over several threads. The created executor service can be passed to the

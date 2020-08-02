@@ -307,7 +307,7 @@ final class BlockOutputStream extends OutputStream
 	@Override
 	public void write(final byte[] data) throws IOException
 	{
-		for (int datum : data) {
+		for (byte datum : data) {
 			write(datum & 0xFF);
 		}
 	}
