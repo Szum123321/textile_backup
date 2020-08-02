@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Iterator;
 
 public class BackupHelper {
 	public static Runnable create(MinecraftServer server, ServerCommandSource ctx, boolean save, String comment) {
@@ -76,35 +76,42 @@ public class BackupHelper {
 			}
 
 			if (TextileBackup.config.backupsToKeep > 0 && root.listFiles().length > TextileBackup.config.backupsToKeep) {
-				AtomicInteger i = new AtomicInteger(root.listFiles().length);
+				int i = root.listFiles().length;
 
-				Arrays.stream(root.listFiles())
+				Iterator<File> it = Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.takeWhile(f -> i.get() > TextileBackup.config.backupsToKeep)
-						.forEach(f -> {
-							if(f.delete())
-								Utilities.info("Deleting: " + f.getName(), ctx);
-							else
-								Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+						.iterator();
 
-							i.getAndDecrement();
-						});
+				while(i > TextileBackup.config.backupsToKeep && it.hasNext()) {
+					File f = it.next();
+
+					if(f.delete()) {
+						Utilities.info("Deleting: " + f.getName(), ctx);
+					} else {
+						Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+					}
+					i--;
+				}
 			}
 
 			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
-				Arrays.stream(root.listFiles())
+				Iterator<File> it =Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.takeWhile(f -> FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize)
-						.forEach(f -> {
-							if(f.delete())
-								Utilities.info("Deleting: " + f.getName(), ctx);
-							else
-								Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
-						});
+						.iterator();
+
+				while(FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize && it.hasNext()) {
+					File f = it.next();
+
+					if(f.delete()) {
+						Utilities.info("Deleting: " + f.getName(), ctx);
+					} else {
+						Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+					}
+				}
 			}
 		}
 	}
