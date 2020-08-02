@@ -29,26 +29,26 @@ public class ParallelGzipCompressor {
 
 			File input = in.getCanonicalFile();
 
-			Files.walk(input.toPath()
-			).filter(path -> !path.equals(input.toPath()) &&
-					path.toFile().isFile() &&
-					!Utilities.isBlacklisted(input.toPath().relativize(path))
-			).forEach(path -> {
-				File file = path.toAbsolutePath().toFile();
+			Files.walk(input.toPath())
+					.filter(path -> !path.equals(input.toPath()))
+					.filter(path -> path.toFile().isFile())
+					.filter(path -> !Utilities.isBlacklisted(input.toPath().relativize(path)))
+					.forEach(path -> {
+						File file = path.toAbsolutePath().toFile();
 
-				try (FileInputStream fin = new FileInputStream(file);
-					 BufferedInputStream bfin = new BufferedInputStream(fin)) {
-					ArchiveEntry entry = arc.createArchiveEntry(file, input.toPath().relativize(path).toString());
+						try (FileInputStream fin = new FileInputStream(file);
+							 BufferedInputStream bfin = new BufferedInputStream(fin)) {
+							ArchiveEntry entry = arc.createArchiveEntry(file, input.toPath().relativize(path).toString());
 
-					arc.putArchiveEntry(entry);
-					IOUtils.copy(bfin, arc);
+							arc.putArchiveEntry(entry);
+							IOUtils.copy(bfin, arc);
 
-					arc.closeArchiveEntry();
-				} catch (IOException e) {
-					TextileBackup.LOGGER.error("An exception occurred while trying to compress file: " + path, e);
-					Utilities.sendError("Something went wrong while compressing files!", ctx);
-				}
-			});
+							arc.closeArchiveEntry();
+						} catch (IOException e) {
+							TextileBackup.LOGGER.error("An exception occurred while trying to compress file: " + path, e);
+							Utilities.sendError("Something went wrong while compressing files!", ctx);
+						}
+					});
 
 			arc.finish();
 		} catch (IOException e) {
