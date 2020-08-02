@@ -64,29 +64,33 @@ public class Utilities {
 	public static Optional<LocalDateTime> getFileCreationTime(File file) {
 		LocalDateTime creationTime = null;
 
-		try {
-			FileTime fileTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
-			creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
-		} catch (IOException ignored) {}
+		if(getFileExtension(file).isPresent()) {
+			String fileExtension = getFileExtension(file).get();
 
-		if(creationTime == null) {
 			try {
 				creationTime = LocalDateTime.from(
 						Utilities.getDateTimeFormatter().parse(
-								file.getName().split(getFileExtension(file).orElseThrow())[0].split("#")[0]
+								file.getName().split(fileExtension)[0].split("#")[0]
 						)
 				);
-			} catch (Exception ignored2) {}
+			} catch (Exception ignored) {}
+
+			if(creationTime == null) {
+				try {
+					creationTime = LocalDateTime.from(
+							Utilities.getBackupDateTimeFormatter().parse(
+									file.getName().split(fileExtension)[0].split("#")[0]
+							)
+					);
+				} catch (Exception ignored2){}
+			}
 		}
 
 		if(creationTime == null) {
 			try {
-				creationTime = LocalDateTime.from(
-						Utilities.getBackupDateTimeFormatter().parse(
-								file.getName().split(getFileExtension(file).orElseThrow())[0].split("#")[0]
-						)
-				);
-			} catch (Exception ignored3){}
+				FileTime fileTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+				creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
+			} catch (IOException ignored3) {}
 		}
 
 		return Optional.ofNullable(creationTime);
