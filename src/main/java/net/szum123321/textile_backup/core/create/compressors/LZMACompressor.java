@@ -1,31 +1,29 @@
-package net.szum123321.textile_backup.compressors;
+package net.szum123321.textile_backup.core.create.compressors;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.at4j.comp.bzip2.BZip2OutputStream;
-import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
+
 
 import java.io.*;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 
-public class ParallelBZip2Compressor {
-	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
+public class LZMACompressor {
+	public static void createArchive(File in, File out, ServerCommandSource ctx) {
 		Utilities.info("Starting compression...", ctx);
-
-		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit);
 
 		Instant start = Instant.now();
 
-		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
-			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-			 BZip2OutputStream bZip2OutputStream = new BZip2OutputStream(bufferedOutputStream, settings);
-			 TarArchiveOutputStream arc = new TarArchiveOutputStream(bZip2OutputStream)) {
+		try (FileOutputStream outStream = new FileOutputStream(out);
+			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
+			 XZCompressorOutputStream compressorStream = new XZCompressorOutputStream(bufferedOutputStream);// CompressorStreamClass.getConstructor().newInstance(bufferedOutputStream);
+			 TarArchiveOutputStream arc = new TarArchiveOutputStream(compressorStream)) {
 
 			arc.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			arc.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);

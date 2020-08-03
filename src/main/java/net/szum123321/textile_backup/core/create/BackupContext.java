@@ -1,4 +1,4 @@
-package net.szum123321.textile_backup.core;
+package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -107,11 +107,12 @@ public class BackupContext {
     }
 
     public enum BackupInitiator {
-        Player ("Player", "by: "),
-        ServerConsole ("Server Console", "from: "),
-        Timer ("Timer", "by: "),
-        Shutdown ("Server Shutdown", "by: "),
-        Null ("Null (That shouldn't have happened)", "form: ");
+        Player ("Player", "by"),
+        ServerConsole ("Server Console", "from"),
+        Timer ("Timer", "by"),
+        Shutdown ("Server Shutdown", "by"),
+        Restore ("Backup Restore", "by"),
+        Null ("Null (That shouldn't have happened)", "form");
 
         private final String name;
         private final String prefix;
@@ -126,7 +127,7 @@ public class BackupContext {
         }
 
         public String getPrefix() {
-            return prefix;
+            return prefix + ": ";
         }
     }
 }

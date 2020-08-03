@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
-import net.szum123321.textile_backup.core.BackupHelper;
+import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.Utilities;
 
 public class CleanupCommand {

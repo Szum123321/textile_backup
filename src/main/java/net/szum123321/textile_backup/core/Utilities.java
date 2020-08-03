@@ -1,9 +1,13 @@
 package net.szum123321.textile_backup.core;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
@@ -45,29 +49,63 @@ public class Utilities {
 		return System.getProperty("os.name").toLowerCase().contains("win");
 	}
 
-	public static Optional<String> getFileExtension(File f) {
-		String[] parts = f.getName().split("\\.");
+	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(File f) {
+		return getFileExtension(f.getName());
+	}
+
+	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(String fileName) {
+		String[] parts = fileName.split("\\.");
 
 		switch (parts[parts.length - 1]) {
 			case "zip":
-				return Optional.of(ConfigHandler.ArchiveFormat.ZIP.getExtension());
+				return Optional.of(ConfigHandler.ArchiveFormat.ZIP);
 			case "bz2":
-				return Optional.of(ConfigHandler.ArchiveFormat.BZIP2.getExtension());
+				return Optional.of(ConfigHandler.ArchiveFormat.BZIP2);
 			case "gz":
-				return Optional.of(ConfigHandler.ArchiveFormat.GZIP.getExtension());
+				return Optional.of(ConfigHandler.ArchiveFormat.GZIP);
 			case "xz":
-				return Optional.of(ConfigHandler.ArchiveFormat.LZMA.getExtension());
+				return Optional.of(ConfigHandler.ArchiveFormat.LZMA);
 
 			default:
 				return Optional.empty();
 		}
 	}
 
+	public static File getBackupRootPath(String worldName) {
+		File path = new File(TextileBackup.config.path).getAbsoluteFile();
+
+		if (TextileBackup.config.perWorldBackup)
+			path = path.toPath().resolve(worldName).toFile();
+
+		if (!path.exists()) {
+			try {
+				path.mkdirs();
+			} catch (Exception e) {
+				TextileBackup.LOGGER.error("An exception occurred!", e);
+
+				return FabricLoader
+						.getInstance()
+						.getGameDirectory()
+						.toPath()
+						.resolve(TextileBackup.config.path)
+						.toFile();
+			}
+		}
+
+		return path;
+	}
+
+	public static File getWorldFolder(MinecraftServer server) {
+		return ((MinecraftServerSessionAccessor)server)
+				.getSession()
+				.getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+	}
+
 	public static Optional<LocalDateTime> getFileCreationTime(File file) {
 		LocalDateTime creationTime = null;
 
 		if(getFileExtension(file).isPresent()) {
-			String fileExtension = getFileExtension(file).get();
+			String fileExtension = getFileExtension(file).get().getString();
 
 			try {
 				creationTime = LocalDateTime.from(

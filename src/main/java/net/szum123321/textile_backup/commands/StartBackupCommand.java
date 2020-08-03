@@ -24,8 +24,8 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.core.BackupContext;
-import net.szum123321.textile_backup.core.BackupHelper;
+import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.BackupHelper;
 
 public class StartBackupCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {

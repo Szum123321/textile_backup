@@ -1,4 +1,4 @@
-package net.szum123321.textile_backup.core;
+package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.TextileBackup;

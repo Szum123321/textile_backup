@@ -117,7 +117,7 @@ public class ConfigHandler {
             this.extension = extension;
         }
 
-        public String getExtension() {
+        public String getString() {
             return extension;
         }
     }

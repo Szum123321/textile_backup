@@ -26,17 +26,16 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.commands.BlacklistCommand;
-import net.szum123321.textile_backup.commands.CleanupCommand;
-import net.szum123321.textile_backup.commands.StartBackupCommand;
-import net.szum123321.textile_backup.commands.WhitelistCommand;
-import net.szum123321.textile_backup.core.BackupScheduler;
+import net.szum123321.textile_backup.commands.*;
+import net.szum123321.textile_backup.core.create.BackupScheduler;
+import net.szum123321.textile_backup.core.restore.RestoreHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_ID = "textile_backup";
@@ -46,6 +45,7 @@ public class TextileBackup implements ModInitializer {
 
     public static final BackupScheduler scheduler = new BackupScheduler();
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
+    public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
 
     @Override
     public void onInitialize() {
@@ -85,6 +85,7 @@ public class TextileBackup implements ModInitializer {
                         .then(CleanupCommand.register())
                         .then(StartBackupCommand.register())
                         .then(WhitelistCommand.register())
+                        .then(RestoreBackupCommand.register())
         ));
     }
 }

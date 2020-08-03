@@ -16,19 +16,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-package net.szum123321.textile_backup.core;
+package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.compressors.LZMACompressor;
-import net.szum123321.textile_backup.compressors.ParallelBZip2Compressor;
-import net.szum123321.textile_backup.compressors.ParallelGzipCompressor;
-import net.szum123321.textile_backup.compressors.ParallelZipCompressor;
-import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
+import net.szum123321.textile_backup.core.create.compressors.LZMACompressor;
+import net.szum123321.textile_backup.core.create.compressors.ParallelBZip2Compressor;
+import net.szum123321.textile_backup.core.create.compressors.ParallelGzipCompressor;
+import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
+import net.szum123321.textile_backup.core.Utilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,13 +46,11 @@ public class MakeBackupRunnable implements Runnable {
     public void run() {
         Utilities.info("Starting backup", commandSource);
 
-        File world = ((MinecraftServerSessionAccessor)server)
-                .getSession()
-                .getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+        File world = Utilities.getWorldFolder(server);
 
         TextileBackup.LOGGER.trace("Minecraft world is: {}", world);
 
-        File outFile = BackupHelper
+        File outFile = Utilities
                 .getBackupRootPath(Utilities.getLevelName(server))
                 .toPath()
                 .resolve(getFileName())
@@ -118,6 +113,6 @@ public class MakeBackupRunnable implements Runnable {
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.config.format.getExtension();
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.config.format.getString();
     }
 }

@@ -16,11 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-package net.szum123321.textile_backup.core;
+package net.szum123321.textile_backup.core.create;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -59,7 +59,7 @@ public class BackupHelper {
 	}
 
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
-		File root = getBackupRootPath(worldName);
+		File root = Utilities.getBackupRootPath(worldName);
 		AtomicInteger deletedFiles = new AtomicInteger();
 
 		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
@@ -127,28 +127,4 @@ public class BackupHelper {
 	}
 
 	private static boolean isFileOk(File f) {return f.exists() && f.isFile(); }
-
-	public static File getBackupRootPath(String worldName) {
-		File path = new File(TextileBackup.config.path).getAbsoluteFile();
-
-		if (TextileBackup.config.perWorldBackup)
-			path = path.toPath().resolve(worldName).toFile();
-
-		if (!path.exists()) {
-			try {
-				path.mkdirs();
-			} catch (Exception e) {
-				TextileBackup.LOGGER.error("An exception occurred!", e);
-
-				return FabricLoader
-						.getInstance()
-						.getGameDirectory()
-						.toPath()
-						.resolve(TextileBackup.config.path)
-						.toFile();
-			}
-		}
-
-		return path;
-	}
 }
