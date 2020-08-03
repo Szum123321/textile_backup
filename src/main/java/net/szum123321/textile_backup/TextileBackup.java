@@ -28,9 +28,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.*;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
-import net.szum123321.textile_backup.core.restore.RestoreHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ParameterizedMessageFactory;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -39,9 +39,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_ID = "textile_backup";
-    public static final Logger LOGGER = LogManager.getFormatterLogger("Textile Backup");
+    public static final Logger LOGGER = LogManager.getLogger("Textile Backup", ParameterizedMessageFactory.INSTANCE);
 
-    public static ConfigHandler config;
+    public static ConfigHandler CONFIG;
 
     public static final BackupScheduler scheduler = new BackupScheduler();
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -49,16 +49,16 @@ public class TextileBackup implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        config = ConfigManager.loadConfig(ConfigHandler.class);
+        CONFIG = ConfigManager.loadConfig(ConfigHandler.class);
 
-        Optional<String> errorMessage = config.sanitize();
+        Optional<String> errorMessage = CONFIG.sanitize();
 
         if(errorMessage.isPresent()) {
-            LOGGER.fatal("TextileBackup config file has wrong settings! \n" + errorMessage.get());
+            LOGGER.fatal("TextileBackup config file has wrong settings! \n {}", errorMessage.get());
             System.exit(1);
         }
 
-        if(TextileBackup.config.backupInterval > 0)
+        if(TextileBackup.CONFIG.backupInterval > 0)
             ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
 
         ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
@@ -72,11 +72,11 @@ public class TextileBackup implements ModInitializer {
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
                                     try {
-                                        return ((config.playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
-                                                ctx.hasPermissionLevel(config.permissionLevel)) &&
-                                                !config.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
+                                        return ((CONFIG.playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
+                                                ctx.hasPermissionLevel(CONFIG.permissionLevel)) &&
+                                                !CONFIG.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
                                                 (ctx.getMinecraftServer().isSinglePlayer() &&
-                                                        config.alwaysSingleplayerAllowed);
+                                                        CONFIG.alwaysSingleplayerAllowed);
                                     } catch (Exception ignored) { //Command was called from server console.
                                         return true;
                                     }
@@ -86,6 +86,7 @@ public class TextileBackup implements ModInitializer {
                         .then(StartBackupCommand.register())
                         .then(WhitelistCommand.register())
                         .then(RestoreBackupCommand.register())
+                        .then(ListBackupsCommand.register())
         ));
     }
 }

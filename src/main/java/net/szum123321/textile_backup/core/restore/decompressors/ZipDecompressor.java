@@ -1,3 +1,21 @@
+/*
+    A simple backup mod for Fabric
+    Copyright (C) 2020  Szum123321
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 package net.szum123321.textile_backup.core.restore.decompressors;
 
 import net.szum123321.textile_backup.TextileBackup;
@@ -12,17 +30,18 @@ import java.time.Duration;
 import java.time.Instant;
 
 public class ZipDecompressor {
-    public static void decompress(File archiveFile, File target) {
+    public static void decompress(FileInputStream fileInputStream, File target) {
         Instant start = Instant.now();
 
-        try (FileInputStream inputStream = new FileInputStream(archiveFile);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
              ZipArchiveInputStream zipInputStream = new ZipArchiveInputStream((bufferedInputStream))) {
             ZipArchiveEntry entry;
 
             while ((entry = zipInputStream.getNextZipEntry()) != null) {
-                if(!zipInputStream.canReadEntryData(entry))
+                if(!zipInputStream.canReadEntryData(entry)){
+                    TextileBackup.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
+                }
 
                 File file = target.toPath().resolve(entry.getName()).toFile();
 
@@ -38,7 +57,7 @@ public class ZipDecompressor {
                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
                         IOUtils.copy(zipInputStream, bufferedOutputStream);
                     } catch (IOException e) {
-                        TextileBackup.LOGGER.error("An exception occurred while trying to compress file: " + file.getName(), e);
+                        TextileBackup.LOGGER.error("An exception occurred while trying to decompress file: " + file.getName(), e);
                     }
                 }
             }

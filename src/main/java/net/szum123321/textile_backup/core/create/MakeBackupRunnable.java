@@ -72,15 +72,15 @@ public class MakeBackupRunnable implements Runnable {
 
         int coreCount;
 
-        if(TextileBackup.config.compressionCoreCountLimit <= 0) {
+        if(TextileBackup.CONFIG.compressionCoreCountLimit <= 0) {
             coreCount = Runtime.getRuntime().availableProcessors();
         } else {
-            coreCount = Math.min(TextileBackup.config.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
+            coreCount = Math.min(TextileBackup.CONFIG.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
         }
 
         TextileBackup.LOGGER.trace("Running compression on {} threads. Available cores = {}", coreCount, Runtime.getRuntime().availableProcessors());
 
-        switch (TextileBackup.config.format) {
+        switch (TextileBackup.CONFIG.format) {
             case ZIP:
                 ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
                 break;
@@ -98,7 +98,7 @@ public class MakeBackupRunnable implements Runnable {
                 break;
 
             default:
-                TextileBackup.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", TextileBackup.config.format);
+                TextileBackup.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", TextileBackup.CONFIG.format);
                 Utilities.sendError("Error! No correct compression format specified! Using default compressor!", commandSource);
 
                 ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
@@ -113,6 +113,6 @@ public class MakeBackupRunnable implements Runnable {
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.config.format.getString();
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.CONFIG.format.getString();
     }
 }

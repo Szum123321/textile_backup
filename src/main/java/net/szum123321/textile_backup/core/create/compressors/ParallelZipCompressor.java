@@ -36,7 +36,7 @@ public class ParallelZipCompressor {
 
 			arc.setMethod(ZipArchiveOutputStream.DEFLATED);
 			arc.setUseZip64(Zip64Mode.AsNeeded);
-			arc.setLevel(TextileBackup.config.compression);
+			arc.setLevel(TextileBackup.CONFIG.compression);
 			arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
 			File input = in.getCanonicalFile();

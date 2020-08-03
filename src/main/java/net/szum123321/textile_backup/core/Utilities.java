@@ -1,3 +1,21 @@
+/*
+    A simple backup mod for Fabric
+    Copyright (C) 2020  Szum123321
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 package net.szum123321.textile_backup.core;
 
 import net.fabricmc.loader.api.FabricLoader;
@@ -37,7 +55,7 @@ public class Utilities {
 			}
 		}
 
-		for(String i : TextileBackup.config.fileBlacklist) {
+		for(String i : TextileBackup.CONFIG.fileBlacklist) {
 			if(path.startsWith(i))
 				return true;
 		}
@@ -72,9 +90,9 @@ public class Utilities {
 	}
 
 	public static File getBackupRootPath(String worldName) {
-		File path = new File(TextileBackup.config.path).getAbsoluteFile();
+		File path = new File(TextileBackup.CONFIG.path).getAbsoluteFile();
 
-		if (TextileBackup.config.perWorldBackup)
+		if (TextileBackup.CONFIG.perWorldBackup)
 			path = path.toPath().resolve(worldName).toFile();
 
 		if (!path.exists()) {
@@ -87,7 +105,7 @@ public class Utilities {
 						.getInstance()
 						.getGameDirectory()
 						.toPath()
-						.resolve(TextileBackup.config.path)
+						.resolve(TextileBackup.CONFIG.path)
 						.toFile();
 			}
 		}
@@ -137,8 +155,8 @@ public class Utilities {
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter(){
-		if(!TextileBackup.config.dateTimeFormat.equals(""))
-			return DateTimeFormatter.ofPattern(TextileBackup.config.dateTimeFormat);
+		if(!TextileBackup.CONFIG.dateTimeFormat.equals(""))
+			return DateTimeFormatter.ofPattern(TextileBackup.CONFIG.dateTimeFormat);
 		else
 			return getBackupDateTimeFormatter();
 	}
@@ -164,7 +182,7 @@ public class Utilities {
 		if(ctx != null && ctx.getEntity() != null)
 			ctx.sendFeedback(new LiteralText(s), false);
 
-		if(TextileBackup.config.log)
+		if(TextileBackup.CONFIG.log)
 			TextileBackup.LOGGER.info(s);
 	}
 

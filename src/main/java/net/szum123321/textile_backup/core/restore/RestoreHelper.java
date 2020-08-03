@@ -1,3 +1,21 @@
+/*
+    A simple backup mod for Fabric
+    Copyright (C) 2020  Szum123321
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
@@ -14,10 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class RestoreHelper {
-    public static Runnable create(LocalDateTime backupTime, MinecraftServer server) {
-        server.getPlayerManager().getPlayerList()
-                .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in few moments!"), false));
-
+    public static Thread create(LocalDateTime backupTime, MinecraftServer server, String comment) {
         File backupFile = Arrays.stream(Utilities.getBackupRootPath(Utilities.getLevelName(server))
                 .listFiles())
                 .filter(file -> Utilities.getFileCreationTime(file).isPresent())
@@ -25,24 +40,12 @@ public class RestoreHelper {
                 .findFirst()
                 .orElseThrow();
 
-        TextileBackup.LOGGER.info("Restoring: {}", backupFile.getName());
+        server.getPlayerManager().getPlayerList()
+                .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in " + TextileBackup.CONFIG.restoreDelay + " seconds!"), false));
 
         TextileBackup.globalShutdownBackupFlag.set(false);
 
-        BackupHelper.create(
-                new BackupContext.Builder()
-                        .setServer(server)
-                        .setInitiator(BackupContext.BackupInitiator.Restore)
-                        .setComment("Old_World")
-                        .setSave()
-                        .build()
-        ).run();
-
-        TextileBackup.LOGGER.info("Shutting down server...");
-
-        server.stop(false);
-
-        return new RestoreBackupRunnable(server, backupFile);
+        return new Thread(new RestoreBackupRunnable(server, backupFile, comment));
     }
 
     public static List<RestoreableFile> getAvailableBackups(MinecraftServer server) {
@@ -61,8 +64,8 @@ public class RestoreHelper {
         private final String comment;
 
         protected RestoreableFile(File file) {
-            String extension = Utilities.getFileExtension(file).get().getString();
-            this.creationTime = Utilities.getFileCreationTime(file).get();
+            String extension = Utilities.getFileExtension(file).orElseThrow().getString();
+            this.creationTime = Utilities.getFileCreationTime(file).orElseThrow();
 
             final String filename = file.getName();
 

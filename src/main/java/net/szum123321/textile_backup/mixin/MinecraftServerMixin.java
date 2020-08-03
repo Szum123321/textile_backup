@@ -19,6 +19,7 @@
 package net.szum123321.textile_backup.mixin;
 
 import net.minecraft.server.MinecraftServer;
+import net.szum123321.textile_backup.LivingServer;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
@@ -28,10 +29,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin {
+public class MinecraftServerMixin implements LivingServer {
+    private boolean isAlive = true;
+
     @Inject(method = "shutdown", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/MinecraftServer;save(ZZZ)Z"))
     public void onFinalWorldSave(CallbackInfo ci) {
-        if (TextileBackup.config.shutdownBackup && TextileBackup.globalShutdownBackupFlag.get())
+        if (TextileBackup.CONFIG.shutdownBackup && TextileBackup.globalShutdownBackupFlag.get())
             TextileBackup.executorService.submit(
                     BackupHelper.create(
                         new BackupContext.Builder()
@@ -41,5 +44,12 @@ public abstract class MinecraftServerMixin {
                                 .build()
                         )
             );
+
+        isAlive = false;
+    }
+
+    @Override
+    public boolean isAlive() {
+        return isAlive;
     }
 }

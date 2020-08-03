@@ -63,13 +63,13 @@ public class BackupHelper {
 		AtomicInteger deletedFiles = new AtomicInteger();
 
 		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
-			if (TextileBackup.config.maxAge > 0) { // delete files older that configured
+			if (TextileBackup.CONFIG.maxAge > 0) { // delete files older that configured
 				final LocalDateTime now = LocalDateTime.now();
 
 				Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())  // We check if we can get file's creation date so that the next line won't throw an exception
-						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > TextileBackup.config.maxAge)
+						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > TextileBackup.CONFIG.maxAge)
 						.forEach(f -> {
 							if(f.delete()) {
 								Utilities.info("Deleting: " + f.getName(), ctx);
@@ -80,7 +80,7 @@ public class BackupHelper {
 						});
 			}
 
-			if (TextileBackup.config.backupsToKeep > 0 && root.listFiles().length > TextileBackup.config.backupsToKeep) {
+			if (TextileBackup.CONFIG.backupsToKeep > 0 && root.listFiles().length > TextileBackup.CONFIG.backupsToKeep) {
 				int i = root.listFiles().length;
 
 				Iterator<File> it = Arrays.stream(root.listFiles())
@@ -89,7 +89,7 @@ public class BackupHelper {
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
-				while(i > TextileBackup.config.backupsToKeep && it.hasNext()) {
+				while(i > TextileBackup.CONFIG.backupsToKeep && it.hasNext()) {
 					File f = it.next();
 
 					if(f.delete()) {
@@ -103,14 +103,14 @@ public class BackupHelper {
 				}
 			}
 
-			if (TextileBackup.config.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize) {
+			if (TextileBackup.CONFIG.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.CONFIG.maxSize) {
 				Iterator<File> it = Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
-				while(FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.config.maxSize && it.hasNext()) {
+				while(FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.CONFIG.maxSize && it.hasNext()) {
 					File f = it.next();
 
 					if(f.delete()) {

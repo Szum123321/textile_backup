@@ -40,7 +40,7 @@ public class BlacklistCommand {
 
 		builder.append("Currently on the blacklist are: ");
 
-		for(String name : TextileBackup.config.playerBlacklist){
+		for(String name : TextileBackup.CONFIG.playerBlacklist){
 			builder.append(name);
 			builder.append(", ");
 		}
@@ -53,11 +53,11 @@ public class BlacklistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(TextileBackup.config.playerBlacklist.contains(player.getEntityName())) {
+		if(TextileBackup.CONFIG.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already blacklisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.config.playerBlacklist.add(player.getEntityName());
-			ConfigManager.saveConfig(TextileBackup.config);
+			TextileBackup.CONFIG.playerBlacklist.add(player.getEntityName());
+			ConfigManager.saveConfig(TextileBackup.CONFIG);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -65,8 +65,8 @@ public class BlacklistCommand {
 			builder.append(player.getEntityName());
 			builder.append(" added to the blacklist");
 
-			if(TextileBackup.config.playerWhitelist.contains(player.getEntityName())){
-				TextileBackup.config.playerWhitelist.remove(player.getEntityName());
+			if(TextileBackup.CONFIG.playerWhitelist.contains(player.getEntityName())){
+				TextileBackup.CONFIG.playerWhitelist.remove(player.getEntityName());
 				builder.append(" and removed form the whitelist");
 			}
 
@@ -83,11 +83,11 @@ public class BlacklistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!TextileBackup.config.playerBlacklist.contains(player.getEntityName())) {
+		if(!TextileBackup.CONFIG.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was blacklisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.config.playerBlacklist.remove(player.getEntityName());
-			ConfigManager.saveConfig(TextileBackup.config);
+			TextileBackup.CONFIG.playerBlacklist.remove(player.getEntityName());
+			ConfigManager.saveConfig(TextileBackup.CONFIG);
 
 			StringBuilder builder = new StringBuilder();
 

@@ -92,6 +92,12 @@ public class ConfigHandler {
             "For more info: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
 
+    @Comment("\nShould old world be backed-up?\n")
+    public boolean backupOldWorlds = true;
+
+    @Comment("\nDelay between typing-in /backup restore and it actually starting\n")
+    public int restoreDelay = 30;
+
     public Optional<String> sanitize() {
         if(compressionCoreCountLimit > Runtime.getRuntime().availableProcessors())
             return Optional.of("compressionCoreCountLimit is too big! Your system only has: " + Runtime.getRuntime().availableProcessors() + " cores!");

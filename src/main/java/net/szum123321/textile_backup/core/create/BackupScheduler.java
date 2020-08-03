@@ -17,7 +17,7 @@ public class BackupScheduler {
     public void tick(MinecraftServer server) {
         long now = Instant.now().getEpochSecond();
 
-        if(TextileBackup.config.doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
+        if(TextileBackup.CONFIG.doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
             if(scheduled) {
                 if(nextBackup <= now) {
                     TextileBackup.executorService.submit(
@@ -30,13 +30,13 @@ public class BackupScheduler {
                             )
                     );
 
-                    nextBackup = now + TextileBackup.config.backupInterval;
+                    nextBackup = now + TextileBackup.CONFIG.backupInterval;
                 }
             } else {
-                nextBackup = now + TextileBackup.config.backupInterval;
+                nextBackup = now + TextileBackup.CONFIG.backupInterval;
                 scheduled = true;
             }
-        } else if(!TextileBackup.config.doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
+        } else if(!TextileBackup.CONFIG.doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
             if(scheduled && nextBackup <= now) {
                 TextileBackup.executorService.submit(
                         BackupHelper.create(
