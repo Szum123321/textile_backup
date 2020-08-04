@@ -22,13 +22,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
-import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.BackupHelper;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 public class RestoreHelper {
@@ -38,7 +37,7 @@ public class RestoreHelper {
                 .filter(file -> Utilities.getFileCreationTime(file).isPresent())
                 .filter(file -> Utilities.getFileCreationTime(file).get().equals(backupTime))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new NoSuchElementException("Couldn't find given backup file!"));
 
         server.getPlayerManager().getPlayerList()
                 .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in " + TextileBackup.CONFIG.restoreDelay + " seconds!"), false));
@@ -64,8 +63,8 @@ public class RestoreHelper {
         private final String comment;
 
         protected RestoreableFile(File file) {
-            String extension = Utilities.getFileExtension(file).orElseThrow().getString();
-            this.creationTime = Utilities.getFileCreationTime(file).orElseThrow();
+            String extension = Utilities.getFileExtension(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file extention")).getString();
+            this.creationTime = Utilities.getFileCreationTime(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file creation time."));
 
             final String filename = file.getName();
 

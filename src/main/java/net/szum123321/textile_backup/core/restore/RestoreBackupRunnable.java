@@ -19,7 +19,7 @@
 package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
-import net.szum123321.textile_backup.LivingServer;
+import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
@@ -33,7 +33,7 @@ import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.channels.FileLock;
+import java.util.NoSuchElementException;
 
 public class RestoreBackupRunnable implements Runnable {
     private final MinecraftServer server;
@@ -76,7 +76,7 @@ public class RestoreBackupRunnable implements Runnable {
         try(FileInputStream fileInputStream = new FileInputStream(backupFile)) {
             TextileBackup.LOGGER.info("Starting decompression...");
 
-            switch(Utilities.getFileExtension(backupFile).orElseThrow()) {
+            switch(Utilities.getFileExtension(backupFile).orElseThrow(() -> new NoSuchElementException("Couldn't get file extention!"))) {
                 case ZIP:
                     ZipDecompressor.decompress(fileInputStream, worldFile);
                     break;
@@ -103,10 +103,9 @@ public class RestoreBackupRunnable implements Runnable {
     private void waitDelay() {
         int delay = TextileBackup.CONFIG.restoreDelay;
 
-        while(delay > 0) {
+        if(delay > 0) {
             try {
-                Thread.sleep(1000);
-                delay--;
+                Thread.sleep(1000 * delay);
             } catch (InterruptedException e) {
                 TextileBackup.LOGGER.error("Exception occurred!", e);
             }
