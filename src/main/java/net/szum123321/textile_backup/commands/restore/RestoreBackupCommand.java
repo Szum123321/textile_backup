@@ -1,4 +1,4 @@
-package net.szum123321.textile_backup.commands;
+package net.szum123321.textile_backup.commands.restore;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.arguments.StringArgumentType;
