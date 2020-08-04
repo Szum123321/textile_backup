@@ -32,21 +32,27 @@ public class ConfigHandler {
             "When set to 0 backups will not be performed automatically\n")
     public long backupInterval = 3600;
 
+    @Comment("\nDelay in seconds between typing-in /backup restore and it actually starting\n")
+    public int restoreDelay = 30;
+
     @Comment("\nShould backups be done even if there are no players?\n")
     public boolean doBackupsOnEmptyServer = false;
 
     @Comment("\nShould backup be made on server shutdown?\n")
     public boolean shutdownBackup = true;
 
+    @Comment("\nShould old world be backed-up?\n")
+    public boolean backupOldWorlds = true;
+
+    @Comment("\nShould every world has its won backup folder?\n")
+    public boolean perWorldBackup = true;
+
     @Comment("\nA path to backup folder\n")
     public String path = "backup/";
 
-    @Comment("\nThis setting allows you to exclude files form being backuped.\n"+
+    @Comment("\nThis setting allows you to exclude files form being backedup.\n"+
                 "Be very careful when setting it, as it is easy corrupt your world!\n")
     public Set<String> fileBlacklist = new HashSet<>();
-
-    @Comment("\nShould every world has its won backup folder?\n")
-    public boolean perWorldBackup = false;
 
     @Comment("\nMaximum number of backups to keep. If set to 0 then no backup will be deleted based their amount\n")
     public int backupsToKeep = 10;
@@ -59,7 +65,10 @@ public class ConfigHandler {
     public int maxSize = 0;
 
     @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
-    public int compression = 6;
+    public int compression = 7;
+
+    @Comment("\nLimit how many cores can be used for compression.\n")
+    public int compressionCoreCountLimit = 0;
 
     @Comment(value = "\nAvailable formats are:\n" +
                     "ZIP - normal zip archive using standard deflate compression\n" +
@@ -67,12 +76,6 @@ public class ConfigHandler {
                     "BZIP2 - tar.bz2 archive using bzip2 compression\n" +
                     "LZMA - tar.xz using lzma compression\n")
     public ArchiveFormat format = ArchiveFormat.ZIP;
-
-    @Comment("\nLimit how many cores can be used for compression.\n")
-    public int compressionCoreCountLimit = 0;
-
-    @Comment("\nPrint info to game out\n")
-    public boolean log = true;
 
     @Comment("\nMinimal permission level required to run commands\n")
     public int permissionLevel = 4;
@@ -91,12 +94,6 @@ public class ConfigHandler {
             "':', '\\', etc...\n" +
             "For more info: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html\n")
     public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
-
-    @Comment("\nShould old world be backed-up?\n")
-    public boolean backupOldWorlds = true;
-
-    @Comment("\nDelay between typing-in /backup restore and it actually starting\n")
-    public int restoreDelay = 30;
 
     public Optional<String> sanitize() {
         if(compressionCoreCountLimit > Runtime.getRuntime().availableProcessors())

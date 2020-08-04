@@ -182,8 +182,7 @@ public class Utilities {
 		if(ctx != null && ctx.getEntity() != null)
 			ctx.sendFeedback(new LiteralText(s), false);
 
-		if(TextileBackup.CONFIG.log)
-			TextileBackup.LOGGER.info(s);
+		TextileBackup.LOGGER.info(s);
 	}
 
 	public static void sendError(String message, ServerCommandSource source) {
