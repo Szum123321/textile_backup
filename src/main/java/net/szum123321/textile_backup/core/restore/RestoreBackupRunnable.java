@@ -48,9 +48,6 @@ public class RestoreBackupRunnable implements Runnable {
 
     @Override
     public void run() {
-        TextileBackup.LOGGER.info("Starting countdown...");
-        waitDelay();
-
         TextileBackup.LOGGER.info("Shutting down server...");
         server.stop(false);
         awaitServerShutdown();
@@ -98,18 +95,6 @@ public class RestoreBackupRunnable implements Runnable {
         }
 
         TextileBackup.LOGGER.info("Done.");
-    }
-
-    private void waitDelay() {
-        int delay = TextileBackup.CONFIG.restoreDelay;
-
-        if(delay > 0) {
-            try {
-                Thread.sleep(1000 * delay);
-            } catch (InterruptedException e) {
-                TextileBackup.LOGGER.error("Exception occurred!", e);
-            }
-        }
     }
 
     private void awaitServerShutdown() {

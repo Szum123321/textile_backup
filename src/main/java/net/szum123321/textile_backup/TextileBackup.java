@@ -21,6 +21,7 @@ package net.szum123321.textile_backup;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.cottonmc.cotton.config.ConfigManager;
 
+import io.github.cottonmc.cotton.logging.ModLogger;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -30,9 +31,12 @@ import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
 import net.szum123321.textile_backup.commands.permission.BlacklistCommand;
 import net.szum123321.textile_backup.commands.permission.WhitelistCommand;
+import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
 import net.szum123321.textile_backup.commands.restore.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
+import net.szum123321.textile_backup.core.restore.AwaitThread;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ParameterizedMessageFactory;
@@ -50,7 +54,9 @@ public class TextileBackup implements ModInitializer {
 
     public static final BackupScheduler scheduler = new BackupScheduler();
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
+
     public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
+    public static AwaitThread restoreAwaitThread;
 
     @Override
     public void onInitialize() {
@@ -92,6 +98,7 @@ public class TextileBackup implements ModInitializer {
                         .then(WhitelistCommand.register())
                         .then(RestoreBackupCommand.register())
                         .then(ListBackupsCommand.register())
+                        .then(KillRestoreCommand.register())
         ));
     }
 }

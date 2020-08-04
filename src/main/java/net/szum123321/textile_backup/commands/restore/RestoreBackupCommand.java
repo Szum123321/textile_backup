@@ -11,7 +11,9 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
+import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.restore.AwaitThread;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
 import java.time.LocalDateTime;
@@ -43,7 +45,16 @@ public class RestoreBackupCommand {
         else
             TextileBackup.LOGGER.info("Backup restoration was initiated form Server Console");
 
-        RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), null).start();
+        if(TextileBackup.restoreAwaitThread == null || !TextileBackup.restoreAwaitThread.isRunning()) {
+            TextileBackup.restoreAwaitThread = new AwaitThread(
+                    TextileBackup.CONFIG.restoreDelay,
+                    RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), null)
+            );
+
+            TextileBackup.restoreAwaitThread.start();
+        } else if(TextileBackup.restoreAwaitThread != null && TextileBackup.restoreAwaitThread.isRunning()) {
+            ctx.getSource().sendFeedback(new LiteralText("Someone has already started another restoration."), false);
+        }
 
         return 1;
     }
@@ -59,7 +70,16 @@ public class RestoreBackupCommand {
         else
             TextileBackup.LOGGER.info("Backup restoration was initiated form Server Console");
 
-        RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), comment).start();
+        if(TextileBackup.restoreAwaitThread == null || !TextileBackup.restoreAwaitThread.isRunning()) {
+            TextileBackup.restoreAwaitThread = new AwaitThread(
+                    TextileBackup.CONFIG.restoreDelay,
+                    RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), comment)
+            );
+
+            TextileBackup.restoreAwaitThread.start();
+        } else if(TextileBackup.restoreAwaitThread != null && TextileBackup.restoreAwaitThread.isRunning()) {
+            ctx.getSource().sendFeedback(new LiteralText("Someone has already started another restoration."), false);
+        }
 
         return 1;
     }

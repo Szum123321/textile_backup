@@ -30,7 +30,7 @@ public class ListBackupsCommand {
                         builder.append(iterator.next());
 
                         while(iterator.hasNext()) {
-                            builder.append("\n");
+                            builder.append(",\n");
                             builder.append(iterator.next());
                         }
                     }
