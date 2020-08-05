@@ -49,7 +49,7 @@ public class ListBackupsCommand {
 
                         while(iterator.hasNext()) {
                             builder.append(",\n");
-                            builder.append(iterator.next());
+                            builder.append(iterator.next().getName());
                         }
                     }
 
