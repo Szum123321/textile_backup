@@ -4,6 +4,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -22,13 +23,13 @@ public class CustomLogger {
     private final Logger logger;
 
     private final String prefix;
-    private final MutableText prefixText;
+    private final Text prefixText;
 
     public CustomLogger(String name, String prefix) {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
         this.logger = LogManager.getLogger(name, messageFactory);
         this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = new LiteralText(prefix).formatted(Formatting.AQUA);
+        this.prefixText = new LiteralText(this.prefix).formatted(Formatting.AQUA);
     }
 
     public void log(Level level, String msg, Object... data) {
@@ -85,10 +86,12 @@ public class CustomLogger {
         if(source != null && source.getEntity() != null) {
             LiteralText text = new LiteralText(messageFactory.newMessage(msg, args).getFormattedMessage());
 
-            if(level.intLevel() >= StandardLevel.WARN.intLevel())
+            if(level.intLevel() <= StandardLevel.WARN.intLevel())
                 text.formatted(Formatting.RED);
+            else
+                text.formatted(Formatting.WHITE);
 
-            source.sendFeedback(prefixText.append(text), false);
+            source.sendFeedback(prefixText.shallowCopy().append(text), false);
         }
     }
 
