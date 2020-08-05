@@ -37,6 +37,7 @@ public class AwaitThread extends Thread {
         try {
             Thread.sleep(delay * 1000);
         } catch (InterruptedException e) {
+            Statics.LOGGER.info("Backup restoration cancelled.");
             return;
         }
 

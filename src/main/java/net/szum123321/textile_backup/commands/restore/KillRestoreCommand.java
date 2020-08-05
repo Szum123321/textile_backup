@@ -26,11 +26,15 @@ import net.szum123321.textile_backup.Statics;
 
 public class KillRestoreCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
-        return CommandManager.literal("kill_r")  //TODO: come up with something better
+        return CommandManager.literal("killR")
                 .executes(ctx -> {
                     if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
                         Statics.restoreAwaitThread.interrupt();
                         ctx.getSource().sendFeedback(new LiteralText("Backup restoration successfully stopped"), false);
+                        Statics.LOGGER.info("{} cancelled backup restoration.", ctx.getSource().getEntity() != null ?
+                                "Player: " + ctx.getSource().getName() :
+                                "SERVER"
+                                );
                     } else {
                         ctx.getSource().sendFeedback(new LiteralText("Failed to stop backup restoration"), false);
                     }
