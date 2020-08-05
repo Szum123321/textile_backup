@@ -31,7 +31,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 public class RestoreHelper {
-    public static Thread create(LocalDateTime backupTime, MinecraftServer server, String comment) {
+    public static Runnable create(LocalDateTime backupTime, MinecraftServer server, String comment) {
         File backupFile = Arrays.stream(Utilities.getBackupRootPath(Utilities.getLevelName(server))
                 .listFiles())
                 .filter(file -> Utilities.getFileCreationTime(file).isPresent())
@@ -44,7 +44,7 @@ public class RestoreHelper {
 
         Statics.globalShutdownBackupFlag.set(false);
 
-        return new Thread(new RestoreBackupRunnable(server, backupFile, comment));
+        return new RestoreBackupRunnable(server, backupFile, comment);
     }
 
     public static List<RestoreableFile> getAvailableBackups(MinecraftServer server) {
