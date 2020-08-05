@@ -21,7 +21,6 @@ package net.szum123321.textile_backup;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.cottonmc.cotton.config.ConfigManager;
 
-import io.github.cottonmc.cotton.logging.ModLogger;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -34,60 +33,42 @@ import net.szum123321.textile_backup.commands.permission.WhitelistCommand;
 import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
 import net.szum123321.textile_backup.commands.restore.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
-import net.szum123321.textile_backup.core.create.BackupScheduler;
-import net.szum123321.textile_backup.core.restore.AwaitThread;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.message.ParameterizedMessageFactory;
 
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TextileBackup implements ModInitializer {
-    public static final String MOD_ID = "textile_backup";
-    public static final Logger LOGGER = LogManager.getLogger("Textile Backup", ParameterizedMessageFactory.INSTANCE);
-
-    public static ConfigHandler CONFIG;
-
-    public static final BackupScheduler scheduler = new BackupScheduler();
-    public static ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-    public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
-    public static AwaitThread restoreAwaitThread;
-
     @Override
     public void onInitialize() {
-        CONFIG = ConfigManager.loadConfig(ConfigHandler.class);
+        Statics.LOGGER.info("Starting Textile Backup by Szum123321.");
 
-        Optional<String> errorMessage = CONFIG.sanitize();
+        Statics.CONFIG = ConfigManager.loadConfig(ConfigHandler.class);
+        Optional<String> errorMessage = Statics.CONFIG.sanitize();
 
         if(errorMessage.isPresent()) {
-            LOGGER.fatal("TextileBackup config file has wrong settings! \n {}", errorMessage.get());
+            Statics.LOGGER.fatal("TextileBackup config file has wrong settings! \n {}", errorMessage.get());
             System.exit(1);
         }
 
-        if(TextileBackup.CONFIG.backupInterval > 0)
-            ServerTickEvents.END_SERVER_TICK.register(scheduler::tick);
+        if(Statics.CONFIG.backupInterval > 0)
+            ServerTickEvents.END_SERVER_TICK.register(Statics.scheduler::tick);
 
         ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
-            if(executorService.isShutdown())
-                executorService = Executors.newSingleThreadExecutor();
+            if(Statics.executorService.isShutdown())
+                Statics.executorService = Executors.newSingleThreadExecutor();
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register(ignored -> executorService.shutdown());
+        ServerLifecycleEvents.SERVER_STOPPED.register(ignored -> Statics.executorService.shutdown());
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
                                     try {
-                                        return ((CONFIG.playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
-                                                ctx.hasPermissionLevel(CONFIG.permissionLevel)) &&
-                                                !CONFIG.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
+                                        return ((Statics.CONFIG.playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
+                                                ctx.hasPermissionLevel(Statics.CONFIG.permissionLevel)) &&
+                                                !Statics.CONFIG.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
                                                 (ctx.getMinecraftServer().isSinglePlayer() &&
-                                                        CONFIG.alwaysSingleplayerAllowed);
+                                                        Statics.CONFIG.alwaysSingleplayerAllowed);
                                     } catch (Exception ignored) { //Command was called from server console.
                                         return true;
                                     }

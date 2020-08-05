@@ -10,8 +10,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
-import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.Statics;
 
 public class BlacklistCommand {
 	public static LiteralArgumentBuilder<ServerCommandSource> register() {
@@ -40,7 +39,7 @@ public class BlacklistCommand {
 
 		builder.append("Currently on the blacklist are: ");
 
-		for(String name : TextileBackup.CONFIG.playerBlacklist){
+		for(String name : Statics.CONFIG.playerBlacklist){
 			builder.append(name);
 			builder.append(", ");
 		}
@@ -53,11 +52,11 @@ public class BlacklistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(TextileBackup.CONFIG.playerBlacklist.contains(player.getEntityName())) {
+		if(Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already blacklisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.CONFIG.playerBlacklist.add(player.getEntityName());
-			ConfigManager.saveConfig(TextileBackup.CONFIG);
+			Statics.CONFIG.playerBlacklist.add(player.getEntityName());
+			ConfigManager.saveConfig(Statics.CONFIG);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -65,8 +64,8 @@ public class BlacklistCommand {
 			builder.append(player.getEntityName());
 			builder.append(" added to the blacklist");
 
-			if(TextileBackup.CONFIG.playerWhitelist.contains(player.getEntityName())){
-				TextileBackup.CONFIG.playerWhitelist.remove(player.getEntityName());
+			if(Statics.CONFIG.playerWhitelist.contains(player.getEntityName())){
+				Statics.CONFIG.playerWhitelist.remove(player.getEntityName());
 				builder.append(" and removed form the whitelist");
 			}
 
@@ -74,7 +73,7 @@ public class BlacklistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.info(builder.toString(), ctx.getSource());
+			Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
 		}
 
 		return 1;
@@ -83,11 +82,11 @@ public class BlacklistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!TextileBackup.CONFIG.playerBlacklist.contains(player.getEntityName())) {
+		if(!Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was blacklisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.CONFIG.playerBlacklist.remove(player.getEntityName());
-			ConfigManager.saveConfig(TextileBackup.CONFIG);
+			Statics.CONFIG.playerBlacklist.remove(player.getEntityName());
+			ConfigManager.saveConfig(Statics.CONFIG);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -97,7 +96,7 @@ public class BlacklistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.info(builder.toString(), ctx.getSource());
+			Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
 		}
 
 		return 1;

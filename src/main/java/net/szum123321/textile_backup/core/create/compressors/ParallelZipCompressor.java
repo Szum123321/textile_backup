@@ -1,7 +1,7 @@
 package net.szum123321.textile_backup.core.create.compressors;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
@@ -24,7 +24,7 @@ import java.util.zip.ZipEntry;
 
 public class ParallelZipCompressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
-		Utilities.info("Starting compression...", ctx);
+		Statics.LOGGER.sendInfo(ctx, "Starting compression...");
 
 		Instant start = Instant.now();
 
@@ -36,7 +36,7 @@ public class ParallelZipCompressor {
 
 			arc.setMethod(ZipArchiveOutputStream.DEFLATED);
 			arc.setUseZip64(Zip64Mode.AsNeeded);
-			arc.setLevel(TextileBackup.CONFIG.compression);
+			arc.setLevel(Statics.CONFIG.compression);
 			arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
 			File input = in.getCanonicalFile();
@@ -56,11 +56,11 @@ public class ParallelZipCompressor {
 
 			arc.finish();
 		} catch (IOException | InterruptedException | ExecutionException e) {
-			TextileBackup.LOGGER.error("An exception occured!", e);
-			Utilities.sendError("Something went wrong while compressing files!", ctx);
+			Statics.LOGGER.error("An exception occurred!", e);
+			Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
 		}
 
-		Utilities.info("Compression took: " + Utilities.formatDuration(Duration.between(start, Instant.now())) + " seconds.", ctx);
+		Statics.LOGGER.sendInfo(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
 	}
 
 	static class FileInputStreamSupplier implements InputStreamSupplier {
@@ -75,7 +75,7 @@ public class ParallelZipCompressor {
 			try {
 				stream = Files.newInputStream(sourceFile);
 			} catch (IOException e) {
-				TextileBackup.LOGGER.error("An exception occurred while trying to create input stream!", e);
+				Statics.LOGGER.error("An exception occurred while trying to create input stream!", e);
 			}
 
 			return stream;

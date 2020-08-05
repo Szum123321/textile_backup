@@ -19,7 +19,7 @@
 package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.io.FileUtils;
 
@@ -48,10 +48,10 @@ public class BackupHelper {
 		builder.append(" on: ");
 		builder.append(Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
-		Utilities.info(builder.toString(), null);
+		Statics.LOGGER.info(builder.toString());
 
 		if (ctx.shouldSave()) {
-			Utilities.info("Saving server...", ctx.getCommandSource());
+			Statics.LOGGER.sendInfo(ctx.getCommandSource(), "Saving server...");
 			ctx.getServer().save(true, true, false);
 		}
 
@@ -63,24 +63,24 @@ public class BackupHelper {
 		AtomicInteger deletedFiles = new AtomicInteger();
 
 		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
-			if (TextileBackup.CONFIG.maxAge > 0) { // delete files older that configured
+			if (Statics.CONFIG.maxAge > 0) { // delete files older that configured
 				final LocalDateTime now = LocalDateTime.now();
 
 				Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())  // We check if we can get file's creation date so that the next line won't throw an exception
-						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > TextileBackup.CONFIG.maxAge)
+						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > Statics.CONFIG.maxAge)
 						.forEach(f -> {
 							if(f.delete()) {
-								Utilities.info("Deleting: " + f.getName(), ctx);
+								Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
 								deletedFiles.getAndIncrement();
 							} else {
-								Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+								Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
 							}
 						});
 			}
 
-			if (TextileBackup.CONFIG.backupsToKeep > 0 && root.listFiles().length > TextileBackup.CONFIG.backupsToKeep) {
+			if (Statics.CONFIG.backupsToKeep > 0 && root.listFiles().length > Statics.CONFIG.backupsToKeep) {
 				int i = root.listFiles().length;
 
 				Iterator<File> it = Arrays.stream(root.listFiles())
@@ -89,35 +89,35 @@ public class BackupHelper {
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
-				while(i > TextileBackup.CONFIG.backupsToKeep && it.hasNext()) {
+				while(i > Statics.CONFIG.backupsToKeep && it.hasNext()) {
 					File f = it.next();
 
 					if(f.delete()) {
-						Utilities.info("Deleting: " + f.getName(), ctx);
+						Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
 						deletedFiles.getAndIncrement();
 					} else {
-						Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+						Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
 					}
 
 					i--;
 				}
 			}
 
-			if (TextileBackup.CONFIG.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.CONFIG.maxSize) {
+			if (Statics.CONFIG.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize) {
 				Iterator<File> it = Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
 						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
-				while(FileUtils.sizeOfDirectory(root) / 1024 > TextileBackup.CONFIG.maxSize && it.hasNext()) {
+				while(FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize && it.hasNext()) {
 					File f = it.next();
 
 					if(f.delete()) {
-						Utilities.info("Deleting: " + f.getName(), ctx);
+						Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
 						deletedFiles.getAndIncrement();
 					} else {
-						Utilities.sendError("Something went wrong while deleting: " + f.getName(), ctx);
+						Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
 					}
 				}
 			}

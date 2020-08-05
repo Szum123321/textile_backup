@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core.restore.decompressors;
 
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -42,7 +42,7 @@ public class GenericTarDecompressor {
 
             while ((entry = archiveInputStream.getNextTarEntry()) != null) {
                 if(!archiveInputStream.canReadEntryData(entry)) {
-                    TextileBackup.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
+                    Statics.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
                 }
 
@@ -60,14 +60,14 @@ public class GenericTarDecompressor {
                          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
                         IOUtils.copy(archiveInputStream, bufferedOutputStream);
                     } catch (IOException e) {
-                        TextileBackup.LOGGER.error("An exception occurred while trying to decompress file: " + file.getName(), e);
+                        Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
                     }
                 }
             }
         } catch (IOException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            TextileBackup.LOGGER.error("An exception occurred! ", e);
+            Statics.LOGGER.error("An exception occurred! ", e);
         }
 
-        TextileBackup.LOGGER.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+        Statics.LOGGER.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 }

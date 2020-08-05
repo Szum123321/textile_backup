@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core.restore.decompressors;
 
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
@@ -39,7 +39,7 @@ public class ZipDecompressor {
 
             while ((entry = zipInputStream.getNextZipEntry()) != null) {
                 if(!zipInputStream.canReadEntryData(entry)){
-                    TextileBackup.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
+                    Statics.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
                 }
 
@@ -57,14 +57,14 @@ public class ZipDecompressor {
                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
                         IOUtils.copy(zipInputStream, bufferedOutputStream);
                     } catch (IOException e) {
-                        TextileBackup.LOGGER.error("An exception occurred while trying to decompress file: " + file.getName(), e);
+                        Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
                     }
                 }
             }
         } catch (IOException e) {
-            TextileBackup.LOGGER.error("An exception occurred! ", e);
+            Statics.LOGGER.error("An exception occurred! ", e);
         }
 
-        TextileBackup.LOGGER.info("Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+        Statics.LOGGER.info("Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 }

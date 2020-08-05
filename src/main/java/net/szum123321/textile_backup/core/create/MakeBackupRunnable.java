@@ -20,7 +20,7 @@ package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.create.compressors.LZMACompressor;
 import net.szum123321.textile_backup.core.create.compressors.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.create.compressors.ParallelGzipCompressor;
@@ -44,11 +44,11 @@ public class MakeBackupRunnable implements Runnable {
 
     @Override
     public void run() {
-        Utilities.info("Starting backup", commandSource);
+        Statics.LOGGER.sendInfo(commandSource, "Starting backup");
 
         File world = Utilities.getWorldFolder(server);
 
-        TextileBackup.LOGGER.trace("Minecraft world is: {}", world);
+        Statics.LOGGER.trace("Minecraft world is: {}", world);
 
         File outFile = Utilities
                 .getBackupRootPath(Utilities.getLevelName(server))
@@ -56,31 +56,30 @@ public class MakeBackupRunnable implements Runnable {
                 .resolve(getFileName())
                 .toFile();
 
-        TextileBackup.LOGGER.trace("Outfile is: {}", outFile);
+        Statics.LOGGER.trace("Outfile is: {}", outFile);
 
         outFile.getParentFile().mkdirs();
 
         try {
             outFile.createNewFile();
         } catch (IOException e) {
-            TextileBackup.LOGGER.error("An exception occurred when trying to create new backup file!", e);
-
-            Utilities.sendError("An exception occurred when trying to create new backup file!", commandSource);
+            Statics.LOGGER.error("An exception occurred when trying to create new backup file!", e);
+            Statics.LOGGER.sendError(commandSource, "An exception occurred when trying to create new backup file!");
 
             return;
         }
 
         int coreCount;
 
-        if(TextileBackup.CONFIG.compressionCoreCountLimit <= 0) {
+        if(Statics.CONFIG.compressionCoreCountLimit <= 0) {
             coreCount = Runtime.getRuntime().availableProcessors();
         } else {
-            coreCount = Math.min(TextileBackup.CONFIG.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
+            coreCount = Math.min(Statics.CONFIG.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
         }
 
-        TextileBackup.LOGGER.trace("Running compression on {} threads. Available cores = {}", coreCount, Runtime.getRuntime().availableProcessors());
+        Statics.LOGGER.trace("Running compression on {} threads. Available cores = {}", coreCount, Runtime.getRuntime().availableProcessors());
 
-        switch (TextileBackup.CONFIG.format) {
+        switch (Statics.CONFIG.format) {
             case ZIP:
                 ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
                 break;
@@ -98,8 +97,8 @@ public class MakeBackupRunnable implements Runnable {
                 break;
 
             default:
-                TextileBackup.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", TextileBackup.CONFIG.format);
-                Utilities.sendError("Error! No correct compression format specified! Using default compressor!", commandSource);
+                Statics.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", Statics.CONFIG.format);
+                Statics.LOGGER.sendError(commandSource, "Error! No correct compression format specified! Using default compressor!");
 
                 ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
                 break;
@@ -107,12 +106,12 @@ public class MakeBackupRunnable implements Runnable {
 
         BackupHelper.executeFileLimit(commandSource, Utilities.getLevelName(server));
 
-		Utilities.info("Done!", commandSource);
+        Statics.LOGGER.sendInfo(commandSource, "Done!");
     }
 
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + TextileBackup.CONFIG.format.getString();
+        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + Statics.CONFIG.format.getString();
     }
 }

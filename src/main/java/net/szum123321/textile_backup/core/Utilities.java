@@ -20,14 +20,11 @@ package net.szum123321.textile_backup.core;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.ConfigHandler;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 
 import java.io.File;
@@ -50,12 +47,12 @@ public class Utilities {
 	public static boolean isBlacklisted(Path path) {
 		if(isWindows()) { //hotfix!
 			if (path.getFileName().toString().equals("session.lock")) {
-				TextileBackup.LOGGER.trace("Skipping session.lock");
+				Statics.LOGGER.trace("Skipping session.lock");
 				return true;
 			}
 		}
 
-		for(String i : TextileBackup.CONFIG.fileBlacklist) {
+		for(String i : Statics.CONFIG.fileBlacklist) {
 			if(path.startsWith(i))
 				return true;
 		}
@@ -90,22 +87,22 @@ public class Utilities {
 	}
 
 	public static File getBackupRootPath(String worldName) {
-		File path = new File(TextileBackup.CONFIG.path).getAbsoluteFile();
+		File path = new File(Statics.CONFIG.path).getAbsoluteFile();
 
-		if (TextileBackup.CONFIG.perWorldBackup)
+		if (Statics.CONFIG.perWorldBackup)
 			path = path.toPath().resolve(worldName).toFile();
 
 		if (!path.exists()) {
 			try {
 				path.mkdirs();
 			} catch (Exception e) {
-				TextileBackup.LOGGER.error("An exception occurred!", e);
+				Statics.LOGGER.error("An exception occurred!", e);
 
 				return FabricLoader
 						.getInstance()
 						.getGameDirectory()
 						.toPath()
-						.resolve(TextileBackup.CONFIG.path)
+						.resolve(Statics.CONFIG.path)
 						.toFile();
 			}
 		}
@@ -155,8 +152,8 @@ public class Utilities {
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter(){
-		if(!TextileBackup.CONFIG.dateTimeFormat.equals(""))
-			return DateTimeFormatter.ofPattern(TextileBackup.CONFIG.dateTimeFormat);
+		if(!Statics.CONFIG.dateTimeFormat.equals(""))
+			return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);
 		else
 			return getBackupDateTimeFormatter();
 	}
@@ -178,16 +175,4 @@ public class Utilities {
 		return LocalTime.ofNanoOfDay(duration.toNanos()).format(formatter);
 	}
 
-	public static void info(String s, ServerCommandSource ctx){
-		if(ctx != null && ctx.getEntity() != null)
-			ctx.sendFeedback(new LiteralText(s), false);
-
-		TextileBackup.LOGGER.info(s);
-	}
-
-	public static void sendError(String message, ServerCommandSource source) {
-		if(source != null) {
-			source.sendFeedback(new LiteralText(message).styled(style -> style.withColor(Formatting.RED)), false);
-		}
-	}
 }

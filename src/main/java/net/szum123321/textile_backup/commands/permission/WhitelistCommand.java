@@ -10,8 +10,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
-import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.Statics;
 
 public class WhitelistCommand {
 	public static LiteralArgumentBuilder<ServerCommandSource> register(){
@@ -40,7 +39,7 @@ public class WhitelistCommand {
 
 		builder.append("Currently on the whitelist are: ");
 
-		for(String name : TextileBackup.CONFIG.playerWhitelist){
+		for(String name : Statics.CONFIG.playerWhitelist){
 			builder.append(name);
 			builder.append(", ");
 		}
@@ -53,11 +52,11 @@ public class WhitelistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(TextileBackup.CONFIG.playerWhitelist.contains(player.getEntityName())) {
+		if(Statics.CONFIG.playerWhitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already whitelisted.", player.getEntityName()), false);
 		}else{
-			TextileBackup.CONFIG.playerWhitelist.add(player.getEntityName());
-			ConfigManager.saveConfig(TextileBackup.CONFIG);
+			Statics.CONFIG.playerWhitelist.add(player.getEntityName());
+			ConfigManager.saveConfig(Statics.CONFIG);
 
 			StringBuilder builder = new StringBuilder();
 
@@ -65,8 +64,8 @@ public class WhitelistCommand {
 			builder.append(player.getEntityName());
 			builder.append(" added to the whitelist");
 
-			if(TextileBackup.CONFIG.playerBlacklist.contains(player.getEntityName())){
-				TextileBackup.CONFIG.playerBlacklist.remove(player.getEntityName());
+			if(Statics.CONFIG.playerBlacklist.contains(player.getEntityName())){
+				Statics.CONFIG.playerBlacklist.remove(player.getEntityName());
 				builder.append(" and removed form the blacklist");
 			}
 
@@ -74,7 +73,7 @@ public class WhitelistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.info(builder.toString(), ctx.getSource());
+			Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
 		}
 
 		return 1;
@@ -83,11 +82,11 @@ public class WhitelistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!TextileBackup.CONFIG.playerWhitelist.contains(player.getEntityName())) {
+		if(!Statics.CONFIG.playerWhitelist.contains(player.getEntityName())) {
 			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was on the whitelist.", player.getEntityName()), false);
 		}else{
-			TextileBackup.CONFIG.playerWhitelist.remove(player.getEntityName());
-			ConfigManager.saveConfig(TextileBackup.CONFIG);
+			Statics.CONFIG.playerWhitelist.remove(player.getEntityName());
+			ConfigManager.saveConfig(Statics.CONFIG);
 			StringBuilder builder = new StringBuilder();
 
 			builder.append("Player: ");
@@ -96,7 +95,7 @@ public class WhitelistCommand {
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Utilities.info(builder.toString(), ctx.getSource());
+			Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
 		}
 
 		return 1;

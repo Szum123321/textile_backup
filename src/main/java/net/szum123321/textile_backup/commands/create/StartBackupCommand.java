@@ -23,7 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 
@@ -36,8 +36,8 @@ public class StartBackupCommand {
     }
 
     private static int executeWithComment(CommandContext<ServerCommandSource> ctx) {
-        if(!TextileBackup.executorService.isShutdown())
-            TextileBackup.executorService.submit(
+        if(!Statics.executorService.isShutdown())
+            Statics.executorService.submit(
                     BackupHelper.create(
                             new BackupContext.Builder()
                                     .setCommandSource(ctx.getSource())
@@ -53,8 +53,8 @@ public class StartBackupCommand {
     }
 
     private static int execute(ServerCommandSource source){
-        if(!TextileBackup.executorService.isShutdown())
-            TextileBackup.executorService.submit(
+        if(!Statics.executorService.isShutdown())
+            Statics.executorService.submit(
                     BackupHelper.create(
                             new BackupContext.Builder()
                                     .setCommandSource(source)

@@ -1,7 +1,7 @@
 package net.szum123321.textile_backup.core.create.compressors;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -16,7 +16,7 @@ import java.time.Instant;
 
 public class ParallelBZip2Compressor {
 	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
-		Utilities.info("Starting compression...", ctx);
+		Statics.LOGGER.sendInfo(ctx, "Starting compression...");
 
 		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit);
 
@@ -48,17 +48,17 @@ public class ParallelBZip2Compressor {
 
 					arc.closeArchiveEntry();
 				} catch (IOException e) {
-					TextileBackup.LOGGER.error("An exception occurred while trying to compress: " + path.getFileName(), e);
-					Utilities.sendError("Something went wrong while compressing files!", ctx);
+					Statics.LOGGER.error("An exception occurred while trying to compress: {}", path.getFileName(), e);
+					Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
 				}
 			});
 
 			arc.finish();
 		} catch (IOException e) {
-			TextileBackup.LOGGER.error("An exception occurred!", e);
-			Utilities.sendError("Something went wrong while compressing files!", ctx);
+			Statics.LOGGER.error("An exception occurred!", e);
+			Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
 		}
 
-		Utilities.info("Compression took: " + Utilities.formatDuration(Duration.between(start, Instant.now())) + " seconds.", ctx);
+		Statics.LOGGER.sendInfo(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
 	}
 }

@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-@ConfigFile(name = TextileBackup.MOD_ID)
+@ConfigFile(name = Statics.MOD_ID)
 public class ConfigHandler {
     @Comment("\nTime between automatic backups in seconds\n" +
             "When set to 0 backups will not be performed automatically\n")

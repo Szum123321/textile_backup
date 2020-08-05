@@ -12,7 +12,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
 import net.minecraft.text.LiteralText;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
@@ -41,18 +41,18 @@ public class RestoreBackupCommand {
         LocalDateTime dateTime = LocalDateTime.from(dateTimeFormatter.parse(file));
 
         if(ctx.getSource().getEntity() != null)
-            TextileBackup.LOGGER.info("Backup restoration was initiated by: {}", ctx.getSource().getName());
+            Statics.LOGGER.info("Backup restoration was initiated by: {}", ctx.getSource().getName());
         else
-            TextileBackup.LOGGER.info("Backup restoration was initiated form Server Console");
+            Statics.LOGGER.info("Backup restoration was initiated form Server Console");
 
-        if(TextileBackup.restoreAwaitThread == null || !TextileBackup.restoreAwaitThread.isRunning()) {
-            TextileBackup.restoreAwaitThread = new AwaitThread(
-                    TextileBackup.CONFIG.restoreDelay,
+        if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
+            Statics.restoreAwaitThread = new AwaitThread(
+                    Statics.CONFIG.restoreDelay,
                     RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), null)
             );
 
-            TextileBackup.restoreAwaitThread.start();
-        } else if(TextileBackup.restoreAwaitThread != null && TextileBackup.restoreAwaitThread.isRunning()) {
+            Statics.restoreAwaitThread.start();
+        } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
             ctx.getSource().sendFeedback(new LiteralText("Someone has already started another restoration."), false);
         }
 
@@ -66,18 +66,18 @@ public class RestoreBackupCommand {
         LocalDateTime dateTime = LocalDateTime.from(dateTimeFormatter.parse(file));
 
         if(ctx.getSource().getEntity() != null)
-            TextileBackup.LOGGER.info("Backup restoration was initiated by: {}", ctx.getSource().getName());
+            Statics.LOGGER.info("Backup restoration was initiated by: {}", ctx.getSource().getName());
         else
-            TextileBackup.LOGGER.info("Backup restoration was initiated form Server Console");
+            Statics.LOGGER.info("Backup restoration was initiated form Server Console");
 
-        if(TextileBackup.restoreAwaitThread == null || !TextileBackup.restoreAwaitThread.isRunning()) {
-            TextileBackup.restoreAwaitThread = new AwaitThread(
-                    TextileBackup.CONFIG.restoreDelay,
+        if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
+            Statics.restoreAwaitThread = new AwaitThread(
+                    Statics.CONFIG.restoreDelay,
                     RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), comment)
             );
 
-            TextileBackup.restoreAwaitThread.start();
-        } else if(TextileBackup.restoreAwaitThread != null && TextileBackup.restoreAwaitThread.isRunning()) {
+            Statics.restoreAwaitThread.start();
+        } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
             ctx.getSource().sendFeedback(new LiteralText("Someone has already started another restoration."), false);
         }
 

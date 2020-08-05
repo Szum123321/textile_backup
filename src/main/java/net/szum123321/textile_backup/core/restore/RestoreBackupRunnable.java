@@ -20,7 +20,7 @@ package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.core.LivingServer;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
@@ -48,11 +48,11 @@ public class RestoreBackupRunnable implements Runnable {
 
     @Override
     public void run() {
-        TextileBackup.LOGGER.info("Shutting down server...");
+        Statics.LOGGER.info("Shutting down server...");
         server.stop(false);
         awaitServerShutdown();
 
-        if(TextileBackup.CONFIG.backupOldWorlds) {
+        if(Statics.CONFIG.backupOldWorlds) {
             BackupHelper.create(
                     new BackupContext.Builder()
                             .setServer(server)
@@ -64,14 +64,14 @@ public class RestoreBackupRunnable implements Runnable {
 
         File worldFile = Utilities.getWorldFolder(server);
 
-        TextileBackup.LOGGER.info("Deleting old world...");
+        Statics.LOGGER.info("Deleting old world...");
         if(!deleteDirectory(worldFile))
-            TextileBackup.LOGGER.error("Something went wrong while deleting old world!");
+            Statics.LOGGER.error("Something went wrong while deleting old world!");
 
         worldFile.mkdirs();
 
         try(FileInputStream fileInputStream = new FileInputStream(backupFile)) {
-            TextileBackup.LOGGER.info("Starting decompression...");
+            Statics.LOGGER.info("Starting decompression...");
 
             switch(Utilities.getFileExtension(backupFile).orElseThrow(() -> new NoSuchElementException("Couldn't get file extention!"))) {
                 case ZIP:
@@ -91,10 +91,10 @@ public class RestoreBackupRunnable implements Runnable {
                     break;
             }
         } catch (IOException e) {
-            TextileBackup.LOGGER.error("Exception occurred!", e);
+            Statics.LOGGER.error("Exception occurred!", e);
         }
 
-        TextileBackup.LOGGER.info("Done.");
+        Statics.LOGGER.info("Done.");
     }
 
     private void awaitServerShutdown() {
@@ -102,7 +102,7 @@ public class RestoreBackupRunnable implements Runnable {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                TextileBackup.LOGGER.error("Exception occurred!", e);
+                Statics.LOGGER.error("Exception occurred!", e);
             }
         }
     }

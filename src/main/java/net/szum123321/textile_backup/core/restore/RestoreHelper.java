@@ -20,7 +20,7 @@ package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
-import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 
 import java.io.File;
@@ -40,9 +40,9 @@ public class RestoreHelper {
                 .orElseThrow(() -> new NoSuchElementException("Couldn't find given backup file!"));
 
         server.getPlayerManager().getPlayerList()
-                .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in " + TextileBackup.CONFIG.restoreDelay + " seconds!"), false));
+                .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!"), false));
 
-        TextileBackup.globalShutdownBackupFlag.set(false);
+        Statics.globalShutdownBackupFlag.set(false);
 
         return new Thread(new RestoreBackupRunnable(server, backupFile, comment));
     }
