@@ -31,72 +31,69 @@ import net.minecraft.server.command.ServerCommandSource;
 
 import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.Statics;
-import net.szum123321.textile_backup.core.restore.AwaitThread;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
+import java.io.File;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RestoreBackupCommand {
-    private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
-
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("restore")
                 .then(CommandManager.argument("file", StringArgumentType.word())
                             .suggests(new FileSuggestionProvider())
-                            .executes(RestoreBackupCommand::execute)
+                        .executes(ctx -> execute(
+                                StringArgumentType.getString(ctx, "file"),
+                                null,
+                                ctx.getSource()
+                        ))
                 ).then(CommandManager.argument("file", StringArgumentType.word())
                         .suggests(new FileSuggestionProvider())
                         .then(CommandManager.argument("comment", StringArgumentType.word())
-                                .executes(RestoreBackupCommand::executeWithCommand)
+                                .executes(ctx -> execute(
+                                        StringArgumentType.getString(ctx, "file"),
+                                        StringArgumentType.getString(ctx, "comment"),
+                                        ctx.getSource()
+                                        ))
                         )
-                );
+                ).executes(context -> {
+                    ServerCommandSource source = context.getSource();
+
+                    source.sendFeedback(new LiteralText("To restore given backup you have to provide exact creation time in format:"), false);
+                    source.sendFeedback(new LiteralText("[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]"), false);
+                    source.sendFeedback(new LiteralText("Example: 2020-08-05_10.58.33"), false);
+
+                    return 1;
+                });
     }
 
-    private static int execute(CommandContext<ServerCommandSource> ctx) {
-        String file = StringArgumentType.getString(ctx, "file");
-        LocalDateTime dateTime = LocalDateTime.from(dateTimeFormatter.parse(file));
+    private static int execute(String file, String comment, ServerCommandSource source) {
+        LocalDateTime dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
 
-        if(ctx.getSource().getEntity() != null)
-            Statics.LOGGER.info("Backup restoration was initiated by: {}", ctx.getSource().getName());
-        else
-            Statics.LOGGER.info("Backup restoration was initiated form Server Console");
+        Optional<File> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
 
-        if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
-            Statics.restoreAwaitThread = new AwaitThread(
-                    Statics.CONFIG.restoreDelay,
-                    RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), null)
-            );
+        if(backupFile.isPresent())
+            Statics.LOGGER.info("Found file to restore {}", backupFile.get().getName());
+        else {
+            Statics.LOGGER.info("No file created on {}  was found!", dateTime.format(Statics.defaultDateTimeFormatter));
+            Statics.LOGGER.sendInfo(source, "No file created on {}  was found!", dateTime.format(Statics.defaultDateTimeFormatter));
 
-            Statics.restoreAwaitThread.start();
-        } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
-            ctx.getSource().sendFeedback(new LiteralText("Someone has already started another restoration."), false);
+            return 0;
         }
 
-        return 1;
-    }
-
-    private static int executeWithCommand(CommandContext<ServerCommandSource> ctx) {
-        String file = StringArgumentType.getString(ctx, "file");
-        String comment = StringArgumentType.getString(ctx, "comment");
-
-        LocalDateTime dateTime = LocalDateTime.from(dateTimeFormatter.parse(file));
-
-        if(ctx.getSource().getEntity() != null)
-            Statics.LOGGER.info("Backup restoration was initiated by: {}", ctx.getSource().getName());
+        if(source.getEntity() != null)
+            Statics.LOGGER.info("Backup restoration was initiated by: {}", source.getName());
         else
             Statics.LOGGER.info("Backup restoration was initiated form Server Console");
 
         if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
-            Statics.restoreAwaitThread = new AwaitThread(
-                    Statics.CONFIG.restoreDelay,
-                    RestoreHelper.create(dateTime, ctx.getSource().getMinecraftServer(), comment)
-            );
+            Statics.restoreAwaitThread = RestoreHelper.create(backupFile.get(), source.getMinecraftServer(), comment);
 
             Statics.restoreAwaitThread.start();
         } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
-            ctx.getSource().sendFeedback(new LiteralText("Someone has already started another restoration."), false);
+            source.sendFeedback(new LiteralText("Someone has already started another restoration."), false);
+            return 0;
         }
 
         return 1;
@@ -108,7 +105,7 @@ public class RestoreBackupCommand {
             String remaining = builder.getRemaining();
 
             for(RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer())) {
-                String formattedCreationTime = file.getCreationTime().format(dateTimeFormatter);
+                String formattedCreationTime = file.getCreationTime().format(Statics.defaultDateTimeFormatter);
 
                 if(formattedCreationTime.startsWith(remaining)) {
                     if(ctx.getSource().getEntity() != null) {  //was typed by player

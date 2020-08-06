@@ -28,23 +28,34 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class RestoreHelper {
-    public static Runnable create(LocalDateTime backupTime, MinecraftServer server, String comment) {
-        File backupFile = Arrays.stream(Utilities.getBackupRootPath(Utilities.getLevelName(server))
-                .listFiles())
-                .filter(file -> Utilities.getFileCreationTime(file).isPresent())
-                .filter(file -> Utilities.getFileCreationTime(file).get().equals(backupTime))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Couldn't find given backup file!"));
+    public static Optional<File> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
+        File root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
+        Optional<File> optionalFile =  Arrays.stream(root.listFiles())
+                .filter(File::isFile)
+                .filter(Utilities::isValid)
+                .filter(file -> Utilities.getFileCreationTime(file).get().equals(backupTime))
+                .findFirst();
+
+        optionalFile.ifPresent(file -> Statics.untouchableFile = file);
+
+        return optionalFile;
+    }
+
+    public static AwaitThread create(File backupFile, MinecraftServer server, String comment) {
         server.getPlayerManager().getPlayerList()
                 .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!"), false));
 
         Statics.globalShutdownBackupFlag.set(false);
 
-        return new RestoreBackupRunnable(server, backupFile, comment);
+        return new AwaitThread(
+                Statics.CONFIG.restoreDelay,
+                new RestoreBackupRunnable(server, backupFile, comment)
+        );
     }
 
     public static List<RestoreableFile> getAvailableBackups(MinecraftServer server) {
@@ -52,8 +63,7 @@ public class RestoreHelper {
 
         return Arrays.stream(root.listFiles())
                 .filter(File::isFile)
-                .filter(file -> Utilities.getFileExtension(file.getName()).isPresent())
-                .filter(file -> Utilities.getFileCreationTime(file).isPresent())
+                .filter(Utilities::isValid)
                 .map(RestoreableFile::new)
                 .collect(Collectors.toList());
     }
