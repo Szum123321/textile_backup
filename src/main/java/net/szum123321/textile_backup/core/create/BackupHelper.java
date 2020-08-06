@@ -68,15 +68,11 @@ public class BackupHelper {
 
 				Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
-						.filter(f -> Utilities.getFileCreationTime(f).isPresent())  // We check if we can get file's creation date so that the next line won't throw an exception
+						.filter(Utilities::isValid)// We check if we can get file's creation date so that the next line won't throw an exception
 						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > Statics.CONFIG.maxAge)
 						.forEach(f -> {
-							if(f.delete()) {
-								Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
+							if(deleteFile(f, ctx))
 								deletedFiles.getAndIncrement();
-							} else {
-								Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
-							}
 						});
 			}
 
@@ -85,19 +81,13 @@ public class BackupHelper {
 
 				Iterator<File> it = Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
-						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
+						.filter(Utilities::isValid)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
 				while(i > Statics.CONFIG.backupsToKeep && it.hasNext()) {
-					File f = it.next();
-
-					if(f.delete()) {
-						Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
+					if(deleteFile(it.next(), ctx))
 						deletedFiles.getAndIncrement();
-					} else {
-						Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
-					}
 
 					i--;
 				}
@@ -106,24 +96,31 @@ public class BackupHelper {
 			if (Statics.CONFIG.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize) {
 				Iterator<File> it = Arrays.stream(root.listFiles())
 						.filter(BackupHelper::isFileOk)
-						.filter(f -> Utilities.getFileCreationTime(f).isPresent())
+						.filter(Utilities::isValid)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
 				while(FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize && it.hasNext()) {
-					File f = it.next();
-
-					if(f.delete()) {
-						Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
+					if(deleteFile(it.next(), ctx))
 						deletedFiles.getAndIncrement();
-					} else {
-						Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
-					}
 				}
 			}
 		}
 
 		return deletedFiles.get();
+	}
+
+	private static boolean deleteFile(File f, ServerCommandSource ctx) {
+		if(f != Statics.untouchableFile) {
+			if(f.delete()) {
+				Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
+				return true;
+			} else {
+				Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
+			}
+		}
+
+		return false;
 	}
 
 	private static boolean isFileOk(File f) {return f.exists() && f.isFile(); }

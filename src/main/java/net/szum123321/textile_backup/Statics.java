@@ -41,4 +41,5 @@ public class Statics {
 
     public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
     public static AwaitThread restoreAwaitThread;
+    public static File untouchableFile;
 }

@@ -151,6 +151,10 @@ public class Utilities {
 		return path;
 	}
 
+	public static boolean isValid(File f) {
+		return getFileExtension(f).isPresent() && getFileCreationTime(f).isPresent();
+	}
+
 	public static DateTimeFormatter getDateTimeFormatter() {
 		return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);
 	}
