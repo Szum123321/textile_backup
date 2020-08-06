@@ -44,6 +44,16 @@ public class Utilities {
 		return 	((MinecraftServerSessionAccessor)server).getSession().getDirectoryName();
 	}
 
+	public static File getWorldFolder(MinecraftServer server) {
+		return ((MinecraftServerSessionAccessor)server)
+				.getSession()
+				.getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+	}
+
+	public static boolean isWindows() {
+		return System.getProperty("os.name").toLowerCase().contains("win");
+	}
+
 	public static boolean isBlacklisted(Path path) {
 		if(isWindows()) { //hotfix!
 			if (path.getFileName().toString().equals("session.lock")) {
@@ -58,14 +68,6 @@ public class Utilities {
 		}
 
 		return false;
-	}
-
-	public static boolean isWindows() {
-		return System.getProperty("os.name").toLowerCase().contains("win");
-	}
-
-	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(File f) {
-		return getFileExtension(f.getName());
 	}
 
 	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(String fileName) {
@@ -84,6 +86,45 @@ public class Utilities {
 			default:
 				return Optional.empty();
 		}
+	}
+
+	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(File f) {
+		return getFileExtension(f.getName());
+	}
+
+	public static Optional<LocalDateTime> getFileCreationTime(File file) {
+		LocalDateTime creationTime = null;
+
+		if(getFileExtension(file).isPresent()) {
+			String fileExtension = getFileExtension(file).get().getString();
+
+			try {
+				creationTime = LocalDateTime.from(
+						Utilities.getDateTimeFormatter().parse(
+								file.getName().split(fileExtension)[0].split("#")[0]
+						)
+				);
+			} catch (Exception ignored) {}
+
+			if(creationTime == null) {
+				try {
+					creationTime = LocalDateTime.from(
+							Utilities.getBackupDateTimeFormatter().parse(
+									file.getName().split(fileExtension)[0].split("#")[0]
+							)
+					);
+				} catch (Exception ignored2){}
+			}
+
+			if(creationTime == null) {
+				try {
+					FileTime fileTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+					creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
+				} catch (IOException ignored3) {}
+			}
+		}
+
+		return Optional.ofNullable(creationTime);
 	}
 
 	public static File getBackupRootPath(String worldName) {
@@ -110,56 +151,12 @@ public class Utilities {
 		return path;
 	}
 
-	public static File getWorldFolder(MinecraftServer server) {
-		return ((MinecraftServerSessionAccessor)server)
-				.getSession()
-				.getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
-	}
-
-	public static Optional<LocalDateTime> getFileCreationTime(File file) {
-		LocalDateTime creationTime = null;
-
-		if(getFileExtension(file).isPresent()) {
-			String fileExtension = getFileExtension(file).get().getString();
-
-			try {
-				creationTime = LocalDateTime.from(
-						Utilities.getDateTimeFormatter().parse(
-								file.getName().split(fileExtension)[0].split("#")[0]
-						)
-				);
-			} catch (Exception ignored) {}
-
-			if(creationTime == null) {
-				try {
-					creationTime = LocalDateTime.from(
-							Utilities.getBackupDateTimeFormatter().parse(
-									file.getName().split(fileExtension)[0].split("#")[0]
-							)
-					);
-				} catch (Exception ignored2){}
-			}
-		}
-
-		if(creationTime == null) {
-			try {
-				FileTime fileTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
-				creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
-			} catch (IOException ignored3) {}
-		}
-
-		return Optional.ofNullable(creationTime);
-	}
-
-	public static DateTimeFormatter getDateTimeFormatter(){
-		if(!Statics.CONFIG.dateTimeFormat.equals(""))
-			return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);
-		else
-			return getBackupDateTimeFormatter();
+	public static DateTimeFormatter getDateTimeFormatter() {
+		return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);
 	}
 
 	public static DateTimeFormatter getBackupDateTimeFormatter() {
-		return DateTimeFormatter.ofPattern("dd.MM.yyyy_HH-mm-ss");
+		return Statics.defaultDateTimeFormatter;
 	}
 
 	public static String formatDuration(Duration duration) {
@@ -174,5 +171,4 @@ public class Utilities {
 
 		return LocalTime.ofNanoOfDay(duration.toNanos()).format(formatter);
 	}
-
 }
