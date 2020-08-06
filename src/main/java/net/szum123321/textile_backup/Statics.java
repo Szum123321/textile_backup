@@ -22,6 +22,8 @@ import net.szum123321.textile_backup.core.CustomLogger;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 
+import java.io.File;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,6 +36,8 @@ public class Statics {
 
     public static final BackupScheduler scheduler = new BackupScheduler();
     public static ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    public final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
 
     public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
     public static AwaitThread restoreAwaitThread;
