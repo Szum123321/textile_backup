@@ -82,5 +82,9 @@ public class RestoreHelper {
         public String getComment() {
             return comment;
         }
+
+        public String toString() {
+            return this.getCreationTime().format(Statics.defaultDateTimeFormatter) + (comment != null ? "#" + comment : "");
+        }
     }
 }

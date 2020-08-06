@@ -22,34 +22,31 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
-import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 public class ListBackupsCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("list")
-                .executes(ctx -> {
-                    StringBuilder builder = new StringBuilder();
+                .executes(ctx -> { StringBuilder builder = new StringBuilder();
+                    List<RestoreHelper.RestoreableFile> backups =  RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer());
 
-                    File[] files = Utilities.getBackupRootPath(Utilities.getLevelName(ctx.getSource().getMinecraftServer())).listFiles();
-
-                    if(files.length == 0) {
+                    if(backups.size() == 0) {
                         builder.append("There a no backups available for this world.");
-                    } else if(files.length == 1) {
+                    } else if(backups.size() == 1) {
                         builder.append("There is only one backup available: ");
-                        builder.append(files[0].getName());
+                        builder.append(backups.get(0).toString());
                     } else {
-                        Iterator<File> iterator = Arrays.stream(files).iterator();
+                        Iterator<RestoreHelper.RestoreableFile> iterator = backups.iterator();
                         builder.append("Available backups: ");
 
                         builder.append(iterator.next());
 
                         while(iterator.hasNext()) {
                             builder.append(",\n");
-                            builder.append(iterator.next().getName());
+                            builder.append(iterator.next().toString());
                         }
                     }
 
