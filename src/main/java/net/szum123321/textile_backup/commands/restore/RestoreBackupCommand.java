@@ -23,6 +23,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -35,6 +36,7 @@ import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -68,26 +70,40 @@ public class RestoreBackupCommand {
                 });
     }
 
-    private static int execute(String file, String comment, ServerCommandSource source) {
-        LocalDateTime dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
+    private static int execute(String file, String comment, ServerCommandSource source) throws CommandSyntaxException {
+        LocalDateTime dateTime;
+
+        try {
+            dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
+        } catch (DateTimeParseException e) {
+            LiteralText message = new LiteralText("An exception occurred while trying to parse:\n");
+            message.append(e.getParsedString())
+                    .append("\n");
+
+            for(int i = 0; i < e.getErrorIndex(); i++)
+                message.append(" ");
+
+            message.append("^");
+
+            throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
+        }
 
         Optional<File> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
 
-        if(backupFile.isPresent())
+        if(backupFile.isPresent()) {
             Statics.LOGGER.info("Found file to restore {}", backupFile.get().getName());
-        else {
-            Statics.LOGGER.info("No file created on {}  was found!", dateTime.format(Statics.defaultDateTimeFormatter));
-            Statics.LOGGER.sendInfo(source, "No file created on {}  was found!", dateTime.format(Statics.defaultDateTimeFormatter));
+        } else {
+            Statics.LOGGER.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
 
             return 0;
         }
 
-        if(source.getEntity() != null)
-            Statics.LOGGER.info("Backup restoration was initiated by: {}", source.getName());
-        else
-            Statics.LOGGER.info("Backup restoration was initiated form Server Console");
-
         if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
+            if(source.getEntity() != null)
+                Statics.LOGGER.info("Backup restoration was initiated by: {}", source.getName());
+            else
+                Statics.LOGGER.info("Backup restoration was initiated form Server Console");
+
             Statics.restoreAwaitThread = RestoreHelper.create(backupFile.get(), source.getMinecraftServer(), comment);
 
             Statics.restoreAwaitThread.start();
