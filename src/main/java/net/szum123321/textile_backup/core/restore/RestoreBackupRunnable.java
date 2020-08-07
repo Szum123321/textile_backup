@@ -100,7 +100,7 @@ public class RestoreBackupRunnable implements Runnable {
     private void awaitServerShutdown() {
         while(((LivingServer)server).isAlive()) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 Statics.LOGGER.error("Exception occurred!", e);
             }
