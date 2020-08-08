@@ -21,7 +21,6 @@ package net.szum123321.textile_backup.commands.restore;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.Statics;
 
 public class KillRestoreCommand {
@@ -30,13 +29,13 @@ public class KillRestoreCommand {
                 .executes(ctx -> {
                     if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
                         Statics.restoreAwaitThread.interrupt();
-                        ctx.getSource().sendFeedback(new LiteralText("Backup restoration successfully stopped"), false);
+                        Statics.LOGGER.sendInfo(ctx.getSource(), "Backup restoration successfully stopped");
                         Statics.LOGGER.info("{} cancelled backup restoration.", ctx.getSource().getEntity() != null ?
                                 "Player: " + ctx.getSource().getName() :
                                 "SERVER"
                                 );
                     } else {
-                        ctx.getSource().sendFeedback(new LiteralText("Failed to stop backup restoration"), false);
+                        Statics.LOGGER.sendInfo(ctx.getSource(), "Failed to stop backup restoration");
                     }
                     return 1;
                 });

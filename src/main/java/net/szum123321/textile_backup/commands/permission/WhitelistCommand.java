@@ -29,7 +29,7 @@ public class WhitelistCommand {
 	}
 
 	private static int help(ServerCommandSource source){
-		source.sendFeedback(new LiteralText("Available command are: add [player], remove [player], list."), false);
+		Statics.LOGGER.sendInfo(source, "Available command are: add [player], remove [player], list.");
 
 		return 1;
 	}
@@ -44,7 +44,7 @@ public class WhitelistCommand {
 			builder.append(", ");
 		}
 
-		source.sendFeedback(new LiteralText(builder.toString()), false);
+		Statics.LOGGER.sendInfo(source, builder.toString());
 
 		return 1;
 	}
@@ -53,8 +53,8 @@ public class WhitelistCommand {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(Statics.CONFIG.playerWhitelist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already whitelisted.", player.getEntityName()), false);
-		}else{
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} is already whitelisted.", player.getEntityName());
+		} else {
 			Statics.CONFIG.playerWhitelist.add(player.getEntityName());
 			ConfigManager.saveConfig(Statics.CONFIG);
 
@@ -83,19 +83,14 @@ public class WhitelistCommand {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!Statics.CONFIG.playerWhitelist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was on the whitelist.", player.getEntityName()), false);
-		}else{
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} newer was whitelisted.", player.getEntityName());
+		} else {
 			Statics.CONFIG.playerWhitelist.remove(player.getEntityName());
 			ConfigManager.saveConfig(Statics.CONFIG);
-			StringBuilder builder = new StringBuilder();
-
-			builder.append("Player: ");
-			builder.append(player.getEntityName());
-			builder.append(" removed from the whitelist successfully.");
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getEntityName());
 		}
 
 		return 1;

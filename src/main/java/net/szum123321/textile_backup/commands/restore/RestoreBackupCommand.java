@@ -62,9 +62,9 @@ public class RestoreBackupCommand {
                 ).executes(context -> {
                     ServerCommandSource source = context.getSource();
 
-                    source.sendFeedback(new LiteralText("To restore given backup you have to provide exact creation time in format:"), false);
-                    source.sendFeedback(new LiteralText("[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]"), false);
-                    source.sendFeedback(new LiteralText("Example: 2020-08-05_10.58.33"), false);
+                    Statics.LOGGER.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
+                    Statics.LOGGER.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
+                    Statics.LOGGER.sendInfo(source, "Example: 2020-08-05_10.58.33");
 
                     return 1;
                 });
@@ -108,7 +108,8 @@ public class RestoreBackupCommand {
 
             Statics.restoreAwaitThread.start();
         } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
-            source.sendFeedback(new LiteralText("Someone has already started another restoration."), false);
+            Statics.LOGGER.sendInfo(source, "Someone has already started another restoration.");
+
             return 0;
         }
 

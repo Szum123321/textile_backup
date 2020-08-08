@@ -8,8 +8,6 @@ import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
 import net.szum123321.textile_backup.Statics;
 
 public class BlacklistCommand {
@@ -29,7 +27,7 @@ public class BlacklistCommand {
 	}
 
 	private static int help(ServerCommandSource source) {
-		source.sendFeedback(new LiteralText("Available command are: add [player], remove [player], list."), false);
+		Statics.LOGGER.sendInfo(source, "Available command are: add [player], remove [player], list.");
 
 		return 1;
 	}
@@ -44,7 +42,7 @@ public class BlacklistCommand {
 			builder.append(", ");
 		}
 
-		source.sendFeedback(new LiteralText(builder.toString()), false);
+		Statics.LOGGER.sendInfo(source, builder.toString());
 
 		return 1;
 	}
@@ -53,8 +51,8 @@ public class BlacklistCommand {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: %s is already blacklisted.", player.getEntityName()), false);
-		}else{
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} is already blacklisted.", player.getEntityName());
+		} else {
 			Statics.CONFIG.playerBlacklist.add(player.getEntityName());
 			ConfigManager.saveConfig(Statics.CONFIG);
 
@@ -83,20 +81,14 @@ public class BlacklistCommand {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
-			ctx.getSource().sendFeedback(new TranslatableText("Player: %s newer was blacklisted.", player.getEntityName()), false);
-		}else{
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} newer was blacklisted.", player.getEntityName());
+		} else {
 			Statics.CONFIG.playerBlacklist.remove(player.getEntityName());
 			ConfigManager.saveConfig(Statics.CONFIG);
 
-			StringBuilder builder = new StringBuilder();
-
-			builder.append("Player: ");
-			builder.append(player.getEntityName());
-			builder.append(" removed from the blacklist successfully.");
-
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} removed from the blacklist successfully.", player.getEntityName());
 		}
 
 		return 1;

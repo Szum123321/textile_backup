@@ -21,9 +21,10 @@ package net.szum123321.textile_backup.commands.restore;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
+import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class ListBackupsCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("list")
                 .executes(ctx -> { StringBuilder builder = new StringBuilder();
-                    List<RestoreHelper.RestoreableFile> backups =  RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer());
+                    List<RestoreHelper.RestoreableFile> backups = RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer());
 
                     if(backups.size() == 0) {
                         builder.append("There a no backups available for this world.");
@@ -39,6 +40,7 @@ public class ListBackupsCommand {
                         builder.append("There is only one backup available: ");
                         builder.append(backups.get(0).toString());
                     } else {
+                        backups.sort(Comparator.comparing(RestoreHelper.RestoreableFile::getCreationTime));
                         Iterator<RestoreHelper.RestoreableFile> iterator = backups.iterator();
                         builder.append("Available backups: ");
 
@@ -50,7 +52,7 @@ public class ListBackupsCommand {
                         }
                     }
 
-                    ctx.getSource().sendFeedback(new LiteralText(builder.toString()), false);
+                    Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
 
                     return 1;
                 });
