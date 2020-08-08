@@ -21,10 +21,7 @@ package net.szum123321.textile_backup.core.create;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
-import net.szum123321.textile_backup.core.create.compressors.LZMACompressor;
-import net.szum123321.textile_backup.core.create.compressors.ParallelBZip2Compressor;
-import net.szum123321.textile_backup.core.create.compressors.ParallelGzipCompressor;
-import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
+import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
 
 import java.io.File;
@@ -85,15 +82,15 @@ public class MakeBackupRunnable implements Runnable {
                 break;
 
             case BZIP2:
-                ParallelBZip2Compressor.createArchive(world, outFile, commandSource, coreCount);
+                ParallelBZip2Compressor.getInstance().createArchive(world, outFile, commandSource, coreCount);
                 break;
 
             case GZIP:
-                ParallelGzipCompressor.createArchive(world, outFile, commandSource, coreCount);
+                ParallelGzipCompressor.getInstance().createArchive(world, outFile, commandSource, coreCount);
                 break;
 
             case LZMA:
-                LZMACompressor.createArchive(world, outFile, commandSource); // Always single-threaded ):
+                LZMACompressor.getInstance().createArchive(world, outFile, commandSource, coreCount);
                 break;
 
             default:

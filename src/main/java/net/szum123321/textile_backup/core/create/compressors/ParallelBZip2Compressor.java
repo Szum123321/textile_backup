@@ -18,65 +18,20 @@
 
 package net.szum123321.textile_backup.core.create.compressors;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.Statics;
-import net.szum123321.textile_backup.core.Utilities;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.at4j.comp.bzip2.BZip2OutputStream;
 import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.time.Duration;
-import java.time.Instant;
 
-public class ParallelBZip2Compressor {
-	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
-		Statics.LOGGER.sendInfo(ctx, "Starting compression...");
+public class ParallelBZip2Compressor extends AbstractTarCompressor {
+	private static final ParallelBZip2Compressor INSTANCE = new ParallelBZip2Compressor();
 
-		BZip2OutputStreamSettings settings = new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit);
+	public static ParallelBZip2Compressor getInstance() {
+		return INSTANCE;
+	}
 
-		Instant start = Instant.now();
-
-		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
-			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-			 BZip2OutputStream bZip2OutputStream = new BZip2OutputStream(bufferedOutputStream, settings);
-			 TarArchiveOutputStream arc = new TarArchiveOutputStream(bZip2OutputStream)) {
-
-			arc.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-			arc.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
-
-			File input = in.getCanonicalFile();
-
-			Files.walk(input.toPath()
-			).filter(path -> !path.equals(input.toPath()) &&
-					path.toFile().isFile() &&
-					!Utilities.isBlacklisted(input.toPath().relativize(path))
-			).forEach(path -> {
-				File file = path.toAbsolutePath().toFile();
-
-				try (FileInputStream fin = new FileInputStream(file);
-					 BufferedInputStream bfin = new BufferedInputStream(fin)) {
-					ArchiveEntry entry = arc.createArchiveEntry(file, input.toPath().relativize(path).toString());
-
-					arc.putArchiveEntry(entry);
-					IOUtils.copy(bfin, arc);
-
-					arc.closeArchiveEntry();
-				} catch (IOException e) {
-					Statics.LOGGER.error("An exception occurred while trying to compress: {}", path.getFileName(), e);
-					Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
-				}
-			});
-
-			arc.finish();
-		} catch (IOException e) {
-			Statics.LOGGER.error("An exception occurred!", e);
-			Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
-		}
-
-		Statics.LOGGER.sendInfo(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+	@Override
+	protected OutputStream openCompressorStream(OutputStream outputStream, int coreCountLimit) throws IOException {
+		return new BZip2OutputStream(outputStream, new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreCountLimit));
 	}
 }
