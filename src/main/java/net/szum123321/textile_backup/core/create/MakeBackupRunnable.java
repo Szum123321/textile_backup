@@ -18,8 +18,6 @@
 
 package net.szum123321.textile_backup.core.create;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
@@ -29,26 +27,22 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class MakeBackupRunnable implements Runnable {
-    private final MinecraftServer server;
-    private final ServerCommandSource commandSource;
-    private final String comment;
+    private final BackupContext context;
 
     public MakeBackupRunnable(BackupContext context){
-        this.server = context.getServer();
-        this.commandSource = context.getCommandSource();
-        this.comment = context.getComment();
+        this.context = context;
     }
 
     @Override
     public void run() {
-        Statics.LOGGER.sendInfo(commandSource, "Starting backup");
+        Statics.LOGGER.sendInfo(context.getCommandSource(), "Starting backup");
 
-        File world = Utilities.getWorldFolder(server);
+        File world = Utilities.getWorldFolder(context.getServer());
 
         Statics.LOGGER.trace("Minecraft world is: {}", world);
 
         File outFile = Utilities
-                .getBackupRootPath(Utilities.getLevelName(server))
+                .getBackupRootPath(Utilities.getLevelName(context.getServer()))
                 .toPath()
                 .resolve(getFileName())
                 .toFile();
@@ -61,7 +55,7 @@ public class MakeBackupRunnable implements Runnable {
             outFile.createNewFile();
         } catch (IOException e) {
             Statics.LOGGER.error("An exception occurred when trying to create new backup file!", e);
-            Statics.LOGGER.sendError(commandSource, "An exception occurred when trying to create new backup file!");
+            Statics.LOGGER.sendError(context.getCommandSource(), "An exception occurred when trying to create new backup file!");
 
             return;
         }
@@ -78,37 +72,39 @@ public class MakeBackupRunnable implements Runnable {
 
         switch (Statics.CONFIG.format) {
             case ZIP:
-                ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
+                ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
                 break;
 
             case BZIP2:
-                ParallelBZip2Compressor.getInstance().createArchive(world, outFile, commandSource, coreCount);
+                ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);
                 break;
 
             case GZIP:
-                ParallelGzipCompressor.getInstance().createArchive(world, outFile, commandSource, coreCount);
+                ParallelGzipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                 break;
 
             case LZMA:
-                LZMACompressor.getInstance().createArchive(world, outFile, commandSource, coreCount);
+                LZMACompressor.getInstance().createArchive(world, outFile, context, coreCount);
                 break;
 
             default:
                 Statics.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", Statics.CONFIG.format);
-                Statics.LOGGER.sendError(commandSource, "Error! No correct compression format specified! Using default compressor!");
+                Statics.LOGGER.sendError(context.getCommandSource(), "Error! No correct compression format specified! Using default compressor!");
 
-                ParallelZipCompressor.createArchive(world, outFile, commandSource, coreCount);
+                ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
                 break;
         }
 
-        BackupHelper.executeFileLimit(commandSource, Utilities.getLevelName(server));
+        BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
 
-        Statics.LOGGER.sendInfo(commandSource, "Done!");
+        Statics.LOGGER.sendInfo(context, "Done!");
     }
 
     private String getFileName(){
         LocalDateTime now = LocalDateTime.now();
 
-        return Utilities.getDateTimeFormatter().format(now) + (comment != null ? "#" + comment.replace("#", "") : "") + Statics.CONFIG.format.getString();
+        return Utilities.getDateTimeFormatter().format(now) +
+                (context.getComment() != null ? "#" + context.getComment().replace("#", "") : "") +
+                Statics.CONFIG.format.getString();
     }
 }
