@@ -29,7 +29,7 @@ public class BackupContext {
     private final boolean save;
     private final String comment;
 
-    protected BackupContext(@NotNull  MinecraftServer server, ServerCommandSource commandSource, @NotNull BackupInitiator initiator, boolean save, String comment) {
+    protected BackupContext(@NotNull MinecraftServer server, ServerCommandSource commandSource, @NotNull BackupInitiator initiator, boolean save, String comment) {
         this.server = server;
         this.commandSource = commandSource;
         this.initiator = initiator;
@@ -117,8 +117,12 @@ public class BackupContext {
                 initiator = BackupInitiator.Null;
             }
 
-            if(server == null)
-                setServer(commandSource.getMinecraftServer());
+            if(server == null) {
+                if(commandSource != null)
+                    setServer(commandSource.getMinecraftServer());
+                else
+                    throw new RuntimeException("Both MinecraftServer and ServerCommandSource weren't provided!");
+            }
 
             return new BackupContext(server, commandSource, initiator, save, comment);
         }
@@ -129,7 +133,7 @@ public class BackupContext {
         ServerConsole ("Server Console", "from"),
         Timer ("Timer", "by"),
         Shutdown ("Server Shutdown", "by"),
-        Restore ("Backup Restore", "by"),
+        Restore ("Backup Restoration", "because of"),
         Null ("Null (That shouldn't have happened)", "form");
 
         private final String name;

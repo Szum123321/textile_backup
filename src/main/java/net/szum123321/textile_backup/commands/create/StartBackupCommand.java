@@ -41,7 +41,6 @@ public class StartBackupCommand {
                     BackupHelper.create(
                             new BackupContext.Builder()
                                     .setCommandSource(ctx.getSource())
-                                    .setServer(ctx.getSource().getMinecraftServer())
                                     .setComment(StringArgumentType.getString(ctx, "comment"))
                                     .guessInitiator()
                                     .setSave()
@@ -58,7 +57,6 @@ public class StartBackupCommand {
                     BackupHelper.create(
                             new BackupContext.Builder()
                                     .setCommandSource(source)
-                                    .setServer(source.getMinecraftServer())
                                     .guessInitiator()
                                     .setSave()
                                     .build()
