@@ -20,9 +20,6 @@ package net.szum123321.textile_backup.mixin;
 
 import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.core.LivingServer;
-import net.szum123321.textile_backup.Statics;
-import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.BackupHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,20 +29,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftServerMixin implements LivingServer {
     private boolean isAlive = true;
 
-    @Inject(method = "shutdown", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/MinecraftServer;save(ZZZ)Z"))
+    @Inject(method = "shutdown", at = @At("TAIL"))
     public void onFinalWorldSave(CallbackInfo ci) {
-        if (Statics.CONFIG.shutdownBackup && Statics.globalShutdownBackupFlag.get()) {
-            Statics.executorService.submit(
-                    BackupHelper.create(
-                            new BackupContext.Builder()
-                                    .setServer((MinecraftServer) (Object) this)
-                                    .setInitiator(BackupContext.BackupInitiator.Shutdown)
-                                    .setComment("shutdown")
-                                    .build()
-                    )
-            );
-        }
-
         isAlive = false;
     }
 

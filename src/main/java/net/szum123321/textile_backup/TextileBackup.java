@@ -33,6 +33,8 @@ import net.szum123321.textile_backup.commands.permission.WhitelistCommand;
 import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
 import net.szum123321.textile_backup.commands.restore.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
+import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.BackupHelper;
 
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -46,7 +48,7 @@ public class TextileBackup implements ModInitializer {
         Optional<String> errorMessage = Statics.CONFIG.sanitize();
 
         if(errorMessage.isPresent()) {
-            Statics.LOGGER.fatal("TextileBackup config file has wrong settings! \n {}", errorMessage.get());
+            Statics.LOGGER.fatal("TextileBackup config file has wrong settings!\n{}", errorMessage.get());
             System.exit(1);
         }
 
@@ -58,7 +60,19 @@ public class TextileBackup implements ModInitializer {
                 Statics.executorService = Executors.newSingleThreadExecutor();
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register(ignored -> Statics.executorService.shutdown());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            Statics.executorService.shutdown();
+
+            if (Statics.CONFIG.shutdownBackup && Statics.globalShutdownBackupFlag.get()) {
+                BackupHelper.create(
+                        new BackupContext.Builder()
+                                .setServer(server)
+                                .setInitiator(BackupContext.BackupInitiator.Shutdown)
+                                .setComment("shutdown")
+                                .build()
+                ).run();
+            }
+        });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
