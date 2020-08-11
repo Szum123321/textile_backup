@@ -18,9 +18,9 @@
 
 package net.szum123321.textile_backup.core.create.compressors;
 
-import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
@@ -40,12 +40,14 @@ import java.util.zip.ZipEntry;
 	https://stackoverflow.com/users/2987755/dkb
 */
 public class ParallelZipCompressor {
-	public static void createArchive(File in, File out, ServerCommandSource ctx, int coreLimit) {
+	public static void createArchive(File inputFile, File outputFile, BackupContext ctx, int coreLimit) {
 		Statics.LOGGER.sendInfo(ctx, "Starting compression...");
 
 		Instant start = Instant.now();
 
-		try (FileOutputStream fileOutputStream = new FileOutputStream(out);
+		Path rootPath = inputFile.toPath();
+
+		try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 			 ZipArchiveOutputStream arc = new ZipArchiveOutputStream(bufferedOutputStream)) {
 
@@ -56,22 +58,23 @@ public class ParallelZipCompressor {
 			arc.setLevel(Statics.CONFIG.compression);
 			arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
-			File input = in.getCanonicalFile();
+			Files.walk(inputFile.toPath())
+					.filter(path -> !Utilities.isBlacklisted(inputFile.toPath().relativize(path)))
+					.map(Path::toFile)
+					.filter(File::isFile)
+					.forEach(file -> {
+						try {  //IOException gets thrown only when arc is closed
+							ZipArchiveEntry entry = (ZipArchiveEntry)arc.createArchiveEntry(file, rootPath.relativize(file.toPath()).toString());
 
-			Files.walk(input.toPath())
-					.filter(path -> !path.equals(input.toPath()))
-					.filter(path -> path.toFile().isFile())
-					.filter(path -> !Utilities.isBlacklisted(input.toPath().relativize(path)))
-					.forEach(p -> {
-						ZipArchiveEntry entry = new ZipArchiveEntry(input.toPath().relativize(p).toString());
-						entry.setMethod(ZipEntry.DEFLATED);
-						FileInputStreamSupplier supplier = new FileInputStreamSupplier(p);
-						scatterZipCreator.addArchiveEntry(entry, supplier);
+							entry.setMethod(ZipEntry.DEFLATED);
+							scatterZipCreator.addArchiveEntry(entry, new FileInputStreamSupplier(file));
+						} catch (IOException e) {
+							Statics.LOGGER.error("An exception occurred while trying to compress: {}", file.getName(), e);
+							Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
+						}
 					});
 
 			scatterZipCreator.writeTo(arc);
-
-			arc.finish();
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			Statics.LOGGER.error("An exception occurred!", e);
 			Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
@@ -81,16 +84,16 @@ public class ParallelZipCompressor {
 	}
 
 	static class FileInputStreamSupplier implements InputStreamSupplier {
-		private final Path sourceFile;
+		private final File sourceFile;
 		private InputStream stream;
 
-		FileInputStreamSupplier(Path sourceFile) {
+		FileInputStreamSupplier(File sourceFile) {
 			this.sourceFile = sourceFile;
 		}
 
 		public InputStream get() {
 			try {
-				stream = Files.newInputStream(sourceFile);
+				stream = new BufferedInputStream(new FileInputStream(sourceFile));
 			} catch (IOException e) {
 				Statics.LOGGER.error("An exception occurred while trying to create input stream!", e);
 			}
