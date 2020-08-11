@@ -36,8 +36,7 @@ public class RestoreHelper {
         File root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
         Optional<File> optionalFile =  Arrays.stream(root.listFiles())
-                .filter(File::isFile)
-                .filter(Utilities::isValid)
+                .filter(Utilities::isValidBackup)
                 .filter(file -> Utilities.getFileCreationTime(file).get().equals(backupTime))
                 .findFirst();
 
@@ -62,8 +61,7 @@ public class RestoreHelper {
         File root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
         return Arrays.stream(root.listFiles())
-                .filter(File::isFile)
-                .filter(Utilities::isValid)
+                .filter(Utilities::isValidBackup)
                 .map(RestoreableFile::new)
                 .collect(Collectors.toList());
     }

@@ -151,9 +151,11 @@ public class Utilities {
 		return path;
 	}
 
-	public static boolean isValid(File f) {
-		return getFileExtension(f).isPresent() && getFileCreationTime(f).isPresent();
+	public static boolean isValidBackup(File f) {
+		return getFileExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
 	}
+
+	public static boolean isFileOk(File f) {return f.exists() && f.isFile(); }
 
 	public static DateTimeFormatter getDateTimeFormatter() {
 		return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);

@@ -67,8 +67,7 @@ public class BackupHelper {
 				final LocalDateTime now = LocalDateTime.now();
 
 				Arrays.stream(root.listFiles())
-						.filter(BackupHelper::isFileOk)
-						.filter(Utilities::isValid)// We check if we can get file's creation date so that the next line won't throw an exception
+						.filter(Utilities::isValidBackup)// We check if we can get file's creation date so that the next line won't throw an exception
 						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > Statics.CONFIG.maxAge)
 						.forEach(f -> {
 							if(deleteFile(f, ctx))
@@ -80,8 +79,7 @@ public class BackupHelper {
 				int i = root.listFiles().length;
 
 				Iterator<File> it = Arrays.stream(root.listFiles())
-						.filter(BackupHelper::isFileOk)
-						.filter(Utilities::isValid)
+						.filter(Utilities::isValidBackup)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
@@ -95,8 +93,7 @@ public class BackupHelper {
 
 			if (Statics.CONFIG.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize) {
 				Iterator<File> it = Arrays.stream(root.listFiles())
-						.filter(BackupHelper::isFileOk)
-						.filter(Utilities::isValid)
+						.filter(Utilities::isValidBackup)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.iterator();
 
