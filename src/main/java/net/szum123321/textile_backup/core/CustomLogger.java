@@ -23,6 +23,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -119,5 +120,13 @@ public class CustomLogger {
 
     public void sendError(ServerCommandSource source, String msg, Object... args) {
         sendToPlayer(Level.ERROR, source, msg, args);
+    }
+
+    public void sendInfo(BackupContext context, String msg, Object... args) {
+        sendInfo(context.getCommandSource(), msg, args);
+    }
+
+    public void sendError(BackupContext context, String msg, Object... args) {
+        sendError(context.getCommandSource(), msg, args);
     }
 }
