@@ -30,10 +30,11 @@ import java.time.Duration;
 import java.time.Instant;
 
 public class ZipDecompressor {
-    public static void decompress(FileInputStream fileInputStream, File target) {
+    public static void decompress(File inputFile, File target) {
         Instant start = Instant.now();
 
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+        try (FileInputStream fileInputStream = new FileInputStream(inputFile);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
              ZipArchiveInputStream zipInputStream = new ZipArchiveInputStream((bufferedInputStream))) {
             ZipArchiveEntry entry;
 
@@ -65,6 +66,6 @@ public class ZipDecompressor {
             Statics.LOGGER.error("An exception occurred! ", e);
         }
 
-        Statics.LOGGER.info("Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+        Statics.LOGGER.info("Decompression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 }

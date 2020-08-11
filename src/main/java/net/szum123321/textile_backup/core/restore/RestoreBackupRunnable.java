@@ -19,6 +19,7 @@
 package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
+import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
@@ -26,13 +27,8 @@ import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecompressor;
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.NoSuchElementException;
 
 public class RestoreBackupRunnable implements Runnable {
@@ -70,31 +66,15 @@ public class RestoreBackupRunnable implements Runnable {
 
         worldFile.mkdirs();
 
-        try(FileInputStream fileInputStream = new FileInputStream(backupFile)) {
-            Statics.LOGGER.info("Starting decompression...");
+        Statics.LOGGER.info("Starting decompression...");
 
-            switch(Utilities.getFileExtension(backupFile).orElseThrow(() -> new NoSuchElementException("Couldn't get file extention!"))) {
-                case ZIP:
-                    ZipDecompressor.decompress(fileInputStream, worldFile);
-                    break;
-
-                case GZIP:
-                    GenericTarDecompressor.decompress(fileInputStream, worldFile, GzipCompressorInputStream.class);
-                    break;
-
-                case BZIP2:
-                    GenericTarDecompressor.decompress(fileInputStream, worldFile, BZip2CompressorInputStream.class);
-                    break;
-
-                case LZMA:
-                    GenericTarDecompressor.decompress(fileInputStream, worldFile, XZCompressorInputStream.class);
-                    break;
-            }
-        } catch (IOException e) {
-            Statics.LOGGER.error("Exception occurred!", e);
+        if(Utilities.getFileExtension(backupFile).orElseThrow(() -> new NoSuchElementException("Couldn't get file extension!")) == ConfigHandler.ArchiveFormat.ZIP) {
+            ZipDecompressor.decompress(backupFile, worldFile);
+        } else {
+            GenericTarDecompressor.decompress(backupFile, worldFile);
         }
 
-        Statics.LOGGER.info("Done.");
+        Statics.LOGGER.info("Done!");
     }
 
     private void awaitServerShutdown() {

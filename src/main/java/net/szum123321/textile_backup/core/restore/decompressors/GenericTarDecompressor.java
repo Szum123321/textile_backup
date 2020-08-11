@@ -22,21 +22,23 @@ import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 
 public class GenericTarDecompressor {
-    public static void decompress(FileInputStream fileInputStream, File target, Class<? extends CompressorInputStream> DecompressorStream) {
+    public static void decompress(File input, File target) {
         Instant start = Instant.now();
 
-        try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-             CompressorInputStream compressorInputStream = DecompressorStream.getDeclaredConstructor(InputStream.class).newInstance(bufferedInputStream);
+        try (FileInputStream fileInputStream = new FileInputStream(input);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+             CompressorInputStream compressorInputStream = new CompressorStreamFactory().createCompressorInputStream(bufferedInputStream);
              TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(compressorInputStream)) {
             TarArchiveEntry entry;
 
@@ -53,18 +55,19 @@ public class GenericTarDecompressor {
                 } else {
                     File parent = file.getParentFile();
 
-                    if (!parent.isDirectory() && !parent.mkdirs())
-                        throw new IOException("Failed to create directory " + parent);
-
-                    try (OutputStream outputStream = Files.newOutputStream(file.toPath());
-                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                        IOUtils.copy(archiveInputStream, bufferedOutputStream);
-                    } catch (IOException e) {
-                        Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        Statics.LOGGER.error("Failed to create {}", parent);
+                    } else {
+                        try (OutputStream outputStream = Files.newOutputStream(file.toPath());
+                             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                            IOUtils.copy(archiveInputStream, bufferedOutputStream);
+                        } catch (IOException e) {
+                            Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
+                        }
                     }
                 }
             }
-        } catch (IOException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (IOException | CompressorException e) {
             Statics.LOGGER.error("An exception occurred! ", e);
         }
 
