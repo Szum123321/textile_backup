@@ -58,9 +58,13 @@ public class CustomLogger {
         log(Level.TRACE, msg, data);
     }
 
-    public void debug(String msg, Object... data) { log(Level.DEBUG, msg, data); }
+    public void debug(String msg, Object... data) {
+        log(Level.DEBUG, msg, data);
+    }
 
-    public void info(String msg, Object... data) { log(Level.INFO, msg, data); }
+    public void info(String msg, Object... data) {
+        log(Level.INFO, msg, data);
+    }
 
     public void warn(String msg, Object... data) {
         log(Level.WARN, msg, data);
@@ -73,13 +77,7 @@ public class CustomLogger {
     public void fatal(String msg, Object... data) {
         log(Level.FATAL, msg, data);
     }
-/*
-    public void warn(String msg, Throwable throwable) { logger.warn(prefix + msg, throwable); }
 
-    public void error(String msg, Throwable throwable) { logger.error(prefix + msg, throwable); }
-
-    public void fatal(String msg, Throwable throwable) { logger.fatal(prefix + msg, throwable); }
-*/
     public void devError(String msg, Object... data) {
         if (isDev) error(msg, data);
     }
