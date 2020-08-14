@@ -21,6 +21,7 @@ package net.szum123321.textile_backup;
 import blue.endless.jankson.Comment;
 import io.github.cottonmc.cotton.config.annotations.ConfigFile;
 
+import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Optional;
@@ -106,6 +107,16 @@ public class ConfigHandler {
             DateTimeFormatter.ofPattern(dateTimeFormat);
         } catch (IllegalArgumentException e) {
             return Optional.of("dateTimeFormat is wrong!\n" + e.getMessage() + "\n See: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html");
+        }
+
+        File path = new File(Statics.CONFIG.path).getAbsoluteFile();
+
+        if (!path.exists()) {
+            try {
+                path.mkdirs();
+            } catch (Exception e) {
+                return Optional.of("Something went wrong while creating backup folder!\n" + e.getMessage());
+            }
         }
 
         return Optional.empty();

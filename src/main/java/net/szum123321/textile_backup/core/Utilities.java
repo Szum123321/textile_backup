@@ -134,18 +134,7 @@ public class Utilities {
 			path = path.toPath().resolve(worldName).toFile();
 
 		if (!path.exists()) {
-			try {
-				path.mkdirs();
-			} catch (Exception e) {
-				Statics.LOGGER.error("An exception occurred!", e);
-
-				return FabricLoader
-						.getInstance()
-						.getGameDirectory()
-						.toPath()
-						.resolve(Statics.CONFIG.path)
-						.toFile();
-			}
+			path.mkdirs();
 		}
 
 		return path;
