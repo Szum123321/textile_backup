@@ -74,6 +74,13 @@ public class RestoreBackupRunnable implements Runnable {
             GenericTarDecompressor.decompress(backupFile, worldFile);
         }
 
+        if(Statics.CONFIG.deleteOldBackupAfterRestore) {
+            Statics.LOGGER.info("Deleting old backup");
+
+            if(!backupFile.delete())
+                Statics.LOGGER.info("Something went wrong while deleting old backup");
+        }
+
         Statics.LOGGER.info("Done!");
     }
 

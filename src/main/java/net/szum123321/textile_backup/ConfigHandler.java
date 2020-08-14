@@ -54,6 +54,9 @@ public class ConfigHandler {
                 "Be very careful when setting it, as it is easy corrupt your world!\n")
     public Set<String> fileBlacklist = new HashSet<>();
 
+    @Comment("\nShould backups be deleted after being restored?\n")
+    public boolean deleteOldBackupAfterRestore = true;
+
     @Comment("\nMaximum number of backups to keep. If set to 0 then no backup will be deleted based their amount\n")
     public int backupsToKeep = 10;
 
