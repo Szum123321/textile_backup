@@ -113,7 +113,6 @@ public class CustomLogger {
 
     public void sendInfo(ServerCommandSource source, String msg, Object... args) {
         sendToPlayer(Level.INFO, source, msg, args);
-        info(msg, args);
     }
 
     public void sendError(ServerCommandSource source, String msg, Object... args) {

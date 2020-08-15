@@ -52,6 +52,7 @@ public class BackupHelper {
 
 		if (ctx.shouldSave()) {
 			Statics.LOGGER.sendInfo(ctx.getCommandSource(), "Saving server...");
+			Statics.LOGGER.info( "Saving server...");
 			ctx.getServer().save(true, true, false);
 		}
 
@@ -111,6 +112,7 @@ public class BackupHelper {
 		if(f != Statics.untouchableFile) {
 			if(f.delete()) {
 				Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
+				Statics.LOGGER.info("Deleting: {}", f.getName());
 				return true;
 			} else {
 				Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
@@ -119,6 +121,4 @@ public class BackupHelper {
 
 		return false;
 	}
-
-	private static boolean isFileOk(File f) {return f.exists() && f.isFile(); }
 }

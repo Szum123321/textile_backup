@@ -36,6 +36,7 @@ public class MakeBackupRunnable implements Runnable {
     @Override
     public void run() {
         Statics.LOGGER.sendInfo(context.getCommandSource(), "Starting backup");
+        Statics.LOGGER.info("Starting backup");
 
         File world = Utilities.getWorldFolder(context.getServer());
 
@@ -98,6 +99,7 @@ public class MakeBackupRunnable implements Runnable {
         BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
 
         Statics.LOGGER.sendInfo(context, "Done!");
+        Statics.LOGGER.info("Done!");
     }
 
     private String getFileName(){

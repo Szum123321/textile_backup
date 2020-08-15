@@ -87,10 +87,11 @@ public class TextileBackup implements ModInitializer {
                                         return true;
                                     }
                                 }
-                        ).then(BlacklistCommand.register())
-                        .then(CleanupCommand.register())
+                        )
                         .then(StartBackupCommand.register())
+                        .then(CleanupCommand.register())
                         .then(WhitelistCommand.register())
+                        .then(BlacklistCommand.register())
                         .then(RestoreBackupCommand.register())
                         .then(ListBackupsCommand.register())
                         .then(KillRestoreCommand.register())
