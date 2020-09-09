@@ -10,7 +10,10 @@ Commands look like that: /backup 'operation'
 
 Available operations are: 
 
- * start - just starts backup. You can add comment* to file by just typing it after command. For example: /backup start FabricIsGreat
+ * start - just starts backup. You can add comment* to file by just typing it after command. For example: `/backup start FabricIsGreat`
+ * restore - restores backup. Note that the current world will be backuped, and you can add comment to it. `/backup restore [version] [comment]`
+ * killR - terminate current restoration.
+ * list - lists all avaliable backups.
  * cleanup - forces cleanup procedure (deletes old backups according to config)
  * whitelist - here you can add, remove and list player that are allowed to run any operation within this mod despite not having high enough permission level*
  * whitelist - here you can add, remove and list player that are not allowed to run any operation within this mod despite having high enough permission level*
