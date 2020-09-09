@@ -1,0 +1,32 @@
+# Textile Backup
+>终于，一个Fabric的备份mod！
+
+[![下载](http://cf.way2muchnoise.eu/full_359893_downloads.svg)
+![版本](http://cf.way2muchnoise.eu/versions/359893.svg)](https://www.curseforge.com/minecraft/mc-mods/textile-backup)
+
+轻量，可配置，完全服务器端的备份Fabric备份mod
+
+指令看起来应该像这样：`/backup <operation> [args]`
+
+有效的指令包括: 
+
+ * start - 创建备份。你可以为备份加入注释，只要将注释作为第二个参数传入即可。 For example: `/backup start FabricIsGreat`
+ * restore - restores backup. Note that the current world will be backuped, and you can add comment to it. `/backup restore [version] [comment]`
+ * killR - terminate current restoration.
+ * list - lists all avaliable backups.
+ * cleanup - forces cleanup procedure (deletes old backups according to config)
+ * whitelist - here you can add, remove and list player that are allowed to run any operation within this mod despite not having high enough permission level*
+ * whitelist - here you can add, remove and list player that are not allowed to run any operation within this mod despite having high enough permission level*
+ 
+All of the above can only be done by server admins(permission level 4 - configurable*) or player on a single player.
+
+Feel free to use this mod in your modpack or on a server!
+
+### Important
+
+* Time format defaultly used by this mod is: dd.MM.yyyy_HH-mm-ss although it is configurable*.
+* _This mod contains **Cotton Config** and its dependencies as jars in a jar, which are property of **CottonMC**_.
+
+\* - feature available since 1.1.0
+
+If you have any suggestions or found a problem please report it on [Github](https://github.com/Szum123321/textile_backup).
