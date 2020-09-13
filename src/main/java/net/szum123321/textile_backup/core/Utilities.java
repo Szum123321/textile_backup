@@ -18,7 +18,6 @@
 
 package net.szum123321.textile_backup.core;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;

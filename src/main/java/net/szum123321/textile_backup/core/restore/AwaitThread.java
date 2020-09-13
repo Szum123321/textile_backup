@@ -20,6 +20,9 @@ package net.szum123321.textile_backup.core.restore;
 
 import net.szum123321.textile_backup.Statics;
 
+/*
+    This thread waits some amount of time and then starts a new, independent thread
+*/
 public class AwaitThread extends Thread {
     private final int delay;
     private final Runnable taskRunnable;
@@ -31,7 +34,7 @@ public class AwaitThread extends Thread {
 
     @Override
     public void run() {
-        Statics.LOGGER.info("Countdown begins...");
+        Statics.LOGGER.info("Countdown begins... Waiting {} second.", delay);
 
         // 𝄞 This is final count down! Tu ruru Tu, Tu Ru Tu Tu ♪
         try {

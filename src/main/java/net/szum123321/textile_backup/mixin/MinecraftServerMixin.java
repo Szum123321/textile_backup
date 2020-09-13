@@ -21,12 +21,14 @@ package net.szum123321.textile_backup.mixin;
 import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.core.LivingServer;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin implements LivingServer {
+    @Unique
     private boolean isAlive = true;
 
     @Inject(method = "shutdown", at = @At("TAIL"))
@@ -34,6 +36,7 @@ public class MinecraftServerMixin implements LivingServer {
         isAlive = false;
     }
 
+    @Unique
     @Override
     public boolean isAlive() {
         return isAlive;

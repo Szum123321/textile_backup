@@ -40,6 +40,6 @@ public class Statics {
     public final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
 
     public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
-    public static AwaitThread restoreAwaitThread;
+    public static AwaitThread restoreAwaitThread = null;
     public static File untouchableFile;
 }
