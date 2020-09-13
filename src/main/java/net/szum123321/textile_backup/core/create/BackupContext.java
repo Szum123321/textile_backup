@@ -105,7 +105,7 @@ public class BackupContext {
             return this;
         }
 
-        public Builder setSave() {
+        public Builder saveServer() {
             this.save = true;
             return this;
         }

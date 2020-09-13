@@ -43,7 +43,7 @@ public class StartBackupCommand {
                                     .setCommandSource(ctx.getSource())
                                     .setComment(StringArgumentType.getString(ctx, "comment"))
                                     .guessInitiator()
-                                    .setSave()
+                                    .saveServer()
                                     .build()
                     )
             );
@@ -58,7 +58,7 @@ public class StartBackupCommand {
                             new BackupContext.Builder()
                                     .setCommandSource(source)
                                     .guessInitiator()
-                                    .setSave()
+                                    .saveServer()
                                     .build()
                     )
             );

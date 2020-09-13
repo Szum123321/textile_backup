@@ -43,7 +43,7 @@ public class BackupScheduler {
                                     new BackupContext.Builder()
                                             .setServer(server)
                                             .setInitiator(BackupContext.BackupInitiator.Timer)
-                                            .setSave()
+                                            .saveServer()
                                             .build()
                             )
                     );
@@ -61,7 +61,7 @@ public class BackupScheduler {
                                 new BackupContext.Builder()
                                         .setServer(server)
                                         .setInitiator(BackupContext.BackupInitiator.Timer)
-                                        .setSave()
+                                        .saveServer()
                                         .build()
                         )
                 );
