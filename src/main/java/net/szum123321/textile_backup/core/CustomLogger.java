@@ -108,6 +108,8 @@ public class CustomLogger {
                 text.formatted(Formatting.WHITE);
 
             source.sendFeedback(prefixText.shallowCopy().append(text), false);
+        } else {
+            logger.log(level, msg, args);
         }
     }
 
