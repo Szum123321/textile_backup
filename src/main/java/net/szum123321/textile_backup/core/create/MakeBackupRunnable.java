@@ -35,71 +35,75 @@ public class MakeBackupRunnable implements Runnable {
 
     @Override
     public void run() {
-        Statics.LOGGER.sendInfo(context.getCommandSource(), "Starting backup");
-        Statics.LOGGER.info("Starting backup");
-
-        File world = Utilities.getWorldFolder(context.getServer());
-
-        Statics.LOGGER.trace("Minecraft world is: {}", world);
-
-        File outFile = Utilities
-                .getBackupRootPath(Utilities.getLevelName(context.getServer()))
-                .toPath()
-                .resolve(getFileName())
-                .toFile();
-
-        Statics.LOGGER.trace("Outfile is: {}", outFile);
-
-        outFile.getParentFile().mkdirs();
-
         try {
-            outFile.createNewFile();
-        } catch (IOException e) {
-            Statics.LOGGER.error("An exception occurred when trying to create new backup file!", e);
-            Statics.LOGGER.sendError(context.getCommandSource(), "An exception occurred when trying to create new backup file!");
+            Statics.LOGGER.sendInfo(context.getCommandSource(), "Starting backup");
+            Statics.LOGGER.info("Starting backup");
 
-            return;
+            File world = Utilities.getWorldFolder(context.getServer());
+
+            Statics.LOGGER.trace("Minecraft world is: {}", world);
+
+            File outFile = Utilities
+                    .getBackupRootPath(Utilities.getLevelName(context.getServer()))
+                    .toPath()
+                    .resolve(getFileName())
+                    .toFile();
+
+            Statics.LOGGER.trace("Outfile is: {}", outFile);
+
+            outFile.getParentFile().mkdirs();
+
+            try {
+                outFile.createNewFile();
+            } catch (IOException e) {
+                Statics.LOGGER.error("An exception occurred when trying to create new backup file!", e);
+                Statics.LOGGER.sendError(context.getCommandSource(), "An exception occurred when trying to create new backup file!");
+
+                return;
+            }
+
+            int coreCount;
+
+            if(Statics.CONFIG.compressionCoreCountLimit <= 0) {
+                coreCount = Runtime.getRuntime().availableProcessors();
+            } else {
+                coreCount = Math.min(Statics.CONFIG.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
+            }
+
+            Statics.LOGGER.trace("Running compression on {} threads. Available cores = {}", coreCount, Runtime.getRuntime().availableProcessors());
+
+            switch (Statics.CONFIG.format) {
+                case ZIP:
+                    ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
+                    break;
+
+                case BZIP2:
+                    ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);
+                    break;
+
+                case GZIP:
+                    ParallelGzipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
+                    break;
+
+                case LZMA:
+                    LZMACompressor.getInstance().createArchive(world, outFile, context, coreCount);
+                    break;
+
+                default:
+                    Statics.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", Statics.CONFIG.format);
+                    Statics.LOGGER.sendError(context.getCommandSource(), "Error! No correct compression format specified! Using default compressor!");
+
+                    ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
+                    break;
+            }
+
+            BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
+
+            Statics.LOGGER.sendInfo(context, "Done!");
+            Statics.LOGGER.info("Done!");
+        } finally {
+            Utilities.enableWorldSaving(context.getServer());
         }
-
-        int coreCount;
-
-        if(Statics.CONFIG.compressionCoreCountLimit <= 0) {
-            coreCount = Runtime.getRuntime().availableProcessors();
-        } else {
-            coreCount = Math.min(Statics.CONFIG.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
-        }
-
-        Statics.LOGGER.trace("Running compression on {} threads. Available cores = {}", coreCount, Runtime.getRuntime().availableProcessors());
-
-        switch (Statics.CONFIG.format) {
-            case ZIP:
-                ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
-                break;
-
-            case BZIP2:
-                ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);
-                break;
-
-            case GZIP:
-                ParallelGzipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
-                break;
-
-            case LZMA:
-                LZMACompressor.getInstance().createArchive(world, outFile, context, coreCount);
-                break;
-
-            default:
-                Statics.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", Statics.CONFIG.format);
-                Statics.LOGGER.sendError(context.getCommandSource(), "Error! No correct compression format specified! Using default compressor!");
-
-                ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
-                break;
-        }
-
-        BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
-
-        Statics.LOGGER.sendInfo(context, "Done!");
-        Statics.LOGGER.info("Done!");
     }
 
     private String getFileName(){
