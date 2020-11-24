@@ -1,7 +1,7 @@
 # Textile Backup
 >终于有了一个Fabric的备份mod！
 
-[English/英文](https://github.com/Szum123321/textile_backup/README.md)
+[English/英文](https://github.com/Szum123321/textile_backup/blob/2.x/README.md)
 
 [![下载](http://cf.way2muchnoise.eu/full_359893_downloads.svg)
 ![版本](http://cf.way2muchnoise.eu/versions/359893.svg)](https://www.curseforge.com/minecraft/mc-mods/textile-backup)
