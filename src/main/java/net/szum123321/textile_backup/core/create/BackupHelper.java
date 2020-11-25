@@ -53,7 +53,10 @@ public class BackupHelper {
 		if (ctx.shouldSave()) {
 			Statics.LOGGER.sendInfo(ctx.getCommandSource(), "Saving server...");
 			Statics.LOGGER.info( "Saving server...");
-			ctx.getServer().save(true, true, false);
+
+			ctx.getServer().save(true, true, true);
+
+			Utilities.disableWorldSaving(ctx.getServer());
 		}
 
 		return new MakeBackupRunnable(ctx);

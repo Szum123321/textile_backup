@@ -19,6 +19,7 @@
 package net.szum123321.textile_backup.core;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
@@ -47,6 +48,22 @@ public class Utilities {
 		return ((MinecraftServerSessionAccessor)server)
 				.getSession()
 				.getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+	}
+
+	public static void disableWorldSaving(MinecraftServer server) {
+		for (ServerWorld serverWorld : server.getWorlds()) {
+			if (serverWorld != null && !serverWorld.savingDisabled) {
+				serverWorld.savingDisabled = true;
+			}
+		}
+	}
+
+	public static void enableWorldSaving(MinecraftServer server) {
+		for (ServerWorld serverWorld : server.getWorlds()) {
+			if (serverWorld != null && serverWorld.savingDisabled) {
+				serverWorld.savingDisabled = false;
+			}
+		}
 	}
 
 	public static boolean isWindows() {

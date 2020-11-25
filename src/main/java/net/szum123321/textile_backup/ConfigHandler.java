@@ -42,13 +42,13 @@ public class ConfigHandler {
     @Comment("\nShould backup be made on server shutdown?\n")
     public boolean shutdownBackup = true;
 
-    @Comment("\nShould old world be backed-up?\n")
+    @Comment("\nShould world be backed up before restoring a backup?\n")
     public boolean backupOldWorlds = true;
 
-    @Comment("\nShould every world has its won backup folder?\n")
+    @Comment("\nShould every world have its own backup folder?\n")
     public boolean perWorldBackup = true;
 
-    @Comment("\nA path to backup folder\n")
+    @Comment("\nA path to the backup folder\n")
     public String path = "backup/";
 
     @Comment("\nThis setting allows you to exclude files form being backedup.\n"+
