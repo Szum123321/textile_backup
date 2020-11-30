@@ -46,6 +46,28 @@ public class Utilities {
 				.getSession()
 				.getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
 	}
+	
+	public static File getBackupRootPath(String worldName) {
+		File path = new File(Statics.CONFIG.path).getAbsoluteFile();
+
+		if (Statics.CONFIG.perWorldBackup)
+			path = path.toPath().resolve(worldName).toFile();
+
+		if (!path.exists()) {
+			path.mkdirs();
+		}
+
+		return path;
+	}
+
+	public static boolean isTmpAvailable() {
+		try {
+			File tmp = File.createTempFile("textile_backup_tmp_test", String.valueOf(Instant.now().getEpochSecond()));
+			return tmp.delete();
+		} catch (IOException ignored) {}
+
+		return false;
+	}
 
 	public static void disableWorldSaving(MinecraftServer server) {
 		for (ServerWorld serverWorld : server.getWorlds()) {

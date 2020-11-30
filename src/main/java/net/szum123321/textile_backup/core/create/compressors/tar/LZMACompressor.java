@@ -16,22 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.create.compressors;
+package net.szum123321.textile_backup.core.create.compressors.tar;
 
-import org.anarres.parallelgzip.ParallelGZIPOutputStream;
+import net.szum123321.textile_backup.core.create.BackupContext;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 
 import java.io.*;
-import java.util.concurrent.Executors;
 
-public class ParallelGzipCompressor extends AbstractTarCompressor {
-	private static final ParallelGzipCompressor INSTANCE = new ParallelGzipCompressor();
-
-	public static ParallelGzipCompressor getInstance() {
-		return INSTANCE;
+public class LZMACompressor extends AbstractTarArchiver {
+	public static LZMACompressor getInstance() {
+		return new LZMACompressor();
 	}
 
 	@Override
-	protected OutputStream openCompressorStream(OutputStream outputStream, int coreCountLimit) throws IOException {
-		return new ParallelGZIPOutputStream(outputStream, Executors.newFixedThreadPool(coreCountLimit));
+	protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+		return new XZCompressorOutputStream(stream);
 	}
 }

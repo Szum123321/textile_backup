@@ -21,6 +21,10 @@ package net.szum123321.textile_backup.core.create;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.create.compressors.tar.LZMACompressor;
+import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Compressor;
+import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
+import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,12 +74,16 @@ public class MakeBackupRunnable implements Runnable {
                 coreCount = Math.min(Statics.CONFIG.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
             }
 
-            Statics.LOGGER.trace("Running compression on {} threads. Available cores = {}", coreCount, Runtime.getRuntime().availableProcessors());
+            Statics.LOGGER.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
 
             switch (Statics.CONFIG.format) {
-                case ZIP:
-                    ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
+                case ZIP: {
+                    if(Statics.tmpAvailable && coreCount > 1)
+                        ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
+                    else
+                        ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                     break;
+                }
 
                 case BZIP2:
                     ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);
@@ -93,7 +101,7 @@ public class MakeBackupRunnable implements Runnable {
                     Statics.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", Statics.CONFIG.format);
                     Statics.LOGGER.sendError(context.getCommandSource(), "Error! No correct compression format specified! Using default compressor!");
 
-                    ParallelZipCompressor.createArchive(world, outFile, context, coreCount);
+                    ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                     break;
             }
 

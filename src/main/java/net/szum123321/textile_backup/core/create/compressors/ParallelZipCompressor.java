@@ -19,17 +19,11 @@
 package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.Statics;
-import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
 
@@ -39,53 +33,40 @@ import java.util.zip.ZipEntry;
 	answer by:
 	https://stackoverflow.com/users/2987755/dkb
 */
-public class ParallelZipCompressor {
-	public static void createArchive(File inputFile, File outputFile, BackupContext ctx, int coreLimit) {
-		Statics.LOGGER.sendInfo(ctx, "Starting compression...");
+public class ParallelZipCompressor extends ZipCompressor {
+	private ParallelScatterZipCreator scatterZipCreator;
 
-		Instant start = Instant.now();
+	public static ParallelZipCompressor getInstance() {
+		return new ParallelZipCompressor();
+	}
 
-		Path rootPath = inputFile.toPath();
+	@Override
+	protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
+		scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(coreLimit));
+		return super.createArchiveOutputStream(stream, ctx, coreLimit);
+	}
 
-		try (FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-			 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-			 ZipArchiveOutputStream arc = new ZipArchiveOutputStream(bufferedOutputStream)) {
+	@Override
+	protected void addEntry(File file, String entryName, OutputStream arc) throws IOException {
+		ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
 
-			ParallelScatterZipCreator scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(coreLimit));
+		if(ZipCompressor.isDotDat(file.getName()))
+			entry.setMethod(ZipEntry.STORED);
+		else
+			entry.setMethod(ZipEntry.DEFLATED);
 
-			arc.setMethod(ZipArchiveOutputStream.DEFLATED);
-			arc.setUseZip64(Zip64Mode.AsNeeded);
-			arc.setLevel(Statics.CONFIG.compression);
-			arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
+		entry.setTime(System.currentTimeMillis());
 
-			Files.walk(inputFile.toPath())
-					.filter(path -> !Utilities.isBlacklisted(inputFile.toPath().relativize(path)))
-					.map(Path::toFile)
-					.filter(File::isFile)
-					.forEach(file -> {
-						try {  //IOException gets thrown only when arc is closed
-							ZipArchiveEntry entry = (ZipArchiveEntry)arc.createArchiveEntry(file, rootPath.relativize(file.toPath()).toString());
+		scatterZipCreator.addArchiveEntry(entry, new FileInputStreamSupplier(file));
+	}
 
-							entry.setMethod(ZipEntry.DEFLATED);
-							scatterZipCreator.addArchiveEntry(entry, new FileInputStreamSupplier(file));
-						} catch (IOException e) {
-							Statics.LOGGER.error("An exception occurred while trying to compress: {}", file.getName(), e);
-							Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
-						}
-					});
-
-			scatterZipCreator.writeTo(arc);
-		} catch (IOException | InterruptedException | ExecutionException e) {
-			Statics.LOGGER.error("An exception occurred!", e);
-			Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
-		}
-
-		Statics.LOGGER.sendInfo(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+	@Override
+	protected void finish(OutputStream arc) throws InterruptedException, ExecutionException, IOException {
+		scatterZipCreator.writeTo((ZipArchiveOutputStream) arc);
 	}
 
 	static class FileInputStreamSupplier implements InputStreamSupplier {
 		private final File sourceFile;
-		private InputStream stream;
 
 		FileInputStreamSupplier(File sourceFile) {
 			this.sourceFile = sourceFile;
@@ -93,12 +74,12 @@ public class ParallelZipCompressor {
 
 		public InputStream get() {
 			try {
-				stream = new BufferedInputStream(new FileInputStream(sourceFile));
+				return new FileInputStream(sourceFile);
 			} catch (IOException e) {
-				Statics.LOGGER.error("An exception occurred while trying to create input stream!", e);
+				Statics.LOGGER.error("An exception occurred while trying to create input stream from file: {}!", sourceFile.getName(), e);
 			}
 
-			return stream;
+			return null;
 		}
 	}
 }
