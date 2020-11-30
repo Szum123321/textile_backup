@@ -18,10 +18,14 @@
 
 package net.szum123321.textile_backup.core.restore;
 
+import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.util.Util;
+import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -30,24 +34,28 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RestoreHelper {
-    public static Optional<File> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
+    public static Optional<RestoreableFile> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
         File root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
-        Optional<File> optionalFile =  Arrays.stream(root.listFiles())
-                .filter(Utilities::isValidBackup)
-                .filter(file -> Utilities.getFileCreationTime(file).get().equals(backupTime))
+        Optional<RestoreableFile> optionalFile =  Arrays.stream(root.listFiles())
+                .map(RestoreableFile::newInstance)
+                .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
+                .filter(rf -> rf.getCreationTime().equals(backupTime))
                 .findFirst();
 
-        optionalFile.ifPresent(file -> Statics.untouchableFile = file);
+        optionalFile.ifPresent(file -> Statics.untouchableFile = file.getFile());
 
         return optionalFile;
     }
 
-    public static AwaitThread create(File backupFile, MinecraftServer server, String comment) {
-        server.getPlayerManager().getPlayerList()
-                .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!"), false));
+    public static AwaitThread create(RestoreableFile backupFile, MinecraftServer server, String comment) {
+        MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
+        message.append("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!");
+
+        server.getPlayerManager().broadcastChatMessage(message, MessageType.GAME_INFO, Util.NIL_UUID);
 
         Statics.globalShutdownBackupFlag.set(false);
 
@@ -62,17 +70,22 @@ public class RestoreHelper {
 
         return Arrays.stream(root.listFiles())
                 .filter(Utilities::isValidBackup)
-                .map(RestoreableFile::new)
+                .map(RestoreableFile::newInstance)
+                .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
                 .collect(Collectors.toList());
     }
 
-    public static class RestoreableFile {
+    public static class RestoreableFile implements Comparable<RestoreableFile> {
+        private final File file;
+        private final ConfigHandler.ArchiveFormat archiveFormat;
         private final LocalDateTime creationTime;
         private final String comment;
 
-        protected RestoreableFile(File file) {
-            String extension = Utilities.getFileExtension(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file extention")).getString();
-            this.creationTime = Utilities.getFileCreationTime(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file creation time."));
+        private RestoreableFile(File file) throws NoSuchElementException {
+            this.file = file;
+            archiveFormat = Utilities.getArchiveExtension(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file extension!"));
+            String extension = archiveFormat.getString();
+            creationTime = Utilities.getFileCreationTime(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file creation time!"));
 
             final String filename = file.getName();
 
@@ -83,12 +96,33 @@ public class RestoreHelper {
             }
         }
 
+        public static Optional<RestoreableFile> newInstance(File file) {
+            try {
+                return Optional.of(new RestoreableFile(file));
+            } catch (NoSuchElementException ignored) {}
+
+            return Optional.empty();
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public ConfigHandler.ArchiveFormat getArchiveFormat() {
+            return archiveFormat;
+        }
+
         public LocalDateTime getCreationTime() {
             return creationTime;
         }
 
         public String getComment() {
             return comment;
+        }
+
+        @Override
+        public int compareTo(@NotNull RestoreHelper.RestoreableFile o) {
+            return creationTime.compareTo(o.creationTime);
         }
 
         public String toString() {
