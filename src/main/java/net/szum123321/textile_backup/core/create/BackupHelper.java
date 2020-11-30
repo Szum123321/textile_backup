@@ -18,7 +18,10 @@
 
 package net.szum123321.textile_backup.core.create;
 
+import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.MutableText;
+import net.minecraft.util.Util;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.io.FileUtils;
@@ -29,10 +32,13 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BackupHelper {
 	public static Runnable create(BackupContext ctx) {
+		notifyPlayers(ctx);
+
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("Backup started ");
@@ -60,6 +66,20 @@ public class BackupHelper {
 		}
 
 		return new MakeBackupRunnable(ctx);
+	}
+
+	private static void notifyPlayers(BackupContext ctx) {
+		MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
+		message.append("Warning! Server backup will begin shortly. You may experience some lag.");
+
+		UUID uuid;
+
+		if(ctx.getCommandSource().getEntity() != null)
+			uuid = ctx.getCommandSource().getEntity().getUuid();
+		else
+			uuid = Util.NIL_UUID;
+
+		ctx.getServer().getPlayerManager().broadcastChatMessage(message, MessageType.GAME_INFO, uuid);
 	}
 
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
