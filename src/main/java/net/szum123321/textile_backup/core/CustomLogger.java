@@ -21,7 +21,7 @@ package net.szum123321.textile_backup.core;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.logging.log4j.Level;
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.message.ParameterizedMessageFactory;
 import org.apache.logging.log4j.spi.StandardLevel;
 
 /*
-    This is practically just a copy-pate of Cotton's ModLogger with few changes
+    This is practically just a copy-pate of Cotton's ModLogger with a few changes
 */
 public class CustomLogger {
     private final boolean isDev = FabricLoader.getInstance().isDevelopmentEnvironment();
@@ -41,13 +41,17 @@ public class CustomLogger {
     private final Logger logger;
 
     private final String prefix;
-    private final Text prefixText;
+    private final MutableText prefixText;
 
     public CustomLogger(String name, String prefix) {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
         this.logger = LogManager.getLogger(name, messageFactory);
         this.prefix = "[" + prefix + "]" + " ";
         this.prefixText = new LiteralText(this.prefix).formatted(Formatting.AQUA);
+    }
+
+    public MutableText getPrefixText() {
+        return prefixText;
     }
 
     public void log(Level level, String msg, Object... data) {
@@ -117,12 +121,12 @@ public class CustomLogger {
         sendToPlayer(Level.INFO, source, msg, args);
     }
 
-    public void sendError(ServerCommandSource source, String msg, Object... args) {
-        sendToPlayer(Level.ERROR, source, msg, args);
-    }
-
     public void sendInfo(BackupContext context, String msg, Object... args) {
         sendInfo(context.getCommandSource(), msg, args);
+    }
+
+    public void sendError(ServerCommandSource source, String msg, Object... args) {
+        sendToPlayer(Level.ERROR, source, msg, args);
     }
 
     public void sendError(BackupContext context, String msg, Object... args) {
