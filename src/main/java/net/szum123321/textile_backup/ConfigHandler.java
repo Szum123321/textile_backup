@@ -71,7 +71,8 @@ public class ConfigHandler {
     @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
     public int compression = 7;
 
-    @Comment("\nLimit how many cores can be used for compression.\n")
+    @Comment("\nLimit how many cores can be used for compression.\n" +
+            "0 means that all available cores will be used\n")
     public int compressionCoreCountLimit = 0;
 
     @Comment(value = "\nAvailable formats are:\n" +
