@@ -160,19 +160,6 @@ public class Utilities {
 		return Optional.ofNullable(creationTime);
 	}
 
-	public static File getBackupRootPath(String worldName) {
-		File path = new File(Statics.CONFIG.path).getAbsoluteFile();
-
-		if (Statics.CONFIG.perWorldBackup)
-			path = path.toPath().resolve(worldName).toFile();
-
-		if (!path.exists()) {
-			path.mkdirs();
-		}
-
-		return path;
-	}
-
 	public static boolean isValidBackup(File f) {
 		return getArchiveExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
 	}

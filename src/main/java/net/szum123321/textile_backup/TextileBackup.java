@@ -33,6 +33,7 @@ import net.szum123321.textile_backup.commands.permission.WhitelistCommand;
 import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
 import net.szum123321.textile_backup.commands.restore.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
+import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 
@@ -64,6 +65,7 @@ public class TextileBackup implements ModInitializer {
         if(Statics.CONFIG.backupInterval > 0)
             ServerTickEvents.END_SERVER_TICK.register(Statics.scheduler::tick);
 
+        //Restart Executor Service in singleplayer
         ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
             if(Statics.executorService.isShutdown())
                 Statics.executorService = Executors.newSingleThreadExecutor();
