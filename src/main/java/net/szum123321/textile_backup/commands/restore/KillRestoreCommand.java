@@ -30,7 +30,7 @@ public class KillRestoreCommand {
                     if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
                         Statics.restoreAwaitThread.interrupt();
                         Statics.globalShutdownBackupFlag.set(true);
-                        Statics.LOGGER.sendInfo(ctx.getSource(), "Backup restoration successfully stopped");
+                        Statics.LOGGER.sendInfo(ctx.getSource(), "Backup restoration successfully stopped.");
                         Statics.LOGGER.info("{} cancelled backup restoration.", ctx.getSource().getEntity() != null ?
                                 "Player: " + ctx.getSource().getName() :
                                 "SERVER"
