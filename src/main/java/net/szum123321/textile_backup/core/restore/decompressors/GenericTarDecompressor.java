@@ -44,7 +44,7 @@ public class GenericTarDecompressor {
 
             while ((entry = archiveInputStream.getNextTarEntry()) != null) {
                 if(!archiveInputStream.canReadEntryData(entry)) {
-                    Statics.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
+                    Statics.LOGGER.error("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
                 }
 

@@ -40,7 +40,7 @@ public class ZipDecompressor {
 
             while ((entry = zipInputStream.getNextZipEntry()) != null) {
                 if(!zipInputStream.canReadEntryData(entry)){
-                    Statics.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
+                    Statics.LOGGER.error("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
                 }
 
