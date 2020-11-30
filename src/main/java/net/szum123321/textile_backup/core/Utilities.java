@@ -32,10 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -52,17 +49,15 @@ public class Utilities {
 
 	public static void disableWorldSaving(MinecraftServer server) {
 		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld != null && !serverWorld.savingDisabled) {
+			if (serverWorld != null && !serverWorld.savingDisabled)
 				serverWorld.savingDisabled = true;
-			}
 		}
 	}
 
 	public static void enableWorldSaving(MinecraftServer server) {
 		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld != null && serverWorld.savingDisabled) {
+			if (serverWorld != null && serverWorld.savingDisabled)
 				serverWorld.savingDisabled = false;
-			}
 		}
 	}
 
@@ -86,7 +81,7 @@ public class Utilities {
 		return false;
 	}
 
-	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(String fileName) {
+	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(String fileName) {
 		String[] parts = fileName.split("\\.");
 
 		switch (parts[parts.length - 1]) {
@@ -104,15 +99,15 @@ public class Utilities {
 		}
 	}
 
-	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(File f) {
-		return getFileExtension(f.getName());
+	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(File f) {
+		return getArchiveExtension(f.getName());
 	}
 
 	public static Optional<LocalDateTime> getFileCreationTime(File file) {
 		LocalDateTime creationTime = null;
 
-		if(getFileExtension(file).isPresent()) {
-			String fileExtension = getFileExtension(file).get().getString();
+		if(getArchiveExtension(file).isPresent()) {
+			String fileExtension = getArchiveExtension(file).get().getString();
 
 			try {
 				creationTime = LocalDateTime.from(
@@ -157,10 +152,12 @@ public class Utilities {
 	}
 
 	public static boolean isValidBackup(File f) {
-		return getFileExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
+		return getArchiveExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
 	}
 
-	public static boolean isFileOk(File f) {return f.exists() && f.isFile(); }
+	public static boolean isFileOk(File f) {
+		return f.exists() && f.isFile();
+	}
 
 	public static DateTimeFormatter getDateTimeFormatter() {
 		return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);
