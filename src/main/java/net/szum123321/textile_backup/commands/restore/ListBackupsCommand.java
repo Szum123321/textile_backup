@@ -24,9 +24,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class ListBackupsCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
@@ -40,7 +38,7 @@ public class ListBackupsCommand {
                         builder.append("There is only one backup available: ");
                         builder.append(backups.get(0).toString());
                     } else {
-                        backups.sort(Comparator.comparing(RestoreHelper.RestoreableFile::getCreationTime));
+                        backups.sort(null);
                         Iterator<RestoreHelper.RestoreableFile> iterator = backups.iterator();
                         builder.append("Available backups: ");
 

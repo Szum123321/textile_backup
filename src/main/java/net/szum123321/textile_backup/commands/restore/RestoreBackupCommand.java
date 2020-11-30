@@ -34,7 +34,6 @@ import net.minecraft.text.LiteralText;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
@@ -88,10 +87,10 @@ public class RestoreBackupCommand {
             throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
         }
 
-        Optional<File> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
+        Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
 
         if(backupFile.isPresent()) {
-            Statics.LOGGER.info("Found file to restore {}", backupFile.get().getName());
+            Statics.LOGGER.info("Found file to restore {}", backupFile.get().getFile().getName());
         } else {
             Statics.LOGGER.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
 

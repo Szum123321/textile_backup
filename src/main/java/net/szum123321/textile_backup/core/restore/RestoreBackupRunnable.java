@@ -29,14 +29,13 @@ import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecomp
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
 import java.io.File;
-import java.util.NoSuchElementException;
 
 public class RestoreBackupRunnable implements Runnable {
     private final MinecraftServer server;
-    private final File backupFile;
+    private final RestoreHelper.RestoreableFile backupFile;
     private final String finalBackupComment;
 
-    public RestoreBackupRunnable(MinecraftServer server, File backupFile, String finalBackupComment) {
+    public RestoreBackupRunnable(MinecraftServer server, RestoreHelper.RestoreableFile backupFile, String finalBackupComment) {
         this.server = server;
         this.backupFile = backupFile;
         this.finalBackupComment = finalBackupComment;
@@ -45,6 +44,7 @@ public class RestoreBackupRunnable implements Runnable {
     @Override
     public void run() {
         Statics.LOGGER.info("Shutting down server...");
+
         server.stop(false);
         awaitServerShutdown();
 
@@ -61,6 +61,7 @@ public class RestoreBackupRunnable implements Runnable {
         File worldFile = Utilities.getWorldFolder(server);
 
         Statics.LOGGER.info("Deleting old world...");
+
         if(!deleteDirectory(worldFile))
             Statics.LOGGER.error("Something went wrong while deleting old world!");
 
@@ -68,16 +69,15 @@ public class RestoreBackupRunnable implements Runnable {
 
         Statics.LOGGER.info("Starting decompression...");
 
-        if(Utilities.getFileExtension(backupFile).orElseThrow(() -> new NoSuchElementException("Couldn't get file extension!")) == ConfigHandler.ArchiveFormat.ZIP) {
-            ZipDecompressor.decompress(backupFile, worldFile);
-        } else {
-            GenericTarDecompressor.decompress(backupFile, worldFile);
-        }
+        if(backupFile.getArchiveFormat() == ConfigHandler.ArchiveFormat.ZIP)
+            ZipDecompressor.decompress(backupFile.getFile(), worldFile);
+        else
+            GenericTarDecompressor.decompress(backupFile.getFile(), worldFile);
 
         if(Statics.CONFIG.deleteOldBackupAfterRestore) {
             Statics.LOGGER.info("Deleting old backup");
 
-            if(!backupFile.delete())
+            if(!backupFile.getFile().delete())
                 Statics.LOGGER.info("Something went wrong while deleting old backup");
         }
 
