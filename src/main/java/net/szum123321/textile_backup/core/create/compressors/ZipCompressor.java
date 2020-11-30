@@ -48,7 +48,6 @@ public class ZipCompressor extends AbstractCompressor {
 
     @Override
     protected void addEntry(File file, String entryName, OutputStream arc) throws IOException {
-
         try (FileInputStream fileInputStream = new FileInputStream(file)){
             ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
 
@@ -63,6 +62,7 @@ public class ZipCompressor extends AbstractCompressor {
         }
     }
 
+    //*.dat files are already compressed with gzip which uses the same algorithm as zip so there's no point in compressing it again
     protected static boolean isDotDat(String filename) {
         String[] arr = filename.split("\\.");
         return arr[arr.length - 1].contains("dat"); //includes dat_old
