@@ -20,48 +20,41 @@ package net.szum123321.textile_backup.commands.create;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 
+import javax.annotation.Nullable;
+
 public class StartBackupCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("start")
                 .then(CommandManager.argument("comment", StringArgumentType.string())
-                        .executes(StartBackupCommand::executeWithComment)
-                ).executes(ctx -> execute(ctx.getSource()));
+                        .executes(ctx -> execute(ctx.getSource(), StringArgumentType.getString(ctx, "comment")))
+                ).executes(ctx -> execute(ctx.getSource(), null));
     }
 
-    private static int executeWithComment(CommandContext<ServerCommandSource> ctx) {
-        if(!Statics.executorService.isShutdown())
-            Statics.executorService.submit(
-                    BackupHelper.create(
-                            new BackupContext.Builder()
-                                    .setCommandSource(ctx.getSource())
-                                    .setComment(StringArgumentType.getString(ctx, "comment"))
-                                    .guessInitiator()
-                                    .saveServer()
-                                    .build()
-                    )
-            );
-
-        return 1;
-    }
-
-    private static int execute(ServerCommandSource source){
-        if(!Statics.executorService.isShutdown())
-            Statics.executorService.submit(
-                    BackupHelper.create(
-                            new BackupContext.Builder()
-                                    .setCommandSource(source)
-                                    .guessInitiator()
-                                    .saveServer()
-                                    .build()
-                    )
-            );
+    private static int execute(ServerCommandSource source, @Nullable String comment) {
+        if(!Statics.executorService.isShutdown()) {
+            try {
+                Statics.executorService.submit(
+                        BackupHelper.create(
+                                BackupContext.Builder
+                                        .newBackupContextBuilder()
+                                        .setCommandSource(source)
+                                        .setComment(comment)
+                                        .guessInitiator()
+                                        .saveServer()
+                                        .build()
+                        )
+                );
+            } catch (Exception e) {
+                Statics.LOGGER.error("Something went wrong while executing command!", e);
+                throw e;
+            }
+        }
 
         return 1;
     }

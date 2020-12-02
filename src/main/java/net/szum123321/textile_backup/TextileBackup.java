@@ -76,7 +76,8 @@ public class TextileBackup implements ModInitializer {
 
             if (Statics.CONFIG.shutdownBackup && Statics.globalShutdownBackupFlag.get()) {
                 BackupHelper.create(
-                        new BackupContext.Builder()
+                        BackupContext.Builder
+                                .newBackupContextBuilder()
                                 .setServer(server)
                                 .setInitiator(ActionInitiator.Shutdown)
                                 .setComment("shutdown")

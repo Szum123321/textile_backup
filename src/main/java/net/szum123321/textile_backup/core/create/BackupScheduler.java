@@ -41,7 +41,8 @@ public class BackupScheduler {
                 if(nextBackup <= now) {
                     Statics.executorService.submit(
                             BackupHelper.create(
-                                    new BackupContext.Builder()
+                                    BackupContext.Builder
+                                            .newBackupContextBuilder()
                                             .setServer(server)
                                             .setInitiator(ActionInitiator.Timer)
                                             .saveServer()
@@ -59,7 +60,8 @@ public class BackupScheduler {
             if(scheduled && nextBackup <= now) {
                 Statics.executorService.submit(
                         BackupHelper.create(
-                                new BackupContext.Builder()
+                                BackupContext.Builder
+                                        .newBackupContextBuilder()
                                         .setServer(server)
                                         .setInitiator(ActionInitiator.Timer)
                                         .saveServer()
