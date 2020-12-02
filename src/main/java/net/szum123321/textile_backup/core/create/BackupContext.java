@@ -128,28 +128,4 @@ public class BackupContext {
         }
     }
 
-    public enum BackupInitiator {
-        Player ("Player", "by"),
-        ServerConsole ("Server Console", "from"),
-        Timer ("Timer", "by"),
-        Shutdown ("Server Shutdown", "by"),
-        Restore ("Backup Restoration", "because of"),
-        Null ("Null (That shouldn't have happened)", "form");
-
-        private final String name;
-        private final String prefix;
-
-        BackupInitiator(String name, String prefix) {
-            this.name = name;
-            this.prefix = prefix;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getPrefix() {
-            return prefix + ": ";
-        }
-    }
 }
