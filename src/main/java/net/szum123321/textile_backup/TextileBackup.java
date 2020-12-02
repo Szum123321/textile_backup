@@ -33,6 +33,7 @@ import net.szum123321.textile_backup.commands.permission.WhitelistCommand;
 import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
 import net.szum123321.textile_backup.commands.restore.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
@@ -53,6 +54,7 @@ public class TextileBackup implements ModInitializer {
             System.exit(1);
         }
 
+        //TODO: finish writing wiki
         if(Statics.CONFIG.format == ConfigHandler.ArchiveFormat.ZIP) {
             Statics.tmpAvailable = Utilities.isTmpAvailable();
             if(!Statics.tmpAvailable) {

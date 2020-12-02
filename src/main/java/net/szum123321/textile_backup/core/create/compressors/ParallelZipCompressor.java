@@ -82,7 +82,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 			try {
 				return new FileInputStream(sourceFile);
 			} catch (IOException e) {
-				Statics.LOGGER.error("An exception occurred while trying to create input stream from file: {}!", sourceFile.getName(), e);
+				Statics.LOGGER.error("An exception occurred while trying to create an input stream from file: {}!", sourceFile.getName(), e);
 			}
 
 			return null;

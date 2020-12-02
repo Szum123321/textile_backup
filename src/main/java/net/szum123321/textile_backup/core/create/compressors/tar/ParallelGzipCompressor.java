@@ -41,7 +41,7 @@ public class ParallelGzipCompressor extends AbstractTarArchiver {
 
 	@Override
 	protected void close() {
-		//it seems like ParallelGZIPOutputStream doesn't shut down its ExecutorService, so to not leave garbage I shutdown it
+		//it seems like ParallelGZIPOutputStream doesn't shut down its ExecutorService, so to not leave garbage I shut it down
 		executorService.shutdown();
 	}
 }
