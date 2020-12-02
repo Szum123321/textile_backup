@@ -60,8 +60,6 @@ public class BackupHelper {
 			Statics.LOGGER.sendInfoAL(ctx, "Saving server...");
 
 			ctx.getServer().save(true, true, true);
-
-			Utilities.disableWorldSaving(ctx.getServer());
 		}
 
 		return new MakeBackupRunnable(ctx);

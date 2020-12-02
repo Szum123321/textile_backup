@@ -19,6 +19,7 @@
 package net.szum123321.textile_backup.core.create;
 
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.compressors.tar.LZMACompressor;
@@ -40,8 +41,9 @@ public class MakeBackupRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            Statics.LOGGER.sendInfo(context.getCommandSource(), "Starting backup");
-            Statics.LOGGER.info("Starting backup");
+            Utilities.disableWorldSaving(context.getServer());
+
+            Statics.LOGGER.sendInfoAL(context, "Starting backup");
 
             File world = Utilities.getWorldFolder(context.getServer());
 
