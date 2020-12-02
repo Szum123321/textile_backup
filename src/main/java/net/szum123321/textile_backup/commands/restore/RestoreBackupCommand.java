@@ -97,13 +97,13 @@ public class RestoreBackupCommand {
             return 0;
         }
 
-        if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
-            if(source.getEntity() != null)
-                Statics.LOGGER.info("Backup restoration was initiated by: {}", source.getName());
-            else
-                Statics.LOGGER.info("Backup restoration was initiated form Server Console");
-
-            Statics.restoreAwaitThread = RestoreHelper.create(backupFile.get(), source.getMinecraftServer(), comment);
+            Statics.restoreAwaitThread = RestoreHelper.create(
+                    RestoreContext.Builder.newRestoreContextBuilder()
+                        .setCommandSource(source)
+                        .setFile(backupFile.get())
+                        .setComment(comment)
+                        .build()
+            );
 
             Statics.restoreAwaitThread.start();
         } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {

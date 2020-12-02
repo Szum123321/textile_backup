@@ -52,17 +52,26 @@ public class RestoreHelper {
         return optionalFile;
     }
 
-    public static AwaitThread create(RestoreableFile backupFile, MinecraftServer server, String comment) {
+    public static AwaitThread create(RestoreContext ctx) {
+        if(ctx.getInitiator() == ActionInitiator.Player)
+            Statics.LOGGER.info("Backup restoration was initiated by: {}", ctx.getCommandSource().getName());
+        else
+            Statics.LOGGER.info("Backup restoration was initiated form Server Console");
+
         MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
         message.append("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!");
 
-        server.getPlayerManager().broadcastChatMessage(message, MessageType.GAME_INFO, Util.NIL_UUID);
+        ctx.getServer().getPlayerManager().broadcastChatMessage(
+                message,
+                MessageType.GAME_INFO,
+                ctx.getInitiator() == ActionInitiator.Player ? ctx.getCommandSource().getEntity().getUuid() : Util.NIL_UUID
+        );
 
         Statics.globalShutdownBackupFlag.set(false);
 
         return new AwaitThread(
                 Statics.CONFIG.restoreDelay,
-                new RestoreBackupRunnable(server, backupFile, comment)
+                new RestoreBackupRunnable(ctx)
         );
     }
 
