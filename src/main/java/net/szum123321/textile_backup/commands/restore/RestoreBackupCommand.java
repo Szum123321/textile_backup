@@ -23,23 +23,39 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.restore.RestoreContext;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class RestoreBackupCommand {
+    private final static DynamicCommandExceptionType DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE = new DynamicCommandExceptionType(o -> {
+        DateTimeParseException e = (DateTimeParseException)o;
+
+        MutableText message = new LiteralText("An exception occurred while trying to parse:\n")
+                .append(e.getParsedString())
+                .append("\n");
+
+        for (int i = 0; i < e.getErrorIndex(); i++) message.append(" ");
+
+        return message.append("^");
+    });
+
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("restore")
                 .then(CommandManager.argument("file", StringArgumentType.word())
@@ -63,39 +79,31 @@ public class RestoreBackupCommand {
 
                     Statics.LOGGER.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
                     Statics.LOGGER.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
-                    Statics.LOGGER.sendInfo(source, "Example: 2020-08-05_10.58.33");
+                    Statics.LOGGER.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
 
                     return 1;
                 });
     }
 
-    private static int execute(String file, String comment, ServerCommandSource source) throws CommandSyntaxException {
-        LocalDateTime dateTime;
+    private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
+        if(Statics.restoreAwaitThread == null || (Statics.restoreAwaitThread != null && !Statics.restoreAwaitThread.isAlive())) {
+            LocalDateTime dateTime;
 
-        try {
-            dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
-        } catch (DateTimeParseException e) {
-            LiteralText message = new LiteralText("An exception occurred while trying to parse:\n");
-            message.append(e.getParsedString())
-                    .append("\n");
+            try {
+                dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
+            } catch (DateTimeParseException e) {
+                throw DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
+            }
 
-            for(int i = 0; i < e.getErrorIndex(); i++)
-                message.append(" ");
+            Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
 
-            message.append("^");
+            if(backupFile.isPresent()) {
+                Statics.LOGGER.info("Found file to restore {}", backupFile.get().getFile().getName());
+            } else {
+                Statics.LOGGER.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
 
-            throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
-        }
-
-        Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
-
-        if(backupFile.isPresent()) {
-            Statics.LOGGER.info("Found file to restore {}", backupFile.get().getFile().getName());
-        } else {
-            Statics.LOGGER.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
-
-            return 0;
-        }
+                return 0;
+            }
 
             Statics.restoreAwaitThread = RestoreHelper.create(
                     RestoreContext.Builder.newRestoreContextBuilder()
@@ -106,13 +114,13 @@ public class RestoreBackupCommand {
             );
 
             Statics.restoreAwaitThread.start();
-        } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
+
+            return 1;
+        } else {
             Statics.LOGGER.sendInfo(source, "Someone has already started another restoration.");
 
             return 0;
         }
-
-        return 1;
     }
 
     private static final class FileSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
