@@ -24,7 +24,9 @@ import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.concurrent.*;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 
 /*
@@ -50,10 +52,14 @@ public class ParallelZipCompressor extends ZipCompressor {
 	protected void addEntry(File file, String entryName, OutputStream arc) throws IOException {
 		ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
 
-		if(ZipCompressor.isDotDat(file.getName()))
-			entry.setMethod(ZipEntry.STORED);
-		else
-			entry.setMethod(ZipEntry.DEFLATED);
+		if(ZipCompressor.isDotDat(file.getName())) {
+			entry.setMethod(ZipArchiveOutputStream.STORED);
+			entry.setSize(file.length());
+			entry.setCompressedSize(file.length());
+			CRC32 sum = new CRC32();
+			sum.update(Files.readAllBytes(file.toPath()));
+			entry.setCrc(sum.getValue());
+		} else entry.setMethod(ZipEntry.DEFLATED);
 
 		entry.setTime(System.currentTimeMillis());
 

@@ -27,7 +27,9 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
+import java.util.zip.CRC32;
 
 public class ZipCompressor extends AbstractCompressor {
     public static ZipCompressor getInstance() {
@@ -51,8 +53,14 @@ public class ZipCompressor extends AbstractCompressor {
         try (FileInputStream fileInputStream = new FileInputStream(file)){
             ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
 
-            if(isDotDat(file.getName()))
+            if(isDotDat(file.getName())) {
                 entry.setMethod(ZipArchiveOutputStream.STORED);
+                entry.setSize(file.length());
+                entry.setCompressedSize(file.length());
+                CRC32 sum = new CRC32();
+                sum.update(Files.readAllBytes(file.toPath()));
+                entry.setCrc(sum.getValue());
+            }
 
             ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);
 
