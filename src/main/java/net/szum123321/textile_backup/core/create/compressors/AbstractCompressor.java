@@ -19,6 +19,7 @@
 package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 
@@ -46,19 +47,23 @@ public abstract class AbstractCompressor {
                             addEntry(file, inputFile.toPath().relativize(file.toPath()).toString(), arc);
                         } catch (IOException e) {
                             Statics.LOGGER.error("An exception occurred while trying to compress: {}", file.getName(), e);
-                            Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
+
+                            if(ctx.getInitiator() == ActionInitiator.Player)
+                                Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
                         }
                     });
 
             finish(arc);
         } catch (IOException | InterruptedException | ExecutionException e) {
             Statics.LOGGER.error("An exception occurred!", e);
-            Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
+
+            if(ctx.getInitiator() == ActionInitiator.Player)
+                Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
         }
 
         close();
 
-        Statics.LOGGER.sendInfo(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+        Statics.LOGGER.sendInfoAL(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 
     protected abstract OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException;

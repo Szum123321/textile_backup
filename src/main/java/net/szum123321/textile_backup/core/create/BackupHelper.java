@@ -23,6 +23,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Util;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.io.FileUtils;
 
@@ -32,7 +33,6 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BackupHelper {
@@ -57,8 +57,7 @@ public class BackupHelper {
 		Statics.LOGGER.info(builder.toString());
 
 		if (ctx.shouldSave()) {
-			Statics.LOGGER.sendInfo(ctx.getCommandSource(), "Saving server...");
-			Statics.LOGGER.info( "Saving server...");
+			Statics.LOGGER.sendInfoAL(ctx, "Saving server...");
 
 			ctx.getServer().save(true, true, true);
 
@@ -72,14 +71,11 @@ public class BackupHelper {
 		MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
 		message.append("Warning! Server backup will begin shortly. You may experience some lag.");
 
-		UUID uuid;
-
-		if(ctx.getCommandSource().getEntity() != null)
-			uuid = ctx.getCommandSource().getEntity().getUuid();
-		else
-			uuid = Util.NIL_UUID;
-
-		ctx.getServer().getPlayerManager().broadcastChatMessage(message, MessageType.GAME_INFO, uuid);
+		ctx.getServer().getPlayerManager().broadcastChatMessage(
+				message,
+				MessageType.GAME_INFO,
+				ctx.getInitiator() == ActionInitiator.Player ? ctx.getCommandSource().getEntity().getUuid() : Util.NIL_UUID
+		);
 	}
 
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
@@ -134,11 +130,10 @@ public class BackupHelper {
 	private static boolean deleteFile(File f, ServerCommandSource ctx) {
 		if(f != Statics.untouchableFile) {
 			if(f.delete()) {
-				Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
-				Statics.LOGGER.info("Deleting: {}", f.getName());
+				Statics.LOGGER.sendInfoAL(ctx, "Deleting: {}", f.getName());
 				return true;
 			} else {
-				Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
+				Statics.LOGGER.sendErrorAL(ctx, "Something went wrong while deleting: {}.", f.getName());
 			}
 		}
 

@@ -124,7 +124,7 @@ public class RestoreBackupCommand {
                 String formattedCreationTime = file.getCreationTime().format(Statics.defaultDateTimeFormatter);
 
                 if(formattedCreationTime.startsWith(remaining)) {
-                    if(ctx.getSource().getEntity() != null) {  //was typed by player
+                    if(ctx.getSource().getEntity() instanceof PlayerEntity) {  //was typed by player
                         if(file.getComment() != null) {
                             builder.suggest(formattedCreationTime, new LiteralMessage("Comment: " + file.getComment()));
                         } else {

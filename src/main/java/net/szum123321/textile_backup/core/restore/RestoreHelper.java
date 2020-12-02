@@ -24,6 +24,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.util.Util;
 import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import org.jetbrains.annotations.NotNull;
 

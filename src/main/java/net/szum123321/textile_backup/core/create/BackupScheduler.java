@@ -20,6 +20,7 @@ package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.ActionInitiator;
 
 import java.time.Instant;
 
@@ -42,7 +43,7 @@ public class BackupScheduler {
                             BackupHelper.create(
                                     new BackupContext.Builder()
                                             .setServer(server)
-                                            .setInitiator(BackupContext.BackupInitiator.Timer)
+                                            .setInitiator(ActionInitiator.Timer)
                                             .saveServer()
                                             .build()
                             )
@@ -60,7 +61,7 @@ public class BackupScheduler {
                         BackupHelper.create(
                                 new BackupContext.Builder()
                                         .setServer(server)
-                                        .setInitiator(BackupContext.BackupInitiator.Timer)
+                                        .setInitiator(ActionInitiator.Timer)
                                         .saveServer()
                                         .build()
                         )

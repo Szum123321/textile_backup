@@ -78,7 +78,7 @@ public class TextileBackup implements ModInitializer {
                 BackupHelper.create(
                         new BackupContext.Builder()
                                 .setServer(server)
-                                .setInitiator(BackupContext.BackupInitiator.Shutdown)
+                                .setInitiator(ActionInitiator.Shutdown)
                                 .setComment("shutdown")
                                 .build()
                 ).run();
