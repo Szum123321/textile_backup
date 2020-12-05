@@ -20,7 +20,9 @@ package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.ActionInitiator;
@@ -59,6 +61,7 @@ public class BackupHelper {
 		if (ctx.shouldSave()) {
 			Statics.LOGGER.sendInfoAL(ctx, "Saving server...");
 
+			ctx.getServer().getPlayerManager().saveAllPlayerData();
 			ctx.getServer().save(true, true, true);
 		}
 
@@ -67,7 +70,7 @@ public class BackupHelper {
 
 	private static void notifyPlayers(BackupContext ctx) {
 		MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
-		message.append("Warning! Server backup will begin shortly. You may experience some lag.");
+		message.append(new LiteralText("Warning! Server backup will begin shortly. You may experience some lag.").formatted(Formatting.WHITE));
 
 		ctx.getServer().getPlayerManager().broadcastChatMessage(
 				message,

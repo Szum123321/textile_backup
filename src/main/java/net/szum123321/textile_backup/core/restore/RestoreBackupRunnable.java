@@ -18,7 +18,6 @@
 
 package net.szum123321.textile_backup.core.restore;
 
-import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.LivingServer;
@@ -40,6 +39,8 @@ public class RestoreBackupRunnable implements Runnable {
 
     @Override
     public void run() {
+        Statics.globalShutdownBackupFlag.set(false);
+
         Statics.LOGGER.info("Shutting down server...");
 
         ctx.getServer().stop(false);

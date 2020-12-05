@@ -58,6 +58,15 @@ public class RestoreHelper {
         else
             Statics.LOGGER.info("Backup restoration was initiated form Server Console");
 
+        notifyPlayer(ctx);
+
+        return new AwaitThread(
+                Statics.CONFIG.restoreDelay,
+                new RestoreBackupRunnable(ctx)
+        );
+    }
+
+    private static void notifyPlayer(RestoreContext ctx) {
         MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
         message.append("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!");
 
@@ -65,13 +74,6 @@ public class RestoreHelper {
                 message,
                 MessageType.GAME_INFO,
                 ctx.getInitiator() == ActionInitiator.Player ? ctx.getCommandSource().getEntity().getUuid() : Util.NIL_UUID
-        );
-
-        Statics.globalShutdownBackupFlag.set(false);
-
-        return new AwaitThread(
-                Statics.CONFIG.restoreDelay,
-                new RestoreBackupRunnable(ctx)
         );
     }
 

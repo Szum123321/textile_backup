@@ -29,7 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.MessageFactory;
 import org.apache.logging.log4j.message.ParameterizedMessageFactory;
-import org.apache.logging.log4j.spi.StandardLevel;
 
 /*
     This is practically just a copy-pate of Cotton's ModLogger with a few changes
@@ -82,11 +81,13 @@ public class CustomLogger {
         log(Level.FATAL, msg, data);
     }
 
-    boolean sendToPlayer(Level level, ServerCommandSource source, String msg, Object... args) {
+    boolean sendFeedback(Level level, ServerCommandSource source, String msg, Object... args) {
         if(source != null && source.getEntity() instanceof PlayerEntity) {
             LiteralText text = new LiteralText(messageFactory.newMessage(msg, args).getFormattedMessage());
 
-            if(level.intLevel() < StandardLevel.WARN.intLevel())
+            if(level.intLevel() == Level.TRACE.intLevel())
+                text.formatted(Formatting.GREEN);
+            else if(level.intLevel() <= Level.WARN.intLevel())
                 text.formatted(Formatting.RED);
             else
                 text.formatted(Formatting.WHITE);
@@ -101,8 +102,12 @@ public class CustomLogger {
         }
     }
 
+    public void sendHint(ServerCommandSource source, String msg, Object... args) {
+        sendFeedback(Level.TRACE, source, msg, args);
+    }
+
     public void sendInfo(ServerCommandSource source, String msg, Object... args) {
-        sendToPlayer(Level.INFO, source, msg, args);
+        sendFeedback(Level.INFO, source, msg, args);
     }
 
     public void sendInfo(BackupContext context, String msg, Object... args) {
@@ -110,7 +115,7 @@ public class CustomLogger {
     }
 
     public void sendError(ServerCommandSource source, String msg, Object... args) {
-        sendToPlayer(Level.ERROR, source, msg, args);
+        sendFeedback(Level.ERROR, source, msg, args);
     }
 
     public void sendError(BackupContext context, String msg, Object... args) {
@@ -118,7 +123,7 @@ public class CustomLogger {
     }
 
     public void sendToPlayerAndLog(Level level, ServerCommandSource source, String msg, Object... args) {
-        if(sendToPlayer(level, source, msg, args))
+        if(sendFeedback(level, source, msg, args))
             log(level, msg, args);
     }
 
