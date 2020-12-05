@@ -28,10 +28,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
-import net.szum123321.textile_backup.commands.permission.BlacklistCommand;
-import net.szum123321.textile_backup.commands.permission.WhitelistCommand;
+import net.szum123321.textile_backup.commands.manage.BlacklistCommand;
+import net.szum123321.textile_backup.commands.manage.DeleteCommand;
+import net.szum123321.textile_backup.commands.manage.WhitelistCommand;
 import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
-import net.szum123321.textile_backup.commands.restore.ListBackupsCommand;
+import net.szum123321.textile_backup.commands.manage.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
@@ -108,6 +109,7 @@ public class TextileBackup implements ModInitializer {
                         .then(BlacklistCommand.register())
                         .then(RestoreBackupCommand.register())
                         .then(ListBackupsCommand.register())
+                        .then(DeleteCommand.register())
                         .then(KillRestoreCommand.register())
         ));
     }

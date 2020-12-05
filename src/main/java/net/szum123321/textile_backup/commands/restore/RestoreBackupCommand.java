@@ -18,22 +18,15 @@
 
 package net.szum123321.textile_backup.commands.restore;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
+import net.szum123321.textile_backup.commands.CommandExceptions;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.commands.FileSuggestionProvider;
 import net.szum123321.textile_backup.core.restore.RestoreContext;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
@@ -41,32 +34,19 @@ import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class RestoreBackupCommand {
-    private final static DynamicCommandExceptionType DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE = new DynamicCommandExceptionType(o -> {
-        DateTimeParseException e = (DateTimeParseException)o;
-
-        MutableText message = new LiteralText("An exception occurred while trying to parse:\n")
-                .append(e.getParsedString())
-                .append("\n");
-
-        for (int i = 0; i < e.getErrorIndex(); i++) message.append(" ");
-
-        return message.append("^");
-    });
-
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("restore")
                 .then(CommandManager.argument("file", StringArgumentType.word())
-                            .suggests(new FileSuggestionProvider())
+                            .suggests(FileSuggestionProvider.Instance())
                         .executes(ctx -> execute(
                                 StringArgumentType.getString(ctx, "file"),
                                 null,
                                 ctx.getSource()
                         ))
                 ).then(CommandManager.argument("file", StringArgumentType.word())
-                        .suggests(new FileSuggestionProvider())
+                        .suggests(FileSuggestionProvider.Instance())
                         .then(CommandManager.argument("comment", StringArgumentType.word())
                                 .executes(ctx -> execute(
                                         StringArgumentType.getString(ctx, "file"),
@@ -92,7 +72,7 @@ public class RestoreBackupCommand {
             try {
                 dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
             } catch (DateTimeParseException e) {
-                throw DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
+                throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
             }
 
             Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
@@ -123,31 +103,4 @@ public class RestoreBackupCommand {
         }
     }
 
-    private static final class FileSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
-            String remaining = builder.getRemaining();
-
-            for(RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer())) {
-                String formattedCreationTime = file.getCreationTime().format(Statics.defaultDateTimeFormatter);
-
-                if(formattedCreationTime.startsWith(remaining)) {
-                    if(ctx.getSource().getEntity() instanceof PlayerEntity) {  //was typed by player
-                        if(file.getComment() != null) {
-                            builder.suggest(formattedCreationTime, new LiteralMessage("Comment: " + file.getComment()));
-                        } else {
-                            builder.suggest(formattedCreationTime);
-                        }
-                    } else {  //was typed from server console
-                        if(file.getComment() != null) {
-                            builder.suggest(file.getCreationTime() + "#" + file.getComment());
-                        } else {
-                            builder.suggest(formattedCreationTime);
-                        }
-                    }
-                }
-            }
-            return builder.buildFuture();
-        }
-    }
 }

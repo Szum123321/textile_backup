@@ -1,4 +1,4 @@
-package net.szum123321.textile_backup.commands.permission;
+package net.szum123321.textile_backup.commands.manage;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,34 +10,34 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.szum123321.textile_backup.Statics;
 
-public class WhitelistCommand {
-	public static LiteralArgumentBuilder<ServerCommandSource> register(){
-		return CommandManager.literal("whitelist")
+public class BlacklistCommand {
+	public static LiteralArgumentBuilder<ServerCommandSource> register() {
+		return CommandManager.literal("blacklist")
 				.then(CommandManager.literal("add")
 						.then(CommandManager.argument("player", EntityArgumentType.player())
-								.executes(WhitelistCommand::executeAdd)
+								.executes(BlacklistCommand::executeAdd)
 						)
 				).then(CommandManager.literal("remove")
 						.then(CommandManager.argument("player", EntityArgumentType.player())
-								.executes(WhitelistCommand::executeRemove)
+								.executes(BlacklistCommand::executeRemove)
 						)
 				).then(CommandManager.literal("list")
 						.executes(ctx -> executeList(ctx.getSource()))
 				).executes(ctx -> help(ctx.getSource()));
 	}
 
-	private static int help(ServerCommandSource source){
+	private static int help(ServerCommandSource source) {
 		Statics.LOGGER.sendInfo(source, "Available command are: add [player], remove [player], list.");
 
 		return 1;
 	}
 
-	private static int executeList(ServerCommandSource source){
+	private static int executeList(ServerCommandSource source) {
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("Currently on the whitelist are: ");
+		builder.append("Currently on the blacklist are: ");
 
-		for(String name : Statics.CONFIG.playerWhitelist){
+		for(String name : Statics.CONFIG.playerBlacklist){
 			builder.append(name);
 			builder.append(", ");
 		}
@@ -50,21 +50,21 @@ public class WhitelistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(Statics.CONFIG.playerWhitelist.contains(player.getEntityName())) {
-			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} is already whitelisted.", player.getEntityName());
+		if(Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} is already blacklisted.", player.getEntityName());
 		} else {
-			Statics.CONFIG.playerWhitelist.add(player.getEntityName());
+			Statics.CONFIG.playerBlacklist.add(player.getEntityName());
 			ConfigManager.saveConfig(Statics.CONFIG);
 
 			StringBuilder builder = new StringBuilder();
 
 			builder.append("Player: ");
 			builder.append(player.getEntityName());
-			builder.append(" added to the whitelist");
+			builder.append(" added to the blacklist");
 
-			if(Statics.CONFIG.playerBlacklist.contains(player.getEntityName())){
-				Statics.CONFIG.playerBlacklist.remove(player.getEntityName());
-				builder.append(" and removed form the blacklist");
+			if(Statics.CONFIG.playerWhitelist.contains(player.getEntityName())){
+				Statics.CONFIG.playerWhitelist.remove(player.getEntityName());
+				builder.append(" and removed form the whitelist");
 			}
 
 			builder.append(" successfully.");
@@ -80,15 +80,15 @@ public class WhitelistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!Statics.CONFIG.playerWhitelist.contains(player.getEntityName())) {
-			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} newer was whitelisted.", player.getEntityName());
+		if(!Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} newer was blacklisted.", player.getEntityName());
 		} else {
-			Statics.CONFIG.playerWhitelist.remove(player.getEntityName());
+			Statics.CONFIG.playerBlacklist.remove(player.getEntityName());
 			ConfigManager.saveConfig(Statics.CONFIG);
 
 			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
 
-			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getEntityName());
+			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} removed from the blacklist successfully.", player.getEntityName());
 		}
 
 		return 1;
