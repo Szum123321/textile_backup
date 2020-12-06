@@ -106,7 +106,7 @@ public class BackupHelper {
 				if(ctx.startedByPlayer())
 					Statics.LOGGER.sendError(ctx, "If you have access to server console please take a look at it.");
 
-				Statics.LOGGER.error("Please let me know about this situation (include below error, mod's config, additional mods, where is the server running etc.", e);
+				Statics.LOGGER.error("Please let me know about this situation, include below error, mod's config, additional mods, where is the server running etc.", e);
 			}
 		}
 
