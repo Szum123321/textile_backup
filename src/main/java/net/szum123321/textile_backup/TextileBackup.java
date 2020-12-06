@@ -70,8 +70,7 @@ public class TextileBackup implements ModInitializer {
 
         //Restart Executor Service in singleplayer
         ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
-            if(Statics.executorService.isShutdown())
-                Statics.executorService = Executors.newSingleThreadExecutor();
+            if(Statics.executorService.isShutdown()) Statics.executorService = Executors.newSingleThreadExecutor();
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {

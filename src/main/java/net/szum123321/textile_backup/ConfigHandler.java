@@ -98,7 +98,7 @@ public class ConfigHandler {
             "Remember not to use '#' symbol or any other character that is not allowed by your operating system such as:\n" +
             "':', '\\', etc...\n" +
             "For more info: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html\n")
-    public String dateTimeFormat = "dd.MM.yyyy_HH-mm-ss";
+    public String dateTimeFormat = "yyyy.MM.dd_HH-mm-ss";
 
     public Optional<String> sanitize() {
         if(compressionCoreCountLimit > Runtime.getRuntime().availableProcessors())

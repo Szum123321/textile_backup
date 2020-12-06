@@ -44,7 +44,7 @@ public class AwaitThread extends Thread {
 
         // 𝄞 This is final count down! Tu ruru Tu, Tu Ru Tu Tu ♪
         try {
-            Thread.sleep(delay * 1000);
+            Thread.sleep(delay * 1000L);
         } catch (InterruptedException e) {
             Statics.LOGGER.info("Backup restoration cancelled.");
             return;
