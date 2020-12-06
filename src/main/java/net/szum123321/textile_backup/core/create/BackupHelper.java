@@ -20,6 +20,8 @@ package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
@@ -66,8 +68,44 @@ public class BackupHelper {
 			try {
 				ctx.getServer().save(false, true, true);
 			} catch (Exception e) {
-				Statics.LOGGER.error("An exception occurred when trying to save world!");
-				Statics.LOGGER.error("This is known issue (See https://github.com/Szum123321/textile_backup/issues/42)");
+				Statics.LOGGER.sendErrorAL(ctx,"An exception occurred when trying to save the world!\n"
+						+ "But don't worry, backup will continue, although data may be not up-to-date."
+				);
+
+				MutableText text = Statics.LOGGER.getPrefixText()
+						.shallowCopy()
+						.append(new LiteralText("In order for backup to be up-to-date call ").formatted(Formatting.WHITE))
+						.append(
+								new LiteralText("[/save-all flush]")
+										.styled(
+												style -> style
+														.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/save-all flush"))
+														.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click!")))
+														.withColor(Formatting.BLUE)
+										)
+						)
+						.append(new LiteralText(" and then re-run the backup.").formatted(Formatting.WHITE));
+
+				ctx.getCommandSource().sendFeedback(text, false);
+
+				text = Statics.LOGGER.getPrefixText()
+						.shallowCopy()
+						.append(new LiteralText("This is known issue (See ").formatted(Formatting.WHITE))
+						.append(
+								new LiteralText("https://github.com/Szum123321/textile_backup/issues/42")
+									.styled(
+											style -> style
+													.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/Szum123321/textile_backup/issues/42"))
+													.withColor(Formatting.BLUE)
+									)
+						)
+						.append(new LiteralText(")").formatted(Formatting.WHITE));
+
+				ctx.getCommandSource().sendFeedback(text, false);
+				
+				if(ctx.startedByPlayer())
+					Statics.LOGGER.sendError(ctx, "If you have access to server console please take a look at it.");
+
 				Statics.LOGGER.error("Please let me know about this situation (include below error, mod's config, additional mods, where is the server running etc.", e);
 			}
 		}
