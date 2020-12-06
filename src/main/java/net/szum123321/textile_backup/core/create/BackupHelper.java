@@ -62,7 +62,14 @@ public class BackupHelper {
 			Statics.LOGGER.sendInfoAL(ctx, "Saving server...");
 
 			ctx.getServer().getPlayerManager().saveAllPlayerData();
-			ctx.getServer().save(true, true, true);
+
+			try {
+				ctx.getServer().save(false, true, true);
+			} catch (Exception e) {
+				Statics.LOGGER.error("An exception occurred when trying to save world!");
+				Statics.LOGGER.error("This is known issue (See https://github.com/Szum123321/textile_backup/issues/42)");
+				Statics.LOGGER.error("Please let me know about this situation (include below error, mod's config, additional mods, where is the server running etc.", e);
+			}
 		}
 
 		return new MakeBackupRunnable(ctx);
