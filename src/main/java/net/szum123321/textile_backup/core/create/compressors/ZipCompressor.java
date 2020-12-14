@@ -30,6 +30,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 public class ZipCompressor extends AbstractCompressor {
     public static ZipCompressor getInstance() {
@@ -37,7 +38,7 @@ public class ZipCompressor extends AbstractCompressor {
     }
 
     @Override
-    protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
+    protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
         ZipArchiveOutputStream arc =  new ZipArchiveOutputStream(stream);
 
         arc.setMethod(ZipArchiveOutputStream.DEFLATED);
@@ -57,9 +58,7 @@ public class ZipCompressor extends AbstractCompressor {
                 entry.setMethod(ZipArchiveOutputStream.STORED);
                 entry.setSize(file.length());
                 entry.setCompressedSize(file.length());
-                CRC32 sum = new CRC32();
-                sum.update(Files.readAllBytes(file.toPath()));
-                entry.setCrc(sum.getValue());
+                entry.setCrc(getCRC(file));
             }
 
             ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);
@@ -74,5 +73,19 @@ public class ZipCompressor extends AbstractCompressor {
     protected static boolean isDotDat(String filename) {
         String[] arr = filename.split("\\.");
         return arr[arr.length - 1].contains("dat"); //includes dat_old
+    }
+
+    protected static long getCRC(File file) throws IOException {
+        Checksum sum = new CRC32();
+        byte[] buffer = new byte[8192];
+        int len;
+
+        try (InputStream stream = new FileInputStream(file)) {
+            while ((len = stream.read(buffer)) != -1) sum.update(buffer, 0, len);
+        } catch (IOException e) {
+            throw new IOException("Error while calculating CRC of: " + file.getAbsolutePath(), e);
+        }
+
+        return sum.getValue();
     }
 }

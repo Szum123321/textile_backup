@@ -56,9 +56,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 			entry.setMethod(ZipArchiveOutputStream.STORED);
 			entry.setSize(file.length());
 			entry.setCompressedSize(file.length());
-			CRC32 sum = new CRC32();
-			sum.update(Files.readAllBytes(file.toPath()));
-			entry.setCrc(sum.getValue());
+			entry.setCrc(getCRC(file));
 		} else entry.setMethod(ZipEntry.DEFLATED);
 
 		entry.setTime(System.currentTimeMillis());
