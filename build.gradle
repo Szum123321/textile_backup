@@ -7,7 +7,7 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 archivesBaseName = project.archives_base_name
-version = "${project.mod_version}-${project.minecraft_version}"
+version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
 group = project.maven_group
 
 minecraft {
@@ -94,4 +94,10 @@ publishing {
 		// uncomment to publish to the local maven
 		// mavenLocal()
 	}
+}
+
+static def getMcMinor(ver) {
+	String[] arr = ((String)ver).split("\\.");
+
+	return (String)(arr[0] + "." + arr[1]);
 }
