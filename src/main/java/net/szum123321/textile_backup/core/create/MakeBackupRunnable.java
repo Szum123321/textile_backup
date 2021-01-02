@@ -22,6 +22,7 @@ import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
 import net.szum123321.textile_backup.core.create.compressors.tar.LZMACompressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
@@ -29,6 +30,7 @@ import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompress
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 
 public class MakeBackupRunnable implements Runnable {
@@ -101,6 +103,14 @@ public class MakeBackupRunnable implements Runnable {
                     LZMACompressor.getInstance().createArchive(world, outFile, context, coreCount);
                     break;
 
+                case TAR:
+                    new AbstractTarArchiver() {
+                        protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
+                            return stream;
+                        }
+                    }.createArchive(world, outFile, context, coreCount);
+                    break;
+
                 default:
                     Statics.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", Statics.CONFIG.format);
 
@@ -124,6 +134,6 @@ public class MakeBackupRunnable implements Runnable {
 
         return Utilities.getDateTimeFormatter().format(now) +
                 (context.getComment() != null ? "#" + context.getComment().replace("#", "") : "") +
-                Statics.CONFIG.format.getString();
+                Statics.CONFIG.format.getCompleteString();
     }
 }

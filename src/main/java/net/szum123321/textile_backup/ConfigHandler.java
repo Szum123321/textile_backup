@@ -23,9 +23,7 @@ import io.github.cottonmc.cotton.config.annotations.ConfigFile;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @ConfigFile(name = Statics.MOD_ID)
 public class ConfigHandler {
@@ -53,7 +51,7 @@ public class ConfigHandler {
 
     @Comment("\nThis setting allows you to exclude files form being backedup.\n"+
                 "Be very careful when setting it, as it is easy corrupt your world!\n")
-    public Set<String> fileBlacklist = new HashSet<>();
+    public List<String> fileBlacklist = new ArrayList<>();
 
     @Comment("\nShould backups be deleted after being restored?\n")
     public boolean deleteOldBackupAfterRestore = true;
@@ -79,7 +77,8 @@ public class ConfigHandler {
                     "ZIP - normal zip archive using standard deflate compression\n" +
                     "GZIP - tar.gz using gzip compression\n" +
                     "BZIP2 - tar.bz2 archive using bzip2 compression\n" +
-                    "LZMA - tar.xz using lzma compression\n")
+                    "LZMA - tar.xz using lzma compression\n" +
+                    "TAR - .tar with no compression\n")
     public ArchiveFormat format = ArchiveFormat.ZIP;
 
     @Comment("\nMinimal permission level required to run commands\n")
@@ -124,19 +123,32 @@ public class ConfigHandler {
     }
 
     public enum ArchiveFormat {
-        ZIP(".zip"),
-        GZIP(".tar.gz"),
-        BZIP2(".tar.bz2"),
-        LZMA(".tar.xz");
+        ZIP("zip"),
+        GZIP("tar", "gz"),
+        BZIP2("tar", "bz2"),
+        LZMA("tar", "xz"),
+        TAR("tar");
 
-        private final String extension;
+        private final List<String> extensionPieces;
 
-        private ArchiveFormat(String extension){
-            this.extension = extension;
+        ArchiveFormat(String... extensionParts) {
+            extensionPieces = Arrays.asList(extensionParts);
         }
 
-        public String getString() {
-            return extension;
+        public String getCompleteString() {
+            StringBuilder builder = new StringBuilder();
+
+            extensionPieces.forEach(s -> builder.append('.').append(s));
+
+            return builder.toString();
+        }
+
+        boolean isMultipart() {
+            return extensionPieces.size() > 1;
+        }
+
+        public String getLastPiece() {
+            return extensionPieces.get(extensionPieces.size() - 1);
         }
     }
 }

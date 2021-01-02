@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class Utilities {
@@ -106,19 +107,9 @@ public class Utilities {
 	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(String fileName) {
 		String[] parts = fileName.split("\\.");
 
-		switch (parts[parts.length - 1]) {
-			case "zip":
-				return Optional.of(ConfigHandler.ArchiveFormat.ZIP);
-			case "bz2":
-				return Optional.of(ConfigHandler.ArchiveFormat.BZIP2);
-			case "gz":
-				return Optional.of(ConfigHandler.ArchiveFormat.GZIP);
-			case "xz":
-				return Optional.of(ConfigHandler.ArchiveFormat.LZMA);
-
-			default:
-				return Optional.empty();
-		}
+		return Arrays.stream(ConfigHandler.ArchiveFormat.values())
+				.filter(format -> format.getLastPiece().equals(parts[parts.length - 1]))
+				.findAny();
 	}
 
 	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(File f) {
@@ -129,7 +120,7 @@ public class Utilities {
 		LocalDateTime creationTime = null;
 
 		if(getArchiveExtension(file).isPresent()) {
-			String fileExtension = getArchiveExtension(file).get().getString();
+			String fileExtension = getArchiveExtension(file).get().getCompleteString();
 
 			try {
 				creationTime = LocalDateTime.from(
