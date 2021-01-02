@@ -96,10 +96,7 @@ public class Utilities {
 			}
 		}
 
-		for(String i : Statics.CONFIG.fileBlacklist) {
-			if(path.startsWith(i))
-				return true;
-		}
+		for(String i : Statics.CONFIG.fileBlacklist) if(path.startsWith(i)) return true;
 
 		return false;
 	}
@@ -170,12 +167,9 @@ public class Utilities {
 	public static String formatDuration(Duration duration) {
 		DateTimeFormatter formatter;
 
-		if(duration.toHours() > 0)
-			formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
-		else if(duration.toMinutes() > 0)
-			formatter = DateTimeFormatter.ofPattern("mm:ss.SSS");
-		else
-			formatter = DateTimeFormatter.ofPattern("ss.SSS");
+		if(duration.toHours() > 0) formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+		else if(duration.toMinutes() > 0) formatter = DateTimeFormatter.ofPattern("mm:ss.SSS");
+		else formatter = DateTimeFormatter.ofPattern("ss.SSS");
 
 		return LocalTime.ofNanoOfDay(duration.toNanos()).format(formatter);
 	}
