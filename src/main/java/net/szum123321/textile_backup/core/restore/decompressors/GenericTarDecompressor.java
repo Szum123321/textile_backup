@@ -50,19 +50,31 @@ public class GenericTarDecompressor {
                 File file = target.toPath().resolve(entry.getName()).toFile();
 
                 if(entry.isDirectory()) {
-                    file.mkdirs();
+                    try {
+                        Files.createDirectories(file.toPath());
+                    } catch (IOException e) {
+                        Statics.LOGGER.error("An exception occurred when trying to create {}", file, e);
+                    }
                 } else {
                     File parent = file.getParentFile();
 
+                    try {
+                        Files.createDirectories(parent.toPath());
+                    } catch (IOException e) {
+                        Statics.LOGGER.error("An exception occurred when trying to create {}", file, e);
+                    }
+                    /*
                     if (!parent.isDirectory() && !parent.mkdirs()) {
                         Statics.LOGGER.error("Failed to create {}", parent);
-                    } else {
-                        try (OutputStream outputStream = Files.newOutputStream(file.toPath());
-                             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                            IOUtils.copy(archiveInputStream, bufferedOutputStream);
-                        } catch (IOException e) {
-                            Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
-                        }
+                        Statics.LOGGER.error("Skipping: {}", file);
+                        continue;
+                    }*/
+
+                    try (OutputStream outputStream = Files.newOutputStream(file.toPath());
+                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                        IOUtils.copy(archiveInputStream, bufferedOutputStream);
+                    } catch (IOException e) {
+                        Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
                     }
                 }
             }

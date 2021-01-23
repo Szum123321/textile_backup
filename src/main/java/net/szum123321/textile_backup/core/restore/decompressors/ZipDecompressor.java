@@ -47,19 +47,27 @@ public class ZipDecompressor {
                 File file = target.toPath().resolve(entry.getName()).toFile();
 
                 if(entry.isDirectory()) {
-                    file.mkdirs();
+                    try {
+                        Files.createDirectories(file.toPath());
+                    } catch (IOException e) {
+                        Statics.LOGGER.error("An exception occurred when trying to create {}", file, e);
+                    }
+                    //if(!file.isDirectory() && !file.mkdirs())
+                      //  Statics.LOGGER.error("Failed to create: {}", file);
                 } else {
                     File parent = file.getParentFile();
 
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        Statics.LOGGER.error("Failed to create {}", parent);
-                    } else {
-                        try (OutputStream outputStream = Files.newOutputStream(file.toPath());
-                             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                            IOUtils.copy(zipInputStream, bufferedOutputStream);
-                        } catch (IOException e) {
-                            Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
-                        }
+                    try {
+                        Files.createDirectories(parent.toPath());
+                    } catch (IOException e) {
+                        Statics.LOGGER.error("An exception occurred when trying to create {}", file, e);
+                    }
+
+                    try (OutputStream outputStream = Files.newOutputStream(file.toPath());
+                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                        IOUtils.copy(zipInputStream, bufferedOutputStream);
+                    } catch (IOException e) {
+                        Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
                     }
                 }
             }
