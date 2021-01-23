@@ -29,6 +29,10 @@ import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecomp
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RestoreBackupRunnable implements Runnable {
     private final RestoreContext ctx;
@@ -61,8 +65,10 @@ public class RestoreBackupRunnable implements Runnable {
 
         Statics.LOGGER.info("Deleting old world...");
 
-        if(!deleteDirectory(worldFile))
-            Statics.LOGGER.error("Something went wrong while deleting old world!");
+        Set<Path> undeleted = deleteDirectory(worldFile);
+        if(!undeleted.isEmpty()) {
+            Statics.LOGGER.error("Failed to delete {} files:\n {}",undeleted.size(),  Arrays.toString(undeleted.toArray()));
+        }
 
         worldFile.mkdirs();
 
@@ -93,14 +99,16 @@ public class RestoreBackupRunnable implements Runnable {
         }
     }
 
-    private static boolean deleteDirectory(File f) {
-        boolean state = true;
+    private static Set<Path> deleteDirectory(File f) {
+        Set<Path> set = new HashSet<>();
+        //boolean state = true;
 
         if(f.isDirectory()) {
-            for(File f2 : f.listFiles())
-                state &= deleteDirectory(f2);
+            for(File f2 : f.listFiles()) set.addAll(deleteDirectory(f2));
         }
 
-        return f.delete() && state;
+        if(!f.delete()) set.add(f.toPath());
+
+        return set;
     }
 }
