@@ -20,13 +20,19 @@ package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor.FileInputStreamSupplier;
+import net.szum123321.textile_backup.core.create.compressors.parallel_zip_fix.FailsafeScatterGatherBackingStore;
 import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
+import org.apache.commons.compress.parallel.ScatterGatherBackingStore;
+import org.apache.commons.compress.parallel.ScatterGatherBackingStoreSupplier;
+import sun.security.action.GetPropertyAction;
 
 import java.io.*;
-import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.*;
-import java.util.zip.CRC32;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 
 /*
@@ -37,14 +43,17 @@ import java.util.zip.ZipEntry;
 */
 public class ParallelZipCompressor extends ZipCompressor {
 	private ParallelScatterZipCreator scatterZipCreator;
+	private ScatterZipOutputStream dirs;
 
 	public static ParallelZipCompressor getInstance() {
 		return new ParallelZipCompressor();
 	}
 
 	@Override
-	protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
-		scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(coreLimit));
+	protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+		dirs = ScatterZipOutputStream.fileBased(File.createTempFile("scatter-dirs", "tmp"));
+		scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(coreLimit), new CatchingBackingStoreSupplier());
+
 		return super.createArchiveOutputStream(stream, ctx, coreLimit);
 	}
 
@@ -52,20 +61,25 @@ public class ParallelZipCompressor extends ZipCompressor {
 	protected void addEntry(File file, String entryName, OutputStream arc) throws IOException {
 		ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
 
-		if(ZipCompressor.isDotDat(file.getName())) {
-			entry.setMethod(ZipArchiveOutputStream.STORED);
-			entry.setSize(file.length());
-			entry.setCompressedSize(file.length());
-			entry.setCrc(getCRC(file));
-		} else entry.setMethod(ZipEntry.DEFLATED);
+		if(entry.isDirectory() && !entry.isUnixSymlink()) {
+			dirs.addArchiveEntry(
+					ZipArchiveEntryRequest.createZipArchiveEntryRequest(entry, new FileInputStreamSupplier(file))
+			);
+		} else {
+			if (ZipCompressor.isDotDat(file.getName())) {
+				entry.setMethod(ZipArchiveOutputStream.STORED);
+				entry.setCompressedSize(entry.getSize());
+				entry.setCrc(getCRC(file));
+			} else entry.setMethod(ZipEntry.DEFLATED);
 
-		entry.setTime(System.currentTimeMillis());
-
-		scatterZipCreator.addArchiveEntry(entry, new FileInputStreamSupplier(file));
+			scatterZipCreator.addArchiveEntry(entry, new FileInputStreamSupplier(file));
+		}
 	}
 
 	@Override
 	protected void finish(OutputStream arc) throws InterruptedException, ExecutionException, IOException {
+		dirs.writeTo((ZipArchiveOutputStream) arc);
+		dirs.close();
 		scatterZipCreator.writeTo((ZipArchiveOutputStream) arc);
 	}
 
@@ -84,6 +98,16 @@ public class ParallelZipCompressor extends ZipCompressor {
 			}
 
 			return null;
+		}
+	}
+
+	private static class CatchingBackingStoreSupplier implements ScatterGatherBackingStoreSupplier {
+		final AtomicInteger storeNum = new AtomicInteger(0);
+
+		@Override
+		public ScatterGatherBackingStore get() throws IOException {
+			//final File tempFile = File.createTempFile("catchngparallelscatter", "n" + storeNum.incrementAndGet());
+			return new FailsafeScatterGatherBackingStore(storeNum.incrementAndGet(), Paths.get(GetPropertyAction.privilegedGetProperty("java.io.tmpdir")));
 		}
 	}
 }

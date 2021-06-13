@@ -66,7 +66,7 @@ public class RestoreBackupCommand {
     }
 
     private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
-        if(Statics.restoreAwaitThread == null || (Statics.restoreAwaitThread != null && !Statics.restoreAwaitThread.isAlive())) {
+        if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
             LocalDateTime dateTime;
 
             try {

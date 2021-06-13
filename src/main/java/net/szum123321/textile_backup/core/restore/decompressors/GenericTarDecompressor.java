@@ -63,12 +63,6 @@ public class GenericTarDecompressor {
                     } catch (IOException e) {
                         Statics.LOGGER.error("An exception occurred when trying to create {}", file, e);
                     }
-                    /*
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        Statics.LOGGER.error("Failed to create {}", parent);
-                        Statics.LOGGER.error("Skipping: {}", file);
-                        continue;
-                    }*/
 
                     try (OutputStream outputStream = Files.newOutputStream(file.toPath());
                          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
@@ -85,6 +79,12 @@ public class GenericTarDecompressor {
         Statics.LOGGER.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 
+    /**
+     * This function handles uncompressed (.tar) streams
+     * @param inputStream File input stream
+     * @return Either { @link CompressorInputStream } that decompresses the file or the inputStream if it's tar
+     * @throws CompressorException when the file is neither a tar or other supported archive
+     */
     private static InputStream getCompressorInputStream(InputStream inputStream) throws CompressorException {
         try {
             return new CompressorStreamFactory().createCompressorInputStream(inputStream);

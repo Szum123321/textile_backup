@@ -67,7 +67,11 @@ public class RestoreBackupRunnable implements Runnable {
 
         Set<Path> undeleted = deleteDirectory(worldFile);
         if(!undeleted.isEmpty()) {
-            Statics.LOGGER.error("Failed to delete {} files:\n {}",undeleted.size(),  Arrays.toString(undeleted.toArray()));
+            Statics.LOGGER.error("Failed to delete {} file{}:\n {}",
+                    undeleted.size(),
+                    undeleted.size() > 1 ? "s" : "",
+                    Arrays.toString(undeleted.toArray())
+            );
         }
 
         worldFile.mkdirs();

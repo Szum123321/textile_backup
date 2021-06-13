@@ -45,7 +45,7 @@ public class Utilities {
 	public static File getWorldFolder(MinecraftServer server) {
 		return ((MinecraftServerSessionAccessor)server)
 				.getSession()
-				.getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+				.getWorldDirectory(RegistryKey.of(Registry.WORLD_KEY, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
 	}
 	
 	public static File getBackupRootPath(String worldName) {

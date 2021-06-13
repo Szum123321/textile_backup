@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
 public class TextileBackup implements ModInitializer {
     @Override
     public void onInitialize() {
+        //Statics.LOGGER.info("Tmpfs: {}",  GetPropertyAction.privilegedGetProperty("java.io.tmpdir"));
         Statics.LOGGER.info("Starting Textile Backup by Szum123321.");
 
         Statics.CONFIG = ConfigManager.loadConfig(ConfigHandler.class);
@@ -65,8 +66,7 @@ public class TextileBackup implements ModInitializer {
             }
         }
 
-        if(Statics.CONFIG.backupInterval > 0)
-            ServerTickEvents.END_SERVER_TICK.register(Statics.scheduler::tick);
+        if(Statics.CONFIG.backupInterval > 0) ServerTickEvents.END_SERVER_TICK.register(Statics.scheduler::tick);
 
         //Restart Executor Service in singleplayer
         ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
