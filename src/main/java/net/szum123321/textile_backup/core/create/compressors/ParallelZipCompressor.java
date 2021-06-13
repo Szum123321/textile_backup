@@ -24,9 +24,7 @@ import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.concurrent.*;
-import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 
 /*

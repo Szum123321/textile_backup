@@ -38,7 +38,7 @@ public class ZipCompressor extends AbstractCompressor {
     }
 
     @Override
-    protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+    protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
         ZipArchiveOutputStream arc =  new ZipArchiveOutputStream(stream);
 
         arc.setMethod(ZipArchiveOutputStream.DEFLATED);

@@ -26,8 +26,6 @@ import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArch
 import net.szum123321.textile_backup.core.create.compressors.tar.LZMACompressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
-import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
