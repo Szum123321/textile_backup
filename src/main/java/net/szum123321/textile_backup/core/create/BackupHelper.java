@@ -37,6 +37,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BackupHelper {
@@ -73,7 +74,6 @@ public class BackupHelper {
 				);
 
 				MutableText text = Statics.LOGGER.getPrefixText()
-						.shallowCopy()
 						.append(new LiteralText("In order for backup to be up-to-date call ").formatted(Formatting.WHITE))
 						.append(
 								new LiteralText("[/save-all flush]")
@@ -89,7 +89,6 @@ public class BackupHelper {
 				ctx.getCommandSource().sendFeedback(text, false);
 
 				text = Statics.LOGGER.getPrefixText()
-						.shallowCopy()
 						.append(new LiteralText("This is known issue (See ").formatted(Formatting.WHITE))
 						.append(
 								new LiteralText("https://github.com/Szum123321/textile_backup/issues/42")
@@ -114,13 +113,20 @@ public class BackupHelper {
 	}
 
 	private static void notifyPlayers(BackupContext ctx) {
-		MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
+		MutableText message = Statics.LOGGER.getPrefixText();
 		message.append(new LiteralText("Warning! Server backup will begin shortly. You may experience some lag.").formatted(Formatting.WHITE));
+
+		UUID uuid;
+
+		if(ctx.getInitiator().equals(ActionInitiator.Player) && ctx.getCommandSource().getEntity() != null)
+			uuid = ctx.getCommandSource().getEntity().getUuid();
+		else
+			uuid = Util.NIL_UUID;
 
 		ctx.getServer().getPlayerManager().broadcastChatMessage(
 				message,
-				MessageType.GAME_INFO,
-				ctx.getInitiator() == ActionInitiator.Player ? ctx.getCommandSource().getEntity().getUuid() : Util.NIL_UUID
+				MessageType.SYSTEM,
+				uuid
 		);
 	}
 

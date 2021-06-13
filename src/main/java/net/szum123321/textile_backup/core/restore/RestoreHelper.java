@@ -20,7 +20,9 @@ package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.Statics;
@@ -30,10 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,7 +57,7 @@ public class RestoreHelper {
         else
             Statics.LOGGER.info("Backup restoration was initiated form Server Console");
 
-        notifyPlayer(ctx);
+        notifyPlayers(ctx);
 
         return new AwaitThread(
                 Statics.CONFIG.restoreDelay,
@@ -66,14 +65,27 @@ public class RestoreHelper {
         );
     }
 
-    private static void notifyPlayer(RestoreContext ctx) {
-        MutableText message = Statics.LOGGER.getPrefixText().shallowCopy();
-        message.append("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!");
+    private static void notifyPlayers(RestoreContext ctx) {
+        MutableText message = Statics.LOGGER.getPrefixText();
+        message.append(
+                new LiteralText(
+                        "Warning! The server is going to shut down in " +
+                                Statics.CONFIG.restoreDelay +
+                                " seconds!"
+                ).formatted(Formatting.WHITE)
+        );
+
+        UUID uuid;
+
+        if(ctx.getInitiator().equals(ActionInitiator.Player) && ctx.getCommandSource().getEntity() != null)
+            uuid = ctx.getCommandSource().getEntity().getUuid();
+        else
+            uuid = Util.NIL_UUID;
 
         ctx.getServer().getPlayerManager().broadcastChatMessage(
                 message,
-                MessageType.GAME_INFO,
-                ctx.getInitiator() == ActionInitiator.Player ? ctx.getCommandSource().getEntity().getUuid() : Util.NIL_UUID
+                MessageType.SYSTEM,
+                uuid
         );
     }
 

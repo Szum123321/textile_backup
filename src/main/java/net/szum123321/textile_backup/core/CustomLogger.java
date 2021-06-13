@@ -46,11 +46,11 @@ public class CustomLogger {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
         this.logger = LogManager.getLogger(name, messageFactory);
         this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = new LiteralText(this.prefix).formatted(Formatting.AQUA);
+        this.prefixText = new LiteralText(this.prefix).styled(style -> style.withColor(0x5B23DA));
     }
 
     public MutableText getPrefixText() {
-        return prefixText;
+        return prefixText.shallowCopy();
     }
 
     public void log(Level level, String msg, Object... data) {
