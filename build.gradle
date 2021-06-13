@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.5-SNAPSHOT'
+	id 'fabric-loom' version '0.8-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -14,7 +14,7 @@ minecraft {
 }
 
 repositories{
-	maven { url 'http://server.bbkr.space:8081/artifactory/libs-release' }
+	maven { url 'https://server.bbkr.space/artifactory/libs-release' }
 	maven { url 'https://jitpack.io' }
 }
 
@@ -22,37 +22,32 @@ dependencies {
 	//to change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modCompile "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modCompile "io.github.cottonmc.cotton:cotton-config:1.0.0-rc.7"
+	modImplementation "io.github.cottonmc.cotton:cotton-config:1.0.0-rc.7"
 
 	include "io.github.cottonmc:Jankson-Fabric:3.0.0+j1.2.0"
 	include "io.github.cottonmc.cotton:cotton-logging:1.0.0-rc.4"
 	include "io.github.cottonmc.cotton:cotton-config:1.0.0-rc.7"
 
-	modCompile "org.apache.commons:commons-compress:1.19"
+	modImplementation "org.apache.commons:commons-compress:1.19"
 	include "org.apache.commons:commons-compress:1.19"
 
-	modCompile "org.tukaani:xz:1.8"
+	modImplementation "org.tukaani:xz:1.8"
 	include "org.tukaani:xz:1.8"
 
-	modCompile 'com.github.shevek:parallelgzip:master-SNAPSHOT'
+	modImplementation 'com.github.shevek:parallelgzip:master-SNAPSHOT'
 	include 'com.github.shevek:parallelgzip:master-SNAPSHOT'
 }
 
 processResources {
 	inputs.property "version", project.version
 
-	from(sourceSets.main.resources.srcDirs) {
-		include "fabric.mod.json"
+	filesMatching("fabric.mod.json") {
 		expand "version": project.version
-	}
-
-	from(sourceSets.main.resources.srcDirs) {
-		exclude "fabric.mod.json"
 	}
 }
 
@@ -63,16 +58,18 @@ tasks.withType(JavaCompile) {
 	options.encoding = "UTF-8"
 }
 
-// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-// if it is present.
-// If you remove this task, sources will not be generated.
-task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = "sources"
-	from sourceSets.main.allSource
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
 }
 
 jar {
-	from "LICENSE"
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}"}
+	}
 }
 
 // configure the maven publication

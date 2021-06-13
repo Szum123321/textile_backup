@@ -22,6 +22,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.Statics;
@@ -47,7 +48,7 @@ public class Utilities {
 	public static File getWorldFolder(MinecraftServer server) {
 		return ((MinecraftServerSessionAccessor)server)
 				.getSession()
-				.getWorldDirectory(RegistryKey.of(Registry.DIMENSION, DimensionType.OVERWORLD_REGISTRY_KEY.getValue()));
+				.getWorldDirectory(World.OVERWORLD);
 	}
 
 	public static void disableWorldSaving(MinecraftServer server) {
