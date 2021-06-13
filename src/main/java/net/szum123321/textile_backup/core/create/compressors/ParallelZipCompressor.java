@@ -64,7 +64,14 @@ public class ParallelZipCompressor extends ZipCompressor {
 
 	@Override
 	protected void finish(OutputStream arc) throws InterruptedException, ExecutionException, IOException {
-		scatterZipCreator.writeTo((ZipArchiveOutputStream) arc);
+		try {
+			scatterZipCreator.writeTo((ZipArchiveOutputStream) arc);
+		} catch (IOException e) {
+			if(e.getMessage().equals("No space left on device")) {
+				Statics.LOGGER.error("Don't panic! This is a known issue! For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
+				throw e;
+			}
+		}
 	}
 
 	static class FileInputStreamSupplier implements InputStreamSupplier {
