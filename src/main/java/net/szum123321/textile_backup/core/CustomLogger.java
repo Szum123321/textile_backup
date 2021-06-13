@@ -21,6 +21,7 @@ package net.szum123321.textile_backup.core;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.szum123321.textile_backup.core.create.BackupContext;
@@ -47,7 +48,11 @@ public class CustomLogger {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
         this.logger = LogManager.getLogger(name, messageFactory);
         this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = new LiteralText(this.prefix).formatted(Formatting.AQUA);
+        this.prefixText = new LiteralText(this.prefix).styled(style -> style.withColor(0x5B23DA));
+    }
+
+    public MutableText getPrefixText() {
+        return prefixText.shallowCopy();
     }
 
     public void log(Level level, String msg, Object... data) {

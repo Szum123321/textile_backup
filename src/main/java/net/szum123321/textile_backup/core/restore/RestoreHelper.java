@@ -18,8 +18,12 @@
 
 package net.szum123321.textile_backup.core.restore;
 
+import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 
@@ -46,8 +50,11 @@ public class RestoreHelper {
     }
 
     public static AwaitThread create(File backupFile, MinecraftServer server, String comment) {
-        server.getPlayerManager().getPlayerList()
-                .forEach(serverPlayerEntity -> serverPlayerEntity.sendMessage(new LiteralText("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!"), false));
+        MutableText msg = new LiteralText("Warning! The server is going to shut down in " + Statics.CONFIG.restoreDelay + " seconds!");
+        msg.formatted(Formatting.WHITE);
+        msg = Statics.LOGGER.getPrefixText().append(msg);
+
+        server.getPlayerManager().broadcastChatMessage(msg, MessageType.SYSTEM, Util.NIL_UUID);
 
         Statics.globalShutdownBackupFlag.set(false);
 
