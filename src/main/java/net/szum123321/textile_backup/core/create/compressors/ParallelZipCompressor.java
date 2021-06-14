@@ -19,11 +19,13 @@
 package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.NoSpaceLeftOnDeviceException;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
 import java.io.*;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
 
@@ -34,6 +36,19 @@ import java.util.zip.ZipEntry;
 	https://stackoverflow.com/users/2987755/dkb
 */
 public class ParallelZipCompressor extends ZipCompressor {
+	//These fields are used to discriminate against the issue #51
+	private final static SimpleStackTraceElement[] STACKTRACE = {
+			new SimpleStackTraceElement("sun.nio.ch.FileDispatcherImpl", "write0", true),
+			new SimpleStackTraceElement("sun.nio.ch.FileDispatcherImpl", "write", false),
+			new SimpleStackTraceElement("sun.nio.ch.IOUtil", "writeFromNativeBuffer", false),
+			new SimpleStackTraceElement("sun.nio.ch.IOUtil", "write", false),
+			new SimpleStackTraceElement("sun.nio.ch.FileChannelImpl", "write", false),
+			new SimpleStackTraceElement("java.nio.channels.Channels", "writeFullyImpl", false),
+			new SimpleStackTraceElement("java.nio.channels.Channels", "writeFully", false),
+			new SimpleStackTraceElement("java.nio.channels.Channels$1", "write", false),
+			new SimpleStackTraceElement("org.apache.commons.compress.parallel.FileBasedScatterGatherBackingStore", "writeOut", false)
+	};
+
 	private ParallelScatterZipCreator scatterZipCreator;
 
 	public static ParallelZipCompressor getInstance() {
@@ -63,14 +78,56 @@ public class ParallelZipCompressor extends ZipCompressor {
 	}
 
 	@Override
-	protected void finish(OutputStream arc) throws InterruptedException, ExecutionException, IOException {
+	protected void finish(OutputStream arc) throws InterruptedException, IOException, ExecutionException {
+		/*
+			This is perhaps the most dreadful line of this whole mess
+			This line causes the infamous Out of space error
+		*/
 		try {
 			scatterZipCreator.writeTo((ZipArchiveOutputStream) arc);
-		} catch (IOException e) {
-			if(e.getMessage().equals("No space left on device")) {
-				Statics.LOGGER.error("Don't panic! This is a known issue! For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
-				throw e;
+		} catch (ExecutionException e) {
+			Throwable cause;
+			if((cause = e.getCause()).getClass().equals(IOException.class)) {
+				//The out of space exception is thrown at sun.nio.ch.FileDispatcherImpl.write0(Native Method)
+				boolean match = (cause.getStackTrace().length >= STACKTRACE.length);
+				if(match) {
+					for(int i = 0; i < STACKTRACE.length && match; i++)
+						if(!STACKTRACE[i].equals(cause.getStackTrace()[i])) {
+							//Statics.LOGGER.error("Mismatch at: {}, classname: {}, methodname: {}, {}", i, cause.getStackTrace()[i].getClassName(), cause.getStackTrace()[i].getMethodName());
+							match = false;
+						}
+
+					//For clarity sake let's not throw the ExecutionException itself rather only the cause, as the EE is just the wrapper
+					if(match) throw new NoSpaceLeftOnDeviceException(cause);
+				}
 			}
+
+			throw e;
+		}
+	}
+
+	private static class SimpleStackTraceElement {
+		private final String className;
+		private final String methodName;
+		private final boolean isNative;
+
+		public SimpleStackTraceElement(String className, String methodName, boolean isNative) {
+			this.className = className;
+			this.methodName = methodName;
+			this.isNative = isNative;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null) return false;
+			if(o.getClass() == StackTraceElement.class) {
+				StackTraceElement that = (StackTraceElement) o;
+				return (isNative == that.isNativeMethod()) && Objects.equals(className, that.getClassName()) && Objects.equals(methodName, that.getMethodName());
+			}
+			if(getClass() != o.getClass()) return false;
+			SimpleStackTraceElement that = (SimpleStackTraceElement) o;
+			return isNative == that.isNative && Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName);
 		}
 	}
 

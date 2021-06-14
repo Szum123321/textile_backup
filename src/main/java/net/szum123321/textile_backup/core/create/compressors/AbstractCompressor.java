@@ -20,6 +20,7 @@ package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.NoSpaceLeftOnDeviceException;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 
@@ -44,19 +45,31 @@ public abstract class AbstractCompressor {
                     .filter(File::isFile)
                     .forEach(file -> {
                         try {
+                            //hopefully bad broken file won't spoil the whole archive
                             addEntry(file, inputFile.toPath().relativize(file.toPath()).toString(), arc);
                         } catch (IOException e) {
                             Statics.LOGGER.error("An exception occurred while trying to compress: {}", file.getName(), e);
 
-                            if(ctx.getInitiator() == ActionInitiator.Player)
+                            if (ctx.getInitiator() == ActionInitiator.Player)
                                 Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
                         }
                     });
 
             finish(arc);
+        } catch(NoSpaceLeftOnDeviceException e) {
+            Statics.LOGGER.error("CRITICAL ERROR OCCURRED!");
+            Statics.LOGGER.error("The backup is corrupted.");
+            Statics.LOGGER.error("Don't panic! This is a known issue!");
+            Statics.LOGGER.error("For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
+            Statics.LOGGER.error("In case this isn't it here's also the exception itself!", e);
+
+            if(ctx.getInitiator() == ActionInitiator.Player) {
+                Statics.LOGGER.sendError(ctx, "Backup failed. The file is corrupt.");
+                Statics.LOGGER.error("For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
+            }
         } catch (IOException | InterruptedException | ExecutionException e) {
             Statics.LOGGER.error("An exception occurred!", e);
-
+        } catch (Exception e) {
             if(ctx.getInitiator() == ActionInitiator.Player)
                 Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
         }
