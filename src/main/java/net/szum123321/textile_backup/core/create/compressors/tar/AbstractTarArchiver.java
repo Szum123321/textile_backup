@@ -29,9 +29,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public abstract class AbstractTarArchiver extends AbstractCompressor {
-
-    protected abstract OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException;
+public class AbstractTarArchiver extends AbstractCompressor {
+    protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+        return stream;
+    }
 
     @Override
     protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {

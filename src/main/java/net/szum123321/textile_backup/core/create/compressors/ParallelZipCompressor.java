@@ -106,17 +106,11 @@ public class ParallelZipCompressor extends ZipCompressor {
 		}
 	}
 
-	private static class SimpleStackTraceElement {
-		private final String className;
-		private final String methodName;
-		private final boolean isNative;
-
-		public SimpleStackTraceElement(String className, String methodName, boolean isNative) {
-			this.className = className;
-			this.methodName = methodName;
-			this.isNative = isNative;
-		}
-
+	private static record SimpleStackTraceElement (
+			String className,
+			String methodName,
+			boolean isNative
+	) {
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -131,13 +125,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 		}
 	}
 
-	static class FileInputStreamSupplier implements InputStreamSupplier {
-		private final File sourceFile;
-
-		FileInputStreamSupplier(File sourceFile) {
-			this.sourceFile = sourceFile;
-		}
-
+	record FileInputStreamSupplier(File sourceFile) implements InputStreamSupplier {
 		public InputStream get() {
 			try {
 				return new FileInputStream(sourceFile);

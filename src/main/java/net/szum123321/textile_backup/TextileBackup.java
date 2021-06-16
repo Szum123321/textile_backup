@@ -59,9 +59,10 @@ public class TextileBackup implements ModInitializer {
         if(Statics.CONFIG.format == ConfigHandler.ArchiveFormat.ZIP) {
             Statics.tmpAvailable = Utilities.isTmpAvailable();
             if(!Statics.tmpAvailable) {
-                Statics.LOGGER.warn("WARNING! It seems like the temporary folder is not accessible on this system!\n" +
-                        "This will cause problems with multithreaded zip compression, so a normal one will be used instead.\n" +
-                        "For more info please read: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
+                Statics.LOGGER.warn("""
+                        WARNING! It seems like the temporary folder is not accessible on this system!
+                        This will cause problems with multithreaded zip compression, so a normal one will be used instead.
+                        For more info please read: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems""");
             }
         }
 

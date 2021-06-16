@@ -25,14 +25,10 @@ import net.szum123321.textile_backup.core.ActionInitiator;
 
 import javax.annotation.Nullable;
 
-public class RestoreContext {
-    private final RestoreHelper.RestoreableFile file;
-    private final MinecraftServer server;
-    @Nullable
-    private final String comment;
-    private final ActionInitiator initiator;
-    private final ServerCommandSource commandSource;
-
+public record RestoreContext(RestoreHelper.RestoreableFile file,
+                             MinecraftServer server, @Nullable String comment,
+                             ActionInitiator initiator,
+                             ServerCommandSource commandSource) {
     public RestoreContext(RestoreHelper.RestoreableFile file, MinecraftServer server, @Nullable String comment, ActionInitiator initiator, ServerCommandSource commandSource) {
         this.file = file;
         this.server = server;
@@ -96,7 +92,7 @@ public class RestoreContext {
         }
 
         public RestoreContext build() {
-            if(server == null) server = serverCommandSource.getMinecraftServer();
+            if (server == null) server = serverCommandSource.getMinecraftServer();
 
             ActionInitiator initiator = serverCommandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
 

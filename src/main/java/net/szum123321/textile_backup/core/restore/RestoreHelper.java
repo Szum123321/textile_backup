@@ -34,7 +34,6 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RestoreHelper {
     public static Optional<RestoreableFile> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
@@ -42,7 +41,7 @@ public class RestoreHelper {
 
         Optional<RestoreableFile> optionalFile =  Arrays.stream(root.listFiles())
                 .map(RestoreableFile::newInstance)
-                .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
+                .flatMap(Optional::stream)
                 .filter(rf -> rf.getCreationTime().equals(backupTime))
                 .findFirst();
 
@@ -95,7 +94,7 @@ public class RestoreHelper {
         return Arrays.stream(root.listFiles())
                 .filter(Utilities::isValidBackup)
                 .map(RestoreableFile::newInstance)
-                .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
+                .flatMap(Optional::stream)
                 .collect(Collectors.toList());
     }
 

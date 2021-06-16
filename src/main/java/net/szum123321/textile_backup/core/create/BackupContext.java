@@ -24,14 +24,11 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import org.jetbrains.annotations.NotNull;
 
-public class BackupContext {
-    private final MinecraftServer server;
-    private final ServerCommandSource commandSource;
-    private final ActionInitiator initiator;
-    private final boolean save;
-    private final String comment;
-
-    protected BackupContext(@NotNull MinecraftServer server, ServerCommandSource commandSource, @NotNull ActionInitiator initiator, boolean save, String comment) {
+public record BackupContext(MinecraftServer server,
+                            ServerCommandSource commandSource,
+                            ActionInitiator initiator, boolean save,
+                            String comment) {
+    public BackupContext(@NotNull MinecraftServer server, ServerCommandSource commandSource, @NotNull ActionInitiator initiator, boolean save, String comment) {
         this.server = server;
         this.commandSource = commandSource;
         this.initiator = initiator;
@@ -117,14 +114,14 @@ public class BackupContext {
         }
 
         public BackupContext build() {
-            if(guessInitiator) {
+            if (guessInitiator) {
                 initiator = commandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
-            } else if(initiator == null) {
+            } else if (initiator == null) {
                 initiator = ActionInitiator.Null;
             }
 
-            if(server == null) {
-                if(commandSource != null)
+            if (server == null) {
+                if (commandSource != null)
                     setServer(commandSource.getMinecraftServer());
                 else
                     throw new RuntimeException("Both MinecraftServer and ServerCommandSource weren't provided!");
