@@ -45,10 +45,10 @@ public abstract class AbstractCompressor {
                     .filter(File::isFile)
                     .forEach(file -> {
                         try {
-                            //hopefully bad broken file won't spoil the whole archive
+                            //hopefully one broken file won't spoil the whole archive
                             addEntry(file, inputFile.toPath().relativize(file.toPath()).toString(), arc);
                         } catch (IOException e) {
-                            Statics.LOGGER.error("An exception occurred while trying to compress: {}", file.getName(), e);
+                            Statics.LOGGER.error("An exception occurred while trying to compress: {}", inputFile.toPath().relativize(file.toPath()).toString(), e);
 
                             if (ctx.getInitiator() == ActionInitiator.Player)
                                 Statics.LOGGER.sendError(ctx, "Something went wrong while compressing files!");
