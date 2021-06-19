@@ -80,6 +80,9 @@ public class RestoreBackupRunnable implements Runnable {
                 Statics.LOGGER.info("Something went wrong while deleting old backup");
         }
 
+        //in case we're playing on client
+        Statics.globalShutdownBackupFlag.set(true);
+
         Statics.LOGGER.info("Done!");
     }
 
