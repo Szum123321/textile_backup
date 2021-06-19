@@ -45,7 +45,7 @@ public class RestoreHelper {
                 .filter(rf -> rf.getCreationTime().equals(backupTime))
                 .findFirst();
 
-        optionalFile.ifPresent(file -> Statics.untouchableFile = file.getFile());
+        Statics.untouchableFile = optionalFile.map(RestoreableFile::getFile);
 
         return optionalFile;
     }

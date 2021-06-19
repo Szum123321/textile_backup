@@ -178,7 +178,7 @@ public class BackupHelper {
 	}
 
 	private static boolean deleteFile(File f, ServerCommandSource ctx) {
-		if(!Statics.untouchableFile.equals(f)) {
+		if(Statics.untouchableFile.isEmpty()|| !Statics.untouchableFile.get().equals(f)) {
 			if(f.delete()) {
 				Statics.LOGGER.sendInfoAL(ctx, "Deleting: {}", f.getName());
 				return true;

@@ -61,7 +61,7 @@ public class DeleteCommand {
                 .findFirst();
 
         if(optionalFile.isPresent()) {
-            if(Statics.untouchableFile == null || (Statics.untouchableFile != null && !Statics.untouchableFile.equals(optionalFile.get()))) {
+            if(Statics.untouchableFile.isEmpty() || !Statics.untouchableFile.get().equals(optionalFile.get())) {
                 if(optionalFile.get().delete()) {
                     Statics.LOGGER.sendInfo(source, "File {} successfully deleted!", optionalFile.get().getName());
 
