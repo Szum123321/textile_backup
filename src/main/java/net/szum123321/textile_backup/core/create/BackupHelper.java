@@ -34,9 +34,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class BackupHelper {
 	public static Runnable create(BackupContext ctx) {
@@ -67,43 +65,7 @@ public class BackupHelper {
 			try {
 				ctx.getServer().save(false, true, true);
 			} catch (Exception e) {
-				Statics.LOGGER.sendErrorAL(ctx,"An exception occurred when trying to save the world!"
-				);
-/*
-				MutableText text = Statics.LOGGER.getPrefixText()
-						.append(new LiteralText("In order for backup to be up-to-date call ").formatted(Formatting.WHITE))
-						.append(
-								new LiteralText("[/save-all flush]")
-										.styled(
-												style -> style
-														.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/save-all flush"))
-														.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click!")))
-														.withColor(Formatting.BLUE)
-										)
-						)
-						.append(new LiteralText(" and then re-run the backup.").formatted(Formatting.WHITE));
-
-				ctx.getCommandSource().sendFeedback(text, false);
-
-				text = Statics.LOGGER.getPrefixText()
-						.append(new LiteralText("This is known issue (See ").formatted(Formatting.WHITE))
-						.append(
-								new LiteralText("https://github.com/Szum123321/textile_backup/issues/42")
-									.styled(
-											style -> style
-													.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/Szum123321/textile_backup/issues/42"))
-													.withColor(Formatting.BLUE)
-									)
-						)
-						.append(new LiteralText(")").formatted(Formatting.WHITE));
-
-				ctx.getCommandSource().sendFeedback(text, false);
-				
-				if(ctx.startedByPlayer())
-					Statics.LOGGER.sendError(ctx, "If you have access to server console please take a look at it.");
-
-				Statics.LOGGER.error("Please let me know about this situation, include below error, mod's config, additional mods, where is the server running etc.", e);
-				*/
+				Statics.LOGGER.sendErrorAL(ctx,"An exception occurred when trying to save the world!");
 			}
 		}
 
@@ -118,8 +80,7 @@ public class BackupHelper {
 
 		if(ctx.getInitiator().equals(ActionInitiator.Player) && ctx.getCommandSource().getEntity() != null)
 			uuid = ctx.getCommandSource().getEntity().getUuid();
-		else
-			uuid = Util.NIL_UUID;
+		else uuid = Util.NIL_UUID;
 
 		ctx.getServer().getPlayerManager().broadcastChatMessage(
 				message,
@@ -130,51 +91,39 @@ public class BackupHelper {
 
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
 		File root = Utilities.getBackupRootPath(worldName);
-		AtomicInteger deletedFiles = new AtomicInteger();
+		int deletedFiles = 0;
 
 		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
 			if (Statics.CONFIG.maxAge > 0) { // delete files older that configured
 				final LocalDateTime now = LocalDateTime.now();
 
-				Arrays.stream(root.listFiles())
+				deletedFiles += Arrays.stream(root.listFiles())
 						.filter(Utilities::isValidBackup)// We check if we can get file's creation date so that the next line won't throw an exception
 						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > Statics.CONFIG.maxAge)
-						.forEach(f -> {
-							if(deleteFile(f, ctx))
-								deletedFiles.getAndIncrement();
-						});
+						.map(f -> deleteFile(f, ctx))
+						.filter(b -> b).count(); //a bit awkward
 			}
 
 			if (Statics.CONFIG.backupsToKeep > 0 && root.listFiles().length > Statics.CONFIG.backupsToKeep) {
-				int i = root.listFiles().length;
-
-				Iterator<File> it = Arrays.stream(root.listFiles())
+				deletedFiles += Arrays.stream(root.listFiles())
 						.filter(Utilities::isValidBackup)
-						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.iterator();
-
-				while(i > Statics.CONFIG.backupsToKeep && it.hasNext()) {
-					if(deleteFile(it.next(), ctx))
-						deletedFiles.getAndIncrement();
-
-					i--;
-				}
+						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime((File) f).get()).reversed())
+						.skip(Statics.CONFIG.backupsToKeep)
+						.map(f -> deleteFile(f, ctx))
+						.filter(b -> b).count();
 			}
 
 			if (Statics.CONFIG.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize) {
-				Iterator<File> it = Arrays.stream(root.listFiles())
+				deletedFiles += Arrays.stream(root.listFiles())
 						.filter(Utilities::isValidBackup)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.iterator();
-
-				while(FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize && it.hasNext()) {
-					if(deleteFile(it.next(), ctx))
-						deletedFiles.getAndIncrement();
-				}
+						.takeWhile(f -> FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize)
+						.map(f -> deleteFile(f, ctx))
+						.filter(b -> b).count();
 			}
 		}
 
-		return deletedFiles.get();
+		return deletedFiles;
 	}
 
 	private static boolean deleteFile(File f, ServerCommandSource ctx) {
