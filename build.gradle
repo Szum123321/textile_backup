@@ -69,6 +69,8 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
+
+	from("Copyright_Notice")
 }
 // configure the maven publication
 publishing {
