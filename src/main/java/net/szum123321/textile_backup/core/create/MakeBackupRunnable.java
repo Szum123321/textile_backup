@@ -43,6 +43,7 @@ public class MakeBackupRunnable implements Runnable {
     public void run() {
         try {
             Utilities.disableWorldSaving(context.getServer());
+            Statics.disableWatchdog = true;
 
             Statics.LOGGER.sendInfoAL(context, "Starting backup");
 
@@ -109,6 +110,7 @@ public class MakeBackupRunnable implements Runnable {
             Statics.LOGGER.sendInfoAL(context, "Done!");
         } finally {
             Utilities.enableWorldSaving(context.getServer());
+            Statics.disableWatchdog = false;
         }
     }
 
