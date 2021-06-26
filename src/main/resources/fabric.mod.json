@@ -27,6 +27,9 @@
   "entrypoints": {
     "main": [
       "net.szum123321.textile_backup.TextileBackup"
+    ],
+    "modmenu": [
+      "net.szum123321.textile_backup.client.ModMenuEntry"
     ]
   },
   "mixins": [

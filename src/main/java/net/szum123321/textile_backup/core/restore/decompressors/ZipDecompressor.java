@@ -18,7 +18,8 @@
 
 package net.szum123321.textile_backup.core.restore.decompressors;
 
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
@@ -30,6 +31,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 public class ZipDecompressor {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
     public static void decompress(File inputFile, File target) {
         Instant start = Instant.now();
 
@@ -40,7 +43,7 @@ public class ZipDecompressor {
 
             while ((entry = zipInputStream.getNextZipEntry()) != null) {
                 if(!zipInputStream.canReadEntryData(entry)){
-                    Statics.LOGGER.error("Something when wrong while trying to decompress {}", entry.getName());
+                    log.error("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
                 }
 
@@ -52,21 +55,21 @@ public class ZipDecompressor {
                     File parent = file.getParentFile();
 
                     if (!parent.isDirectory() && !parent.mkdirs()) {
-                        Statics.LOGGER.error("Failed to create {}", parent);
+                        log.error("Failed to create {}", parent);
                     } else {
                         try (OutputStream outputStream = Files.newOutputStream(file.toPath());
                              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
                             IOUtils.copy(zipInputStream, bufferedOutputStream);
                         } catch (IOException e) {
-                            Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
+                            log.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
                         }
                     }
                 }
             }
         } catch (IOException e) {
-            Statics.LOGGER.error("An exception occurred! ", e);
+            log.error("An exception occurred! ", e);
         }
 
-        Statics.LOGGER.info("Decompression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+        log.info("Decompression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 }

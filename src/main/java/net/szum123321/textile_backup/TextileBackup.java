@@ -19,8 +19,9 @@
 package net.szum123321.textile_backup;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import io.github.cottonmc.cotton.config.ConfigManager;
 
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -34,40 +35,41 @@ import net.szum123321.textile_backup.commands.manage.WhitelistCommand;
 import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
 import net.szum123321.textile_backup.commands.manage.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
+import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
+import net.szum123321.textile_backup.core.create.BackupScheduler;
 
-import java.util.Optional;
 import java.util.concurrent.Executors;
 
 public class TextileBackup implements ModInitializer {
+    public static final String MOD_NAME = "Textile Backup";
+    public static final String MOD_ID = "textile_backup";
+
+    private final static TextileLogger log = new TextileLogger(MOD_NAME);
+    private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
     @Override
     public void onInitialize() {
-        Statics.LOGGER.info("Starting Textile Backup by Szum123321.");
+        log.info("Starting Textile Backup by Szum123321");
 
-        Statics.CONFIG = ConfigManager.loadConfig(ConfigHandler.class);
-        Optional<String> errorMessage = Statics.CONFIG.sanitize();
-
-        if(errorMessage.isPresent()) {
-            Statics.LOGGER.fatal("TextileBackup config file has wrong settings!\n{}", errorMessage.get());
-            System.exit(1);
-        }
+        ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
 
         //TODO: finish writing wiki
-        if(Statics.CONFIG.format == ConfigHandler.ArchiveFormat.ZIP) {
+        if(config.get().format == ConfigPOJO.ArchiveFormat.ZIP) {
             Statics.tmpAvailable = Utilities.isTmpAvailable();
             if(!Statics.tmpAvailable) {
-                Statics.LOGGER.warn("""
+                log.warn("""
                         WARNING! It seems like the temporary folder is not accessible on this system!
                         This will cause problems with multithreaded zip compression, so a normal one will be used instead.
                         For more info please read: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems""");
             }
         }
 
-        if(Statics.CONFIG.backupInterval > 0)
-            ServerTickEvents.END_SERVER_TICK.register(Statics.scheduler::tick);
+        ServerTickEvents.END_SERVER_TICK.register(new BackupScheduler()::tick);
 
         //Restart Executor Service in singleplayer
         ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
@@ -77,7 +79,7 @@ public class TextileBackup implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             Statics.executorService.shutdown();
 
-            if (Statics.CONFIG.shutdownBackup && Statics.globalShutdownBackupFlag.get()) {
+            if (config.get().shutdownBackup && Statics.globalShutdownBackupFlag.get()) {
                 BackupHelper.create(
                         BackupContext.Builder
                                 .newBackupContextBuilder()
@@ -93,11 +95,11 @@ public class TextileBackup implements ModInitializer {
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
                                     try {
-                                        return ((Statics.CONFIG.playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
-                                                ctx.hasPermissionLevel(Statics.CONFIG.permissionLevel)) &&
-                                                !Statics.CONFIG.playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
+                                        return ((config.get().playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
+                                                ctx.hasPermissionLevel(config.get().permissionLevel)) &&
+                                                !config.get().playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
                                                 (ctx.getMinecraftServer().isSinglePlayer() &&
-                                                        Statics.CONFIG.alwaysSingleplayerAllowed);
+                                                        config.get().alwaysSingleplayerAllowed);
                                     } catch (Exception ignored) { //Command was called from server console.
                                         return true;
                                     }

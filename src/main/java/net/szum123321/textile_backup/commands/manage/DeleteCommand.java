@@ -24,6 +24,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
@@ -36,6 +38,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class DeleteCommand {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("delete")
                 .then(CommandManager.argument("file", StringArgumentType.word())
@@ -63,20 +67,20 @@ public class DeleteCommand {
         if(optionalFile.isPresent()) {
             if(Statics.untouchableFile.isEmpty() || !Statics.untouchableFile.get().equals(optionalFile.get())) {
                 if(optionalFile.get().delete()) {
-                    Statics.LOGGER.sendInfo(source, "File {} successfully deleted!", optionalFile.get().getName());
+                    log.sendInfo(source, "File {} successfully deleted!", optionalFile.get().getName());
 
                     if(source.getEntity() instanceof PlayerEntity)
-                        Statics.LOGGER.info("Player {} deleted {}.", source.getPlayer().getName(), optionalFile.get().getName());
+                        log.info("Player {} deleted {}.", source.getPlayer().getName(), optionalFile.get().getName());
                 } else {
-                    Statics.LOGGER.sendError(source, "Something went wrong while deleting file!");
+                    log.sendError(source, "Something went wrong while deleting file!");
                 }
             } else {
-                Statics.LOGGER.sendError(source, "Couldn't delete the file because it's being restored right now.");
-                Statics.LOGGER.sendHint(source, "If you want to abort restoration then use: /backup killR");
+                log.sendError(source, "Couldn't delete the file because it's being restored right now.");
+                log.sendHint(source, "If you want to abort restoration then use: /backup killR");
             }
         } else {
-            Statics.LOGGER.sendError(source, "Couldn't find file by this name.");
-            Statics.LOGGER.sendHint(source, "Maybe try /backup list");
+            log.sendError(source, "Couldn't find file by this name.");
+            log.sendHint(source, "Maybe try /backup list");
         }
 
         return 0;

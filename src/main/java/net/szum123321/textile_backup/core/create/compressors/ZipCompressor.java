@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core.create.compressors;
 
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.commons.compress.archivers.zip.Zip64Mode;
@@ -27,12 +27,13 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 public class ZipCompressor extends AbstractCompressor {
+    private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
     public static ZipCompressor getInstance() {
         return new ZipCompressor();
     }
@@ -43,7 +44,7 @@ public class ZipCompressor extends AbstractCompressor {
 
         arc.setMethod(ZipArchiveOutputStream.DEFLATED);
         arc.setUseZip64(Zip64Mode.AsNeeded);
-        arc.setLevel(Statics.CONFIG.compression);
+        arc.setLevel(config.get().compression);
         arc.setComment("Created on: " + Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
 
         return arc;

@@ -19,6 +19,9 @@
 package net.szum123321.textile_backup.core.create;
 
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
@@ -33,6 +36,9 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 
 public class MakeBackupRunnable implements Runnable {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+    private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
     private final BackupContext context;
 
     public MakeBackupRunnable(BackupContext context){
@@ -45,11 +51,11 @@ public class MakeBackupRunnable implements Runnable {
             Utilities.disableWorldSaving(context.getServer());
             Statics.disableWatchdog = true;
 
-            Statics.LOGGER.sendInfoAL(context, "Starting backup");
+            log.sendInfoAL(context, "Starting backup");
 
             File world = Utilities.getWorldFolder(context.getServer());
 
-            Statics.LOGGER.trace("Minecraft world is: {}", world);
+            log.trace("Minecraft world is: {}", world);
 
             File outFile = Utilities
                     .getBackupRootPath(Utilities.getLevelName(context.getServer()))
@@ -57,32 +63,32 @@ public class MakeBackupRunnable implements Runnable {
                     .resolve(getFileName())
                     .toFile();
 
-            Statics.LOGGER.trace("Outfile is: {}", outFile);
+            log.trace("Outfile is: {}", outFile);
 
             outFile.getParentFile().mkdirs();
 
             try {
                 outFile.createNewFile();
             } catch (IOException e) {
-                Statics.LOGGER.error("An exception occurred when trying to create new backup file!", e);
+                log.error("An exception occurred when trying to create new backup file!", e);
 
                 if(context.getInitiator() == ActionInitiator.Player)
-                    Statics.LOGGER.sendError(context, "An exception occurred when trying to create new backup file!");
+                    log.sendError(context, "An exception occurred when trying to create new backup file!");
 
                 return;
             }
 
             int coreCount;
 
-            if(Statics.CONFIG.compressionCoreCountLimit <= 0) {
+            if(config.get().compressionCoreCountLimit <= 0) {
                 coreCount = Runtime.getRuntime().availableProcessors();
             } else {
-                coreCount = Math.min(Statics.CONFIG.compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
+                coreCount = Math.min(config.get().compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
             }
 
-            Statics.LOGGER.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
+            log.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
 
-            switch (Statics.CONFIG.format) {
+            switch (config.get().format) {
                 case ZIP -> {
                     if (Statics.tmpAvailable && coreCount > 1)
                         ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
@@ -98,16 +104,16 @@ public class MakeBackupRunnable implements Runnable {
                 }.createArchive(world, outFile, context, coreCount);
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
                 default -> {
-                    Statics.LOGGER.warn("Specified compressor ({}) is not supported! Zip will be used instead!", Statics.CONFIG.format);
+                    log.warn("Specified compressor ({}) is not supported! Zip will be used instead!", config.get().format);
                     if (context.getInitiator() == ActionInitiator.Player)
-                        Statics.LOGGER.sendError(context.getCommandSource(), "Error! No correct compression format specified! Using default compressor!");
+                        log.sendError(context.getCommandSource(), "Error! No correct compression format specified! Using default compressor!");
                     ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                 }
             }
 
             BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
 
-            Statics.LOGGER.sendInfoAL(context, "Done!");
+            log.sendInfoAL(context, "Done!");
         } finally {
             Utilities.enableWorldSaving(context.getServer());
             Statics.disableWatchdog = false;
@@ -119,6 +125,6 @@ public class MakeBackupRunnable implements Runnable {
 
         return Utilities.getDateTimeFormatter().format(now) +
                 (context.getComment() != null ? "#" + context.getComment().replace("#", "") : "") +
-                Statics.CONFIG.format.getCompleteString();
+                config.get().format.getCompleteString();
     }
 }

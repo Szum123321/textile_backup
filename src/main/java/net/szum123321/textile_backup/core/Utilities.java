@@ -21,7 +21,8 @@ package net.szum123321.textile_backup.core;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
-import net.szum123321.textile_backup.ConfigHandler;
+import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 
@@ -36,6 +37,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class Utilities {
+	private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
 	public static String getLevelName(MinecraftServer server) {
 		return 	((MinecraftServerSessionAccessor)server).getSession().getDirectoryName();
 	}
@@ -47,18 +50,16 @@ public class Utilities {
 	}
 	
 	public static File getBackupRootPath(String worldName) {
-		File path = new File(Statics.CONFIG.path).getAbsoluteFile();
+		File path = new File(config.get().path).getAbsoluteFile();
 
-		if (Statics.CONFIG.perWorldBackup)
-			path = path.toPath().resolve(worldName).toFile();
+		if (config.get().perWorldBackup) path = path.toPath().resolve(worldName).toFile();
 
-		if (!path.exists()) {
-			path.mkdirs();
-		}
+		if (!path.exists()) path.mkdirs();
 
 		return path;
 	}
 
+	//This is quite pointless
 	public static boolean isTmpAvailable() {
 		try {
 			File tmp = File.createTempFile("textile_backup_tmp_test", String.valueOf(Instant.now().getEpochSecond()));
@@ -88,26 +89,23 @@ public class Utilities {
 
 	public static boolean isBlacklisted(Path path) {
 		if(isWindows()) { //hotfix!
-			if (path.getFileName().toString().equals("session.lock")) {
-				Statics.LOGGER.trace("Skipping session.lock");
-				return true;
-			}
+			if (path.getFileName().toString().equals("session.lock")) return true;
 		}
 
-		for(String i : Statics.CONFIG.fileBlacklist) if(path.startsWith(i)) return true;
+		for(String i : config.get().fileBlacklist) if(path.startsWith(i)) return true;
 
 		return false;
 	}
 
-	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(String fileName) {
+	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(String fileName) {
 		String[] parts = fileName.split("\\.");
 
-		return Arrays.stream(ConfigHandler.ArchiveFormat.values())
+		return Arrays.stream(ConfigPOJO.ArchiveFormat.values())
 				.filter(format -> format.getLastPiece().equals(parts[parts.length - 1]))
 				.findAny();
 	}
 
-	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(File f) {
+	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(File f) {
 		return getArchiveExtension(f.getName());
 	}
 
@@ -155,7 +153,7 @@ public class Utilities {
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter() {
-		return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);
+		return DateTimeFormatter.ofPattern(config.get().dateTimeFormat);
 	}
 
 	public static DateTimeFormatter getBackupDateTimeFormatter() {

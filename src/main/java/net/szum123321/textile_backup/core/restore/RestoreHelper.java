@@ -24,7 +24,10 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
-import net.szum123321.textile_backup.ConfigHandler;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
@@ -36,6 +39,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class RestoreHelper {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+    private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
     public static Optional<RestoreableFile> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
         File root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
@@ -52,24 +58,24 @@ public class RestoreHelper {
 
     public static AwaitThread create(RestoreContext ctx) {
         if(ctx.getInitiator() == ActionInitiator.Player)
-            Statics.LOGGER.info("Backup restoration was initiated by: {}", ctx.getCommandSource().getName());
+            log.info("Backup restoration was initiated by: {}", ctx.getCommandSource().getName());
         else
-            Statics.LOGGER.info("Backup restoration was initiated form Server Console");
+            log.info("Backup restoration was initiated form Server Console");
 
         notifyPlayers(ctx);
 
         return new AwaitThread(
-                Statics.CONFIG.restoreDelay,
+                config.get().restoreDelay,
                 new RestoreBackupRunnable(ctx)
         );
     }
 
     private static void notifyPlayers(RestoreContext ctx) {
-        MutableText message = Statics.LOGGER.getPrefixText();
+        MutableText message = log.getPrefixText();
         message.append(
                 new LiteralText(
                         "Warning! The server is going to shut down in " +
-                                Statics.CONFIG.restoreDelay +
+                                config.get().restoreDelay +
                                 " seconds!"
                 ).formatted(Formatting.WHITE)
         );
@@ -100,7 +106,7 @@ public class RestoreHelper {
 
     public static class RestoreableFile implements Comparable<RestoreableFile> {
         private final File file;
-        private final ConfigHandler.ArchiveFormat archiveFormat;
+        private final ConfigPOJO.ArchiveFormat archiveFormat;
         private final LocalDateTime creationTime;
         private final String comment;
 
@@ -131,7 +137,7 @@ public class RestoreHelper {
             return file;
         }
 
-        public ConfigHandler.ArchiveFormat getArchiveFormat() {
+        public ConfigPOJO.ArchiveFormat getArchiveFormat() {
             return archiveFormat;
         }
 

@@ -24,6 +24,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
@@ -36,6 +38,8 @@ import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 public class RestoreBackupCommand {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("restore")
                 .then(CommandManager.argument("file", StringArgumentType.word())
@@ -57,9 +61,9 @@ public class RestoreBackupCommand {
                 ).executes(context -> {
                     ServerCommandSource source = context.getSource();
 
-                    Statics.LOGGER.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
-                    Statics.LOGGER.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
-                    Statics.LOGGER.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
+                    log.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
+                    log.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
+                    log.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
 
                     return 1;
                 });
@@ -78,9 +82,9 @@ public class RestoreBackupCommand {
             Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
 
             if(backupFile.isPresent()) {
-                Statics.LOGGER.info("Found file to restore {}", backupFile.get().getFile().getName());
+                log.info("Found file to restore {}", backupFile.get().getFile().getName());
             } else {
-                Statics.LOGGER.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
+                log.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
 
                 return 0;
             }
@@ -97,7 +101,7 @@ public class RestoreBackupCommand {
 
             return 1;
         } else {
-            Statics.LOGGER.sendInfo(source, "Someone has already started another restoration.");
+            log.sendInfo(source, "Someone has already started another restoration.");
 
             return 0;
         }
