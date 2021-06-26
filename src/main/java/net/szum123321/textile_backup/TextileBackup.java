@@ -28,11 +28,14 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
-import net.szum123321.textile_backup.commands.permission.BlacklistCommand;
-import net.szum123321.textile_backup.commands.permission.WhitelistCommand;
+import net.szum123321.textile_backup.commands.manage.BlacklistCommand;
+import net.szum123321.textile_backup.commands.manage.DeleteCommand;
+import net.szum123321.textile_backup.commands.manage.WhitelistCommand;
 import net.szum123321.textile_backup.commands.restore.KillRestoreCommand;
-import net.szum123321.textile_backup.commands.restore.ListBackupsCommand;
+import net.szum123321.textile_backup.commands.manage.ListBackupsCommand;
 import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
+import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 
@@ -52,12 +55,23 @@ public class TextileBackup implements ModInitializer {
             System.exit(1);
         }
 
+        //TODO: finish writing wiki
+        if(Statics.CONFIG.format == ConfigHandler.ArchiveFormat.ZIP) {
+            Statics.tmpAvailable = Utilities.isTmpAvailable();
+            if(!Statics.tmpAvailable) {
+                Statics.LOGGER.warn("""
+                        WARNING! It seems like the temporary folder is not accessible on this system!
+                        This will cause problems with multithreaded zip compression, so a normal one will be used instead.
+                        For more info please read: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems""");
+            }
+        }
+
         if(Statics.CONFIG.backupInterval > 0)
             ServerTickEvents.END_SERVER_TICK.register(Statics.scheduler::tick);
 
+        //Restart Executor Service in singleplayer
         ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
-            if(Statics.executorService.isShutdown())
-                Statics.executorService = Executors.newSingleThreadExecutor();
+            if(Statics.executorService.isShutdown()) Statics.executorService = Executors.newSingleThreadExecutor();
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
@@ -65,9 +79,10 @@ public class TextileBackup implements ModInitializer {
 
             if (Statics.CONFIG.shutdownBackup && Statics.globalShutdownBackupFlag.get()) {
                 BackupHelper.create(
-                        new BackupContext.Builder()
+                        BackupContext.Builder
+                                .newBackupContextBuilder()
                                 .setServer(server)
-                                .setInitiator(BackupContext.BackupInitiator.Shutdown)
+                                .setInitiator(ActionInitiator.Shutdown)
                                 .setComment("shutdown")
                                 .build()
                 ).run();
@@ -94,6 +109,7 @@ public class TextileBackup implements ModInitializer {
                         .then(BlacklistCommand.register())
                         .then(RestoreBackupCommand.register())
                         .then(ListBackupsCommand.register())
+                        .then(DeleteCommand.register())
                         .then(KillRestoreCommand.register())
         ));
     }

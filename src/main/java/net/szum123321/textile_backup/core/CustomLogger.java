@@ -18,11 +18,10 @@
 
 package net.szum123321.textile_backup.core;
 
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.logging.log4j.Level;
@@ -30,19 +29,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.MessageFactory;
 import org.apache.logging.log4j.message.ParameterizedMessageFactory;
-import org.apache.logging.log4j.spi.StandardLevel;
 
 /*
-    This is practically just a copy-pate of Cotton's ModLogger with few changes
+    This is practically just a copy-pate of Cotton's ModLogger with a few changes
 */
 public class CustomLogger {
-    private final boolean isDev = FabricLoader.getInstance().isDevelopmentEnvironment();
+    //private final boolean isDev = FabricLoader.getInstance().isDevelopmentEnvironment();
 
     private final MessageFactory messageFactory;
     private final Logger logger;
 
     private final String prefix;
-    private final Text prefixText;
+    private final MutableText prefixText;
 
     public CustomLogger(String name, String prefix) {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
@@ -83,54 +81,66 @@ public class CustomLogger {
         log(Level.FATAL, msg, data);
     }
 
-    public void devError(String msg, Object... data) {
-        if (isDev) error(msg, data);
-    }
-
-    public void devWarn(String msg, Object... data) {
-        if (isDev) warn(msg, data);
-    }
-
-    public void devInfo(String msg, Object... data) {
-        if (isDev) info(msg, data);
-    }
-
-    public void devDebug(String msg, Object... data) {
-        if (isDev) debug(msg, data);
-    }
-
-    public void devTrace(String msg, Object... data) {
-        if(isDev) trace(msg, data);
-    }
-
-    private void sendToPlayer(Level level, ServerCommandSource source, String msg, Object... args) {
-        if(source != null && source.getEntity() != null) {
+    boolean sendFeedback(Level level, ServerCommandSource source, String msg, Object... args) {
+        if(source != null && source.getEntity() instanceof PlayerEntity) {
             LiteralText text = new LiteralText(messageFactory.newMessage(msg, args).getFormattedMessage());
 
-            if(level.intLevel() <= StandardLevel.WARN.intLevel())
+            if(level.intLevel() == Level.TRACE.intLevel())
+                text.formatted(Formatting.GREEN);
+            else if(level.intLevel() <= Level.WARN.intLevel())
                 text.formatted(Formatting.RED);
             else
                 text.formatted(Formatting.WHITE);
 
             source.sendFeedback(prefixText.shallowCopy().append(text), false);
+
+            return true;
         } else {
-            logger.log(level, msg, args);
+            log(level, msg, args);
+
+            return false;
         }
     }
 
-    public void sendInfo(ServerCommandSource source, String msg, Object... args) {
-        sendToPlayer(Level.INFO, source, msg, args);
+    public void sendHint(ServerCommandSource source, String msg, Object... args) {
+        sendFeedback(Level.TRACE, source, msg, args);
     }
 
-    public void sendError(ServerCommandSource source, String msg, Object... args) {
-        sendToPlayer(Level.ERROR, source, msg, args);
+    public void sendInfo(ServerCommandSource source, String msg, Object... args) {
+        sendFeedback(Level.INFO, source, msg, args);
     }
 
     public void sendInfo(BackupContext context, String msg, Object... args) {
         sendInfo(context.getCommandSource(), msg, args);
     }
 
+    public void sendError(ServerCommandSource source, String msg, Object... args) {
+        sendFeedback(Level.ERROR, source, msg, args);
+    }
+
     public void sendError(BackupContext context, String msg, Object... args) {
         sendError(context.getCommandSource(), msg, args);
+    }
+
+    public void sendToPlayerAndLog(Level level, ServerCommandSource source, String msg, Object... args) {
+        if(sendFeedback(level, source, msg, args))
+            log(level, msg, args);
+    }
+
+    //send info and log
+    public void sendInfoAL(ServerCommandSource source, String msg, Object... args) {
+        sendToPlayerAndLog(Level.INFO, source, msg, args);
+    }
+
+    public void sendInfoAL(BackupContext context, String msg, Object... args) {
+        sendInfoAL(context.getCommandSource(), msg, args);
+    }
+
+    public void sendErrorAL(ServerCommandSource source, String msg, Object... args) {
+        sendToPlayerAndLog(Level.ERROR, source, msg, args);
+    }
+
+    public void sendErrorAL(BackupContext context, String msg, Object... args) {
+        sendErrorAL(context.getCommandSource(), msg, args);
     }
 }

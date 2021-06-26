@@ -16,22 +16,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.create.compressors;
+package net.szum123321.textile_backup.core;
 
-import org.at4j.comp.bzip2.BZip2OutputStream;
-import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
+public enum ActionInitiator {
+    Player("Player", "by"),
+    ServerConsole("Server Console", "from"),
+    Timer("Timer", "by"),
+    Shutdown("Server Shutdown", "by"),
+    Restore("Backup Restoration", "because of"),
+    Null("Null (That shouldn't have happened)", "form");
 
-import java.io.*;
+    private final String name;
+    private final String prefix;
 
-public class ParallelBZip2Compressor extends AbstractTarCompressor {
-	private static final ParallelBZip2Compressor INSTANCE = new ParallelBZip2Compressor();
+    ActionInitiator(String name, String prefix) {
+        this.name = name;
+        this.prefix = prefix;
+    }
 
-	public static ParallelBZip2Compressor getInstance() {
-		return INSTANCE;
-	}
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	protected OutputStream openCompressorStream(OutputStream outputStream, int coreCountLimit) throws IOException {
-		return new BZip2OutputStream(outputStream, new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreCountLimit));
-	}
+    public String getPrefix() {
+        return prefix + ": ";
+    }
 }

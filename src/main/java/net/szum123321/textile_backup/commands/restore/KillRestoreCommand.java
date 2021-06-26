@@ -19,9 +19,12 @@
 package net.szum123321.textile_backup.commands.restore;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
+
+import java.util.Optional;
 
 public class KillRestoreCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
@@ -30,11 +33,16 @@ public class KillRestoreCommand {
                     if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
                         Statics.restoreAwaitThread.interrupt();
                         Statics.globalShutdownBackupFlag.set(true);
-                        Statics.LOGGER.sendInfo(ctx.getSource(), "Backup restoration successfully stopped");
-                        Statics.LOGGER.info("{} cancelled backup restoration.", ctx.getSource().getEntity() != null ?
+                        Statics.untouchableFile = Optional.empty();
+
+                        Statics.LOGGER.info("{} cancelled backup restoration.", ctx.getSource().getEntity() instanceof PlayerEntity ?
                                 "Player: " + ctx.getSource().getName() :
                                 "SERVER"
                                 );
+
+                        if(ctx.getSource().getEntity() instanceof PlayerEntity)
+                            Statics.LOGGER.sendInfo(ctx.getSource(), "Backup restoration successfully stopped.");
+
                     } else {
                         Statics.LOGGER.sendInfo(ctx.getSource(), "Failed to stop backup restoration");
                     }

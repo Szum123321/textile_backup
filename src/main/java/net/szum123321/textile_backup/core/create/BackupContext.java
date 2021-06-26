@@ -18,18 +18,17 @@
 
 package net.szum123321.textile_backup.core.create;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import org.jetbrains.annotations.NotNull;
 
-public class BackupContext {
-    private final MinecraftServer server;
-    private final ServerCommandSource commandSource;
-    private final BackupInitiator initiator;
-    private final boolean save;
-    private final String comment;
-
-    protected BackupContext(@NotNull MinecraftServer server, ServerCommandSource commandSource, @NotNull BackupInitiator initiator, boolean save, String comment) {
+public record BackupContext(MinecraftServer server,
+                            ServerCommandSource commandSource,
+                            ActionInitiator initiator, boolean save,
+                            String comment) {
+    public BackupContext(@NotNull MinecraftServer server, ServerCommandSource commandSource, @NotNull ActionInitiator initiator, boolean save, String comment) {
         this.server = server;
         this.commandSource = commandSource;
         this.initiator = initiator;
@@ -45,12 +44,12 @@ public class BackupContext {
         return commandSource;
     }
 
-    public BackupInitiator getInitiator() {
+    public ActionInitiator getInitiator() {
         return initiator;
     }
 
     public boolean startedByPlayer() {
-        return initiator == BackupInitiator.Player;
+        return initiator == ActionInitiator.Player;
     }
 
     public boolean shouldSave() {
@@ -64,7 +63,7 @@ public class BackupContext {
     public static class Builder {
         private MinecraftServer server;
         private ServerCommandSource commandSource;
-        private BackupInitiator initiator;
+        private ActionInitiator initiator;
         private boolean save;
         private String comment;
 
@@ -80,6 +79,10 @@ public class BackupContext {
             guessInitiator = false;
         }
 
+        public static Builder newBackupContextBuilder() {
+            return new Builder();
+        }
+
         public Builder setCommandSource(ServerCommandSource commandSource) {
             this.commandSource = commandSource;
             return this;
@@ -90,7 +93,7 @@ public class BackupContext {
             return this;
         }
 
-        public Builder setInitiator(BackupInitiator initiator) {
+        public Builder setInitiator(ActionInitiator initiator) {
             this.initiator = initiator;
             return this;
         }
@@ -111,14 +114,14 @@ public class BackupContext {
         }
 
         public BackupContext build() {
-            if(guessInitiator) {
-                initiator = commandSource.getEntity() == null ? BackupInitiator.ServerConsole : BackupInitiator.Player;
-            } else if(initiator == null) {
-                initiator = BackupInitiator.Null;
+            if (guessInitiator) {
+                initiator = commandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
+            } else if (initiator == null) {
+                initiator = ActionInitiator.Null;
             }
 
-            if(server == null) {
-                if(commandSource != null)
+            if (server == null) {
+                if (commandSource != null)
                     setServer(commandSource.getMinecraftServer());
                 else
                     throw new RuntimeException("Both MinecraftServer and ServerCommandSource weren't provided!");
@@ -128,28 +131,4 @@ public class BackupContext {
         }
     }
 
-    public enum BackupInitiator {
-        Player ("Player", "by"),
-        ServerConsole ("Server Console", "from"),
-        Timer ("Timer", "by"),
-        Shutdown ("Server Shutdown", "by"),
-        Restore ("Backup Restoration", "because of"),
-        Null ("Null (That shouldn't have happened)", "form");
-
-        private final String name;
-        private final String prefix;
-
-        BackupInitiator(String name, String prefix) {
-            this.name = name;
-            this.prefix = prefix;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getPrefix() {
-            return prefix + ": ";
-        }
-    }
 }

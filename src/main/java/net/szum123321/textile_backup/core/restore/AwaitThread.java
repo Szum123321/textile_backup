@@ -20,14 +20,20 @@ package net.szum123321.textile_backup.core.restore;
 
 import net.szum123321.textile_backup.Statics;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /*
     This thread waits some amount of time and then starts a new, independent thread
 */
 public class AwaitThread extends Thread {
+    private final static AtomicInteger threadCounter = new AtomicInteger(0);
+
     private final int delay;
+    private final int thisThreadId = threadCounter.getAndIncrement();
     private final Runnable taskRunnable;
 
     public AwaitThread(int delay, Runnable taskRunnable) {
+        this.setName("Textile Backup await thread nr. " + thisThreadId);
         this.delay = delay;
         this.taskRunnable = taskRunnable;
     }
@@ -38,7 +44,7 @@ public class AwaitThread extends Thread {
 
         // 𝄞 This is final count down! Tu ruru Tu, Tu Ru Tu Tu ♪
         try {
-            Thread.sleep(delay * 1000);
+            Thread.sleep(delay * 1000L);
         } catch (InterruptedException e) {
             Statics.LOGGER.info("Backup restoration cancelled.");
             return;
@@ -49,6 +55,6 @@ public class AwaitThread extends Thread {
             But still it's farewell
             And maybe we'll come back
          */
-        new Thread(taskRunnable).start();
+        new Thread(taskRunnable, "Textile Backup restore thread nr. " + thisThreadId).start();
     }
 }

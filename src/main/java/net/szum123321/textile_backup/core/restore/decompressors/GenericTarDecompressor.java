@@ -23,7 +23,6 @@ import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -36,15 +35,15 @@ public class GenericTarDecompressor {
     public static void decompress(File input, File target) {
         Instant start = Instant.now();
 
-        try (FileInputStream fileInputStream = new FileInputStream(input);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-             CompressorInputStream compressorInputStream = new CompressorStreamFactory().createCompressorInputStream(bufferedInputStream);
+        try (InputStream fileInputStream = new FileInputStream(input);
+             InputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+             InputStream compressorInputStream = getCompressorInputStream(bufferedInputStream);
              TarArchiveInputStream archiveInputStream = new TarArchiveInputStream(compressorInputStream)) {
             TarArchiveEntry entry;
 
             while ((entry = archiveInputStream.getNextTarEntry()) != null) {
                 if(!archiveInputStream.canReadEntryData(entry)) {
-                    Statics.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
+                    Statics.LOGGER.error("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
                 }
 
@@ -72,5 +71,27 @@ public class GenericTarDecompressor {
         }
 
         Statics.LOGGER.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+    }
+
+    private static InputStream getCompressorInputStream(InputStream inputStream) throws CompressorException {
+        try {
+            return new CompressorStreamFactory().createCompressorInputStream(inputStream);
+        } catch (CompressorException e) {
+            final byte[] tarHeader = new byte[512];
+            int signatureLength;
+
+            inputStream.mark(tarHeader.length);
+
+            try {
+                signatureLength = IOUtils.readFully(inputStream, tarHeader);
+                inputStream.reset();
+            } catch (IOException e1) {
+                throw new CompressorException("IOException while reading tar signature", e1);
+            }
+
+            if(TarArchiveInputStream.matches(tarHeader, signatureLength)) return inputStream;
+
+            throw e;
+        }
     }
 }

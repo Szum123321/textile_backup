@@ -20,10 +20,7 @@ package net.szum123321.textile_backup.core;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.szum123321.textile_backup.ConfigHandler;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
@@ -33,11 +30,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class Utilities {
@@ -50,20 +45,40 @@ public class Utilities {
 				.getSession()
 				.getWorldDirectory(World.OVERWORLD);
 	}
+	
+	public static File getBackupRootPath(String worldName) {
+		File path = new File(Statics.CONFIG.path).getAbsoluteFile();
+
+		if (Statics.CONFIG.perWorldBackup)
+			path = path.toPath().resolve(worldName).toFile();
+
+		if (!path.exists()) {
+			path.mkdirs();
+		}
+
+		return path;
+	}
+
+	public static boolean isTmpAvailable() {
+		try {
+			File tmp = File.createTempFile("textile_backup_tmp_test", String.valueOf(Instant.now().getEpochSecond()));
+			return tmp.delete();
+		} catch (IOException ignored) {}
+
+		return false;
+	}
 
 	public static void disableWorldSaving(MinecraftServer server) {
 		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld != null && !serverWorld.savingDisabled) {
+			if (serverWorld != null && !serverWorld.savingDisabled)
 				serverWorld.savingDisabled = true;
-			}
 		}
 	}
 
 	public static void enableWorldSaving(MinecraftServer server) {
 		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld != null && serverWorld.savingDisabled) {
+			if (serverWorld != null && serverWorld.savingDisabled)
 				serverWorld.savingDisabled = false;
-			}
 		}
 	}
 
@@ -79,41 +94,28 @@ public class Utilities {
 			}
 		}
 
-		for(String i : Statics.CONFIG.fileBlacklist) {
-			if(path.startsWith(i))
-				return true;
-		}
+		for(String i : Statics.CONFIG.fileBlacklist) if(path.startsWith(i)) return true;
 
 		return false;
 	}
 
-	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(String fileName) {
+	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(String fileName) {
 		String[] parts = fileName.split("\\.");
 
-		switch (parts[parts.length - 1]) {
-			case "zip":
-				return Optional.of(ConfigHandler.ArchiveFormat.ZIP);
-			case "bz2":
-				return Optional.of(ConfigHandler.ArchiveFormat.BZIP2);
-			case "gz":
-				return Optional.of(ConfigHandler.ArchiveFormat.GZIP);
-			case "xz":
-				return Optional.of(ConfigHandler.ArchiveFormat.LZMA);
-
-			default:
-				return Optional.empty();
-		}
+		return Arrays.stream(ConfigHandler.ArchiveFormat.values())
+				.filter(format -> format.getLastPiece().equals(parts[parts.length - 1]))
+				.findAny();
 	}
 
-	public static Optional<ConfigHandler.ArchiveFormat> getFileExtension(File f) {
-		return getFileExtension(f.getName());
+	public static Optional<ConfigHandler.ArchiveFormat> getArchiveExtension(File f) {
+		return getArchiveExtension(f.getName());
 	}
 
 	public static Optional<LocalDateTime> getFileCreationTime(File file) {
 		LocalDateTime creationTime = null;
 
-		if(getFileExtension(file).isPresent()) {
-			String fileExtension = getFileExtension(file).get().getString();
+		if(getArchiveExtension(file).isPresent()) {
+			String fileExtension = getArchiveExtension(file).get().getCompleteString();
 
 			try {
 				creationTime = LocalDateTime.from(
@@ -144,24 +146,13 @@ public class Utilities {
 		return Optional.ofNullable(creationTime);
 	}
 
-	public static File getBackupRootPath(String worldName) {
-		File path = new File(Statics.CONFIG.path).getAbsoluteFile();
-
-		if (Statics.CONFIG.perWorldBackup)
-			path = path.toPath().resolve(worldName).toFile();
-
-		if (!path.exists()) {
-			path.mkdirs();
-		}
-
-		return path;
-	}
-
 	public static boolean isValidBackup(File f) {
-		return getFileExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
+		return getArchiveExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
 	}
 
-	public static boolean isFileOk(File f) {return f.exists() && f.isFile(); }
+	public static boolean isFileOk(File f) {
+		return f.exists() && f.isFile();
+	}
 
 	public static DateTimeFormatter getDateTimeFormatter() {
 		return DateTimeFormatter.ofPattern(Statics.CONFIG.dateTimeFormat);
@@ -174,12 +165,9 @@ public class Utilities {
 	public static String formatDuration(Duration duration) {
 		DateTimeFormatter formatter;
 
-		if(duration.toHours() > 0)
-			formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
-		else if(duration.toMinutes() > 0)
-			formatter = DateTimeFormatter.ofPattern("mm:ss.SSS");
-		else
-			formatter = DateTimeFormatter.ofPattern("ss.SSS");
+		if(duration.toHours() > 0) formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+		else if(duration.toMinutes() > 0) formatter = DateTimeFormatter.ofPattern("mm:ss.SSS");
+		else formatter = DateTimeFormatter.ofPattern("ss.SSS");
 
 		return LocalTime.ofNanoOfDay(duration.toNanos()).format(formatter);
 	}

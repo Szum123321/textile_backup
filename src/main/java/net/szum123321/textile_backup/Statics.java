@@ -24,6 +24,7 @@ import net.szum123321.textile_backup.core.restore.AwaitThread;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,6 +41,9 @@ public class Statics {
     public final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
 
     public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
+    public static boolean disableWatchdog = false;
     public static AwaitThread restoreAwaitThread = null;
-    public static File untouchableFile;
+    public static Optional<File> untouchableFile = Optional.empty();
+
+    public static boolean tmpAvailable;
 }

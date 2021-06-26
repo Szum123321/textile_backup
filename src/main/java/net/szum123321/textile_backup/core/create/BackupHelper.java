@@ -18,8 +18,14 @@
 
 package net.szum123321.textile_backup.core.create;
 
+import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.io.FileUtils;
 
@@ -28,11 +34,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.UUID;
 
 public class BackupHelper {
 	public static Runnable create(BackupContext ctx) {
+		notifyPlayers(ctx);
+
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("Backup started ");
@@ -51,74 +58,81 @@ public class BackupHelper {
 		Statics.LOGGER.info(builder.toString());
 
 		if (ctx.shouldSave()) {
-			Statics.LOGGER.sendInfo(ctx.getCommandSource(), "Saving server...");
-			Statics.LOGGER.info( "Saving server...");
+			Statics.LOGGER.sendInfoAL(ctx, "Saving server...");
 
-			ctx.getServer().save(true, true, true);
+			ctx.getServer().getPlayerManager().saveAllPlayerData();
 
-			Utilities.disableWorldSaving(ctx.getServer());
+			try {
+				ctx.getServer().save(false, true, true);
+			} catch (Exception e) {
+				Statics.LOGGER.sendErrorAL(ctx,"An exception occurred when trying to save the world!");
+			}
 		}
 
 		return new MakeBackupRunnable(ctx);
 	}
 
+	private static void notifyPlayers(BackupContext ctx) {
+		MutableText message = Statics.LOGGER.getPrefixText();
+		message.append(new LiteralText("Warning! Server backup will begin shortly. You may experience some lag.").formatted(Formatting.WHITE));
+
+		UUID uuid;
+
+		if(ctx.getInitiator().equals(ActionInitiator.Player) && ctx.getCommandSource().getEntity() != null)
+			uuid = ctx.getCommandSource().getEntity().getUuid();
+		else uuid = Util.NIL_UUID;
+
+		ctx.getServer().getPlayerManager().broadcastChatMessage(
+				message,
+				MessageType.SYSTEM,
+				uuid
+		);
+	}
+
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
 		File root = Utilities.getBackupRootPath(worldName);
-		AtomicInteger deletedFiles = new AtomicInteger();
+		int deletedFiles = 0;
 
 		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
 			if (Statics.CONFIG.maxAge > 0) { // delete files older that configured
 				final LocalDateTime now = LocalDateTime.now();
 
-				Arrays.stream(root.listFiles())
+				deletedFiles += Arrays.stream(root.listFiles())
 						.filter(Utilities::isValidBackup)// We check if we can get file's creation date so that the next line won't throw an exception
 						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > Statics.CONFIG.maxAge)
-						.forEach(f -> {
-							if(deleteFile(f, ctx))
-								deletedFiles.getAndIncrement();
-						});
+						.map(f -> deleteFile(f, ctx))
+						.filter(b -> b).count(); //a bit awkward
 			}
 
 			if (Statics.CONFIG.backupsToKeep > 0 && root.listFiles().length > Statics.CONFIG.backupsToKeep) {
-				int i = root.listFiles().length;
-
-				Iterator<File> it = Arrays.stream(root.listFiles())
+				deletedFiles += Arrays.stream(root.listFiles())
 						.filter(Utilities::isValidBackup)
-						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.iterator();
-
-				while(i > Statics.CONFIG.backupsToKeep && it.hasNext()) {
-					if(deleteFile(it.next(), ctx))
-						deletedFiles.getAndIncrement();
-
-					i--;
-				}
+						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime((File) f).get()).reversed())
+						.skip(Statics.CONFIG.backupsToKeep)
+						.map(f -> deleteFile(f, ctx))
+						.filter(b -> b).count();
 			}
 
 			if (Statics.CONFIG.maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize) {
-				Iterator<File> it = Arrays.stream(root.listFiles())
+				deletedFiles += Arrays.stream(root.listFiles())
 						.filter(Utilities::isValidBackup)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.iterator();
-
-				while(FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize && it.hasNext()) {
-					if(deleteFile(it.next(), ctx))
-						deletedFiles.getAndIncrement();
-				}
+						.takeWhile(f -> FileUtils.sizeOfDirectory(root) / 1024 > Statics.CONFIG.maxSize)
+						.map(f -> deleteFile(f, ctx))
+						.filter(b -> b).count();
 			}
 		}
 
-		return deletedFiles.get();
+		return deletedFiles;
 	}
 
 	private static boolean deleteFile(File f, ServerCommandSource ctx) {
-		if(f != Statics.untouchableFile) {
+		if(Statics.untouchableFile.isEmpty()|| !Statics.untouchableFile.get().equals(f)) {
 			if(f.delete()) {
-				Statics.LOGGER.sendInfo(ctx, "Deleting: {}", f.getName());
-				Statics.LOGGER.info("Deleting: {}", f.getName());
+				Statics.LOGGER.sendInfoAL(ctx, "Deleting: {}", f.getName());
 				return true;
 			} else {
-				Statics.LOGGER.sendError(ctx, "Something went wrong while deleting: {}.", f.getName());
+				Statics.LOGGER.sendErrorAL(ctx, "Something went wrong while deleting: {}.", f.getName());
 			}
 		}
 

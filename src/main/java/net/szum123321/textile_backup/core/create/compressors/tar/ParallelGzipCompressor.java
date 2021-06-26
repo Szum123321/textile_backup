@@ -16,22 +16,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.create.compressors;
+package net.szum123321.textile_backup.core.create.compressors.tar;
 
+import net.szum123321.textile_backup.core.create.BackupContext;
 import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 
 import java.io.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ParallelGzipCompressor extends AbstractTarCompressor {
-	private static final ParallelGzipCompressor INSTANCE = new ParallelGzipCompressor();
+public class ParallelGzipCompressor extends AbstractTarArchiver {
+	private ExecutorService executorService;
 
 	public static ParallelGzipCompressor getInstance() {
-		return INSTANCE;
+		return new ParallelGzipCompressor();
 	}
 
 	@Override
-	protected OutputStream openCompressorStream(OutputStream outputStream, int coreCountLimit) throws IOException {
-		return new ParallelGZIPOutputStream(outputStream, Executors.newFixedThreadPool(coreCountLimit));
+	protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+		executorService = Executors.newFixedThreadPool(coreLimit);
+
+		return new ParallelGZIPOutputStream(stream, executorService);
+	}
+
+	@Override
+	protected void close() {
+		//it seems like ParallelGZIPOutputStream doesn't shut down its ExecutorService, so to not leave garbage I shut it down
+		executorService.shutdown();
 	}
 }

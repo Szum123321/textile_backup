@@ -3,11 +3,11 @@ plugins {
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
-version = "${project.mod_version}-${project.minecraft_version}"
+version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
 group = project.maven_group
 
 minecraft {
@@ -57,8 +57,6 @@ processResources {
 tasks.withType(JavaCompile) {
 	options.encoding = "UTF-8"
 }
-
-
 java {
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
 	// if it is present.
@@ -72,6 +70,8 @@ jar {
 	}
 }
 
+	from("Copyright_Notice")
+}
 // configure the maven publication
 publishing {
 	publications {
@@ -89,6 +89,16 @@ publishing {
 	// select the repositories you want to publish to
 	repositories {
 		// uncomment to publish to the local maven
-		// mavenLocal()
+
+		maven {
+			name = 'myRepo'
+			url = layout.buildDirectory.dir("repo")
+		}
 	}
+}
+
+static def getMcMinor(ver) {
+	String[] arr = ((String)ver).split("\\.");
+
+	return (String)(arr[0] + "." + arr[1]);
 }

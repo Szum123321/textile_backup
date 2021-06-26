@@ -18,40 +18,35 @@
 
 package net.szum123321.textile_backup.commands.restore;
 
-import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
-import net.minecraft.text.LiteralText;
+import net.szum123321.textile_backup.commands.CommandExceptions;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.commands.FileSuggestionProvider;
+import net.szum123321.textile_backup.core.restore.RestoreContext;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
-import java.io.File;
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class RestoreBackupCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("restore")
                 .then(CommandManager.argument("file", StringArgumentType.word())
-                            .suggests(new FileSuggestionProvider())
+                            .suggests(FileSuggestionProvider.Instance())
                         .executes(ctx -> execute(
                                 StringArgumentType.getString(ctx, "file"),
                                 null,
                                 ctx.getSource()
                         ))
                 ).then(CommandManager.argument("file", StringArgumentType.word())
-                        .suggests(new FileSuggestionProvider())
+                        .suggests(FileSuggestionProvider.Instance())
                         .then(CommandManager.argument("comment", StringArgumentType.word())
                                 .executes(ctx -> execute(
                                         StringArgumentType.getString(ctx, "file"),
@@ -64,83 +59,48 @@ public class RestoreBackupCommand {
 
                     Statics.LOGGER.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
                     Statics.LOGGER.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
-                    Statics.LOGGER.sendInfo(source, "Example: 2020-08-05_10.58.33");
+                    Statics.LOGGER.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
 
                     return 1;
                 });
     }
 
-    private static int execute(String file, String comment, ServerCommandSource source) throws CommandSyntaxException {
-        LocalDateTime dateTime;
+    private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
+        if(Statics.restoreAwaitThread == null || (Statics.restoreAwaitThread != null && !Statics.restoreAwaitThread.isAlive())) {
+            LocalDateTime dateTime;
 
-        try {
-            dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
-        } catch (DateTimeParseException e) {
-            LiteralText message = new LiteralText("An exception occurred while trying to parse:\n");
-            message.append(e.getParsedString())
-                    .append("\n");
+            try {
+                dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
+            } catch (DateTimeParseException e) {
+                throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
+            }
 
-            for(int i = 0; i < e.getErrorIndex(); i++)
-                message.append(" ");
+            Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
 
-            message.append("^");
+            if(backupFile.isPresent()) {
+                Statics.LOGGER.info("Found file to restore {}", backupFile.get().getFile().getName());
+            } else {
+                Statics.LOGGER.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
 
-            throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
-        }
+                return 0;
+            }
 
-        Optional<File> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
-
-        if(backupFile.isPresent()) {
-            Statics.LOGGER.info("Found file to restore {}", backupFile.get().getName());
-        } else {
-            Statics.LOGGER.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
-
-            return 0;
-        }
-
-        if(Statics.restoreAwaitThread == null || !Statics.restoreAwaitThread.isAlive()) {
-            if(source.getEntity() != null)
-                Statics.LOGGER.info("Backup restoration was initiated by: {}", source.getName());
-            else
-                Statics.LOGGER.info("Backup restoration was initiated form Server Console");
-
-            Statics.restoreAwaitThread = RestoreHelper.create(backupFile.get(), source.getMinecraftServer(), comment);
+            Statics.restoreAwaitThread = RestoreHelper.create(
+                    RestoreContext.Builder.newRestoreContextBuilder()
+                        .setCommandSource(source)
+                        .setFile(backupFile.get())
+                        .setComment(comment)
+                        .build()
+            );
 
             Statics.restoreAwaitThread.start();
-        } else if(Statics.restoreAwaitThread != null && Statics.restoreAwaitThread.isAlive()) {
+
+            return 1;
+        } else {
             Statics.LOGGER.sendInfo(source, "Someone has already started another restoration.");
 
             return 0;
         }
-
-        return 1;
     }
 
-    private static final class FileSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
-            String remaining = builder.getRemaining();
-
-            for(RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer())) {
-                String formattedCreationTime = file.getCreationTime().format(Statics.defaultDateTimeFormatter);
-
-                if(formattedCreationTime.startsWith(remaining)) {
-                    if(ctx.getSource().getEntity() != null) {  //was typed by player
-                        if(file.getComment() != null) {
-                            builder.suggest(formattedCreationTime, new LiteralMessage("Comment: " + file.getComment()));
-                        } else {
-                            builder.suggest(formattedCreationTime);
-                        }
-                    } else {  //was typed from server console
-                        if(file.getComment() != null) {
-                            builder.suggest(file.getCreationTime() + "#" + file.getComment());
-                        } else {
-                            builder.suggest(formattedCreationTime);
-                        }
-                    }
-                }
-            }
-            return builder.buildFuture();
-        }
-    }
 }

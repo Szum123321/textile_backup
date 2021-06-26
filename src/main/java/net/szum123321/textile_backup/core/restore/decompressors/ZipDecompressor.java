@@ -40,7 +40,7 @@ public class ZipDecompressor {
 
             while ((entry = zipInputStream.getNextZipEntry()) != null) {
                 if(!zipInputStream.canReadEntryData(entry)){
-                    Statics.LOGGER.warn("Something when wrong while trying to decompress {}", entry.getName());
+                    Statics.LOGGER.error("Something when wrong while trying to decompress {}", entry.getName());
                     continue;
                 }
 
@@ -51,14 +51,15 @@ public class ZipDecompressor {
                 } else {
                     File parent = file.getParentFile();
 
-                    if (!parent.isDirectory() && !parent.mkdirs())
-                        throw new IOException("Failed to create directory " + parent);
-
-                    try (OutputStream outputStream = Files.newOutputStream(file.toPath());
-                        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                        IOUtils.copy(zipInputStream, bufferedOutputStream);
-                    } catch (IOException e) {
-                        Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        Statics.LOGGER.error("Failed to create {}", parent);
+                    } else {
+                        try (OutputStream outputStream = Files.newOutputStream(file.toPath());
+                             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                            IOUtils.copy(zipInputStream, bufferedOutputStream);
+                        } catch (IOException e) {
+                            Statics.LOGGER.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
+                        }
                     }
                 }
             }

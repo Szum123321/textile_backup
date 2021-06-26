@@ -18,8 +18,8 @@
 
 package net.szum123321.textile_backup.core.restore;
 
-import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.ConfigHandler;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
@@ -29,38 +29,38 @@ import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecomp
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
 import java.io.File;
-import java.util.NoSuchElementException;
 
 public class RestoreBackupRunnable implements Runnable {
-    private final MinecraftServer server;
-    private final File backupFile;
-    private final String finalBackupComment;
+    private final RestoreContext ctx;
 
-    public RestoreBackupRunnable(MinecraftServer server, File backupFile, String finalBackupComment) {
-        this.server = server;
-        this.backupFile = backupFile;
-        this.finalBackupComment = finalBackupComment;
+    public RestoreBackupRunnable(RestoreContext ctx) {
+        this.ctx = ctx;
     }
 
     @Override
     public void run() {
+        Statics.globalShutdownBackupFlag.set(false);
+
         Statics.LOGGER.info("Shutting down server...");
-        server.stop(false);
+
+        ctx.getServer().stop(false);
         awaitServerShutdown();
 
         if(Statics.CONFIG.backupOldWorlds) {
             BackupHelper.create(
-                    new BackupContext.Builder()
-                            .setServer(server)
-                            .setInitiator(BackupContext.BackupInitiator.Restore)
-                            .setComment("Old_World" + (finalBackupComment != null ? "_" + finalBackupComment : ""))
+                    BackupContext.Builder
+                            .newBackupContextBuilder()
+                            .setServer(ctx.getServer())
+                            .setInitiator(ActionInitiator.Restore)
+                            .setComment("Old_World" + (ctx.getComment() != null ? "_" + ctx.getComment() : ""))
                             .build()
             ).run();
         }
 
-        File worldFile = Utilities.getWorldFolder(server);
+        File worldFile = Utilities.getWorldFolder(ctx.getServer());
 
         Statics.LOGGER.info("Deleting old world...");
+
         if(!deleteDirectory(worldFile))
             Statics.LOGGER.error("Something went wrong while deleting old world!");
 
@@ -68,24 +68,26 @@ public class RestoreBackupRunnable implements Runnable {
 
         Statics.LOGGER.info("Starting decompression...");
 
-        if(Utilities.getFileExtension(backupFile).orElseThrow(() -> new NoSuchElementException("Couldn't get file extension!")) == ConfigHandler.ArchiveFormat.ZIP) {
-            ZipDecompressor.decompress(backupFile, worldFile);
-        } else {
-            GenericTarDecompressor.decompress(backupFile, worldFile);
-        }
+        if(ctx.getFile().getArchiveFormat() == ConfigHandler.ArchiveFormat.ZIP)
+            ZipDecompressor.decompress(ctx.getFile().getFile(), worldFile);
+        else
+            GenericTarDecompressor.decompress(ctx.getFile().getFile(), worldFile);
 
         if(Statics.CONFIG.deleteOldBackupAfterRestore) {
             Statics.LOGGER.info("Deleting old backup");
 
-            if(!backupFile.delete())
+            if(!ctx.getFile().getFile().delete())
                 Statics.LOGGER.info("Something went wrong while deleting old backup");
         }
+
+        //in case we're playing on client
+        Statics.globalShutdownBackupFlag.set(true);
 
         Statics.LOGGER.info("Done!");
     }
 
     private void awaitServerShutdown() {
-        while(((LivingServer)server).isAlive()) {
+        while(((LivingServer)ctx.getServer()).isAlive()) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
