@@ -34,4 +34,4 @@ Feel free to use this mod in your modpack or on a server!
 
 If you have any suggestions or found a problem please report it on [Github](https://github.com/Szum123321/textile_backup).
 
-And here's a link to my [discord channel](https://discord.gg/ktasEy4) 
+And here's a link to my [discord server](https://discord.gg/ktasEy4) 

@@ -57,7 +57,6 @@ processResources {
 tasks.withType(JavaCompile) {
 	options.encoding = "UTF-8"
 }
-
 java {
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
 	// if it is present.
@@ -69,6 +68,7 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
+}
 
 	from("Copyright_Notice")
 }
