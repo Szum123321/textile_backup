@@ -30,102 +30,125 @@ import java.util.*;
 @Config(name = TextileBackup.MOD_ID)
 public class ConfigPOJO implements ConfigData {
     @Comment("""
-            Format of date&time used to name backup files.
-            Remember not to use '#' symbol or any other character that is not allowed by your operating system such as:
-            ':', '\\', etc...
-            For more info: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html""")
-    public String dateTimeFormat = "yyyy.MM.dd_HH-mm-ss";
-
-    @Comment("Should every world have its own backup folder?")
-    @ConfigEntry.Gui.Excluded
-    public boolean perWorldBackup = true;
-
-    @Comment("A path to the backup folder")
-    public String path = "backup/";
-
-    @Comment("""
-            This setting allows you to exclude files form being backed-up.
-            Be very careful when setting it, as it is easy corrupt your world!""")
-    public List<String> fileBlacklist = new ArrayList<>();
-
-    @Comment("Should backups be deleted after being restored?")
-    public boolean deleteOldBackupAfterRestore = true;
-
-    @Comment("Maximum number of backups to keep.\nIf set to 0 then no backup will be deleted based their amount")
-    public int backupsToKeep = 10;
-
-    @Comment("""
-            Maximum age of backups to keep in seconds.
-             If set to 0 then backups will not be deleted based their age""")
-    public long maxAge = 0;
-
-    @Comment("""
-            Maximum size of backup folder in kilo bytes (1024).
-            If set to 0 then backups will not be deleted""")
-    public int maxSize = 0;
-
-    @Comment("""
-            Time between automatic backups in seconds
-            When set to 0 backups will not be performed automatically""")
+            \nTime between automatic backups in seconds
+            When set to 0 backups will not be performed automatically
+            """)
     @ConfigEntry.Gui.Tooltip()
     @ConfigEntry.Category("Create")
     public long backupInterval = 3600;
 
-    @Comment("Should backups be done even if there are no players?")
+    @Comment("\nDelay in seconds between typing-in /backup restore and it actually starting\n")
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Category("Restore")
+    public int restoreDelay = 30;
+
+    @Comment("\nShould backups be done even if there are no players?\n")
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Create")
     public boolean doBackupsOnEmptyServer = false;
 
-    @Comment("Should backup be made on server shutdown?")
+    @Comment("\nShould backup be made on server shutdown?\n")
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Create")
     public boolean shutdownBackup = true;
 
-    @Comment("Should world be backed up before restoring a backup?")
-    @ConfigEntry.Category("Create")
+    @Comment("\nShould world be backed up before restoring a backup?\n")
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Category("Restore")
     public boolean backupOldWorlds = true;
 
-    @Comment("Compression level 0 - 9 Only affects zip compression.")
+    @Comment("\nShould every world have its own backup folder?\n")
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Excluded
+    public boolean perWorldBackup = true;
+
+    @Comment("\nA path to the backup folder\n")
+    @ConfigEntry.Gui.NoTooltip()
+    public String path = "backup/";
+
+    @Comment("""
+            \nThis setting allows you to exclude files form being backedup.
+            Be very careful when setting it, as it is easy corrupt your world!
+            """)
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Category("Create")
+    public List<String> fileBlacklist = new ArrayList<>();
+
+    @Comment("\nShould backups be deleted after being restored?\n")
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Category("Restore")
+    public boolean deleteOldBackupAfterRestore = true;
+
+    @Comment("\nMaximum number of backups to keep. If set to 0 then no backup will be deleted based their amount\n")
+    @ConfigEntry.Gui.NoTooltip()
+    public int backupsToKeep = 10;
+
+    @Comment("\nMaximum age of backups to keep in seconds.\n If set to 0 then backups will not be deleted based their age \n")
+    @ConfigEntry.Gui.NoTooltip()
+    public long maxAge = 0;
+
+    @Comment("""
+            \nMaximum size of backup folder in kilo bytes (1024).
+            If set to 0 then backups will not be deleted
+            """)
+    @ConfigEntry.Gui.NoTooltip()
+    public int maxSize = 0;
+
+    @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.BoundedDiscrete(max = 9)
     @ConfigEntry.Category("Create")
     public int compression = 7;
 
     @Comment("""
-            Limit how many cores can be used for compression.
-            0 means that all available cores will be used""")
+            \nLimit how many cores can be used for compression.
+            0 means that all available cores will be used
+            """)
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Create")
     public int compressionCoreCountLimit = 0;
 
-    @Comment(value = """
-            Available formats are:
+    @Comment("""
+            \nAvailable formats are:
             ZIP - normal zip archive using standard deflate compression
             GZIP - tar.gz using gzip compression
             BZIP2 - tar.bz2 archive using bzip2 compression
             LZMA - tar.xz using lzma compression
-            TAR - .tar with no compression""")
+            TAR - .tar with no compression
+            """)
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Create")
     @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
     public ArchiveFormat format = ArchiveFormat.ZIP;
 
-    @Comment("Minimal permission level required to run commands")
+    @Comment("\nMinimal permission level required to run commands\n")
     @ConfigEntry.Category("Manage")
+    @ConfigEntry.Gui.NoTooltip()
     public int permissionLevel = 4;
 
-    @Comment("""
-        Player on singleplayer is always allowed to run command.
-        Warning! On lan party everyone will be allowed to run it.""")
+    @Comment("\nPlayer on singleplayer is always allowed to run command. Warning! On lan party everyone will be allowed to run it.\n")
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Manage")
     public boolean alwaysSingleplayerAllowed = true;
 
-    @Comment("Players allowed to run backup commands without sufficient permission level")
+    @Comment("\nPlayers allowed to run backup commands without sufficient permission level\n")
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Manage")
-    public Set<String> playerWhitelist = new HashSet<>();
+    public List<String> playerWhitelist = new ArrayList<>();
 
-    @Comment("Players banned from running backup commands besides their sufficient permission level")
+    @Comment("\nPlayers banned from running backup commands besides their sufficient permission level\n")
+    @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Manage")
-    public Set<String> playerBlacklist = new HashSet<>();
+    public List<String> playerBlacklist = new ArrayList<>();
 
-    @Comment("Delay in seconds between typing-in /backup restore and it actually starting")
-    @ConfigEntry.Category("Restore")
-    public int restoreDelay = 30;
+    @Comment("""
+            \nFormat of date&time used to name backup files.
+            Remember not to use '#' symbol or any other character that is not allowed by your operating system such as:
+            ':', '\\', etc...
+            For more info: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+            """)
+    @ConfigEntry.Gui.Tooltip()
+    public String dateTimeFormat = "yyyy.MM.dd_HH-mm-ss";
 
     @Override
     public void validatePostLoad() throws ValidationException {

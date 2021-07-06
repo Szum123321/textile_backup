@@ -7,7 +7,7 @@
   "text.autoconfig.textile_backup.category.Manage": "Management",
 
   "text.autoconfig.textile_backup.option.backupInterval": "Backup Interval",
-  "text.autoconfig.textile_backup.option.backupInterval.@Tooltip": "AAAAAA",
+  "text.autoconfig.textile_backup.option.backupInterval.@Tooltip": "Time between each automatic backup (in seconds)",
 
   "text.autoconfig.textile_backup.option.restoreDelay": "Restore Delay",
 
@@ -45,5 +45,6 @@
 
   "text.autoconfig.textile_backup.option.playerBlacklist": "Admin Blacklist",
 
-  "text.autoconfig.textile_backup.option.dateTimeFormat": "Date&Time format"
+  "text.autoconfig.textile_backup.option.dateTimeFormat": "Date&Time format",
+  "text.autoconfig.textile_backup.option.dateTimeFormat.@Tooltip": "See: https://github.com/Szum123321/textile_backup/wiki/Date-time-format"
 }
