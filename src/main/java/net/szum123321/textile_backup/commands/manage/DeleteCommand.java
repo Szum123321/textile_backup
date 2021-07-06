@@ -57,7 +57,7 @@ public class DeleteCommand {
             throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
         }
 
-        File root = Utilities.getBackupRootPath(Utilities.getLevelName(source.getMinecraftServer()));
+        File root = Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer()));
 
         Optional<File> optionalFile =  Arrays.stream(root.listFiles())
                 .filter(Utilities::isValidBackup)

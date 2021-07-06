@@ -73,7 +73,7 @@ public class BlacklistCommand {
 
 			builder.append(" successfully.");
 
-			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
 			log.sendInfo(ctx.getSource(), builder.toString());
 		}
@@ -90,7 +90,7 @@ public class BlacklistCommand {
 			config.get().playerBlacklist.remove(player.getEntityName());
 			config.save();
 
-			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
 			log.sendInfo(ctx.getSource(), "Player: {} removed from the blacklist successfully.", player.getEntityName());
 		}

@@ -79,7 +79,7 @@ public class RestoreBackupCommand {
                 throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
             }
 
-            Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getMinecraftServer());
+            Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
 
             if(backupFile.isPresent()) {
                 log.info("Found file to restore {}", backupFile.get().getFile().getName());

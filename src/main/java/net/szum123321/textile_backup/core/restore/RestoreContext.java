@@ -92,7 +92,7 @@ public record RestoreContext(RestoreHelper.RestoreableFile file,
         }
 
         public RestoreContext build() {
-            if (server == null) server = serverCommandSource.getMinecraftServer();
+            if (server == null) server = serverCommandSource.getServer();
 
             ActionInitiator initiator = serverCommandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
 

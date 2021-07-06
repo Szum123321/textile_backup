@@ -73,7 +73,7 @@ public class WhitelistCommand {
 
 			builder.append(" successfully.");
 
-			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
 			log.sendInfo(ctx.getSource(), builder.toString());
 		}
@@ -90,7 +90,7 @@ public class WhitelistCommand {
 			config.get().playerWhitelist.remove(player.getEntityName());
 			config.save();
 
-			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
 			log.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getEntityName());
 		}
