@@ -29,6 +29,11 @@ import java.util.*;
 
 @Config(name = TextileBackup.MOD_ID)
 public class ConfigPOJO implements ConfigData {
+    @Comment("\nShould every world have its own backup folder?\n")
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Excluded
+    public boolean perWorldBackup = true;
+
     @Comment("""
             \nTime between automatic backups in seconds
             When set to 0 backups will not be performed automatically
@@ -57,17 +62,12 @@ public class ConfigPOJO implements ConfigData {
     @ConfigEntry.Category("Restore")
     public boolean backupOldWorlds = true;
 
-    @Comment("\nShould every world have its own backup folder?\n")
-    @ConfigEntry.Gui.NoTooltip()
-    @ConfigEntry.Gui.Excluded
-    public boolean perWorldBackup = true;
-
     @Comment("\nA path to the backup folder\n")
     @ConfigEntry.Gui.NoTooltip()
     public String path = "backup/";
 
     @Comment("""
-            \nThis setting allows you to exclude files form being backedup.
+            \nThis setting allows you to exclude files form being backed-up.
             Be very careful when setting it, as it is easy corrupt your world!
             """)
     @ConfigEntry.Gui.NoTooltip()
