@@ -68,6 +68,7 @@ public class WhitelistCommand {
 
 			if(config.get().playerBlacklist.contains(player.getEntityName())){
 				config.get().playerBlacklist.remove(player.getEntityName());
+				config.save();
 				builder.append(" and removed form the blacklist");
 			}
 
