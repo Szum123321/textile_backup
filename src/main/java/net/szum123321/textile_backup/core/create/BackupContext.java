@@ -24,17 +24,11 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import org.jetbrains.annotations.NotNull;
 
-public record BackupContext(MinecraftServer server,
+public record BackupContext(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
-                            ActionInitiator initiator, boolean save,
+                            ActionInitiator initiator,
+                            boolean save,
                             String comment) {
-    public BackupContext(@NotNull MinecraftServer server, ServerCommandSource commandSource, @NotNull ActionInitiator initiator, boolean save, String comment) {
-        this.server = server;
-        this.commandSource = commandSource;
-        this.initiator = initiator;
-        this.save = save;
-        this.comment = comment;
-    }
 
     public MinecraftServer getServer() {
         return server;

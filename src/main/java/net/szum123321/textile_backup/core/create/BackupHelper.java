@@ -52,11 +52,10 @@ public class BackupHelper {
 
 		builder.append(ctx.getInitiator().getPrefix());
 
-		if(ctx.startedByPlayer()) {
+		if(ctx.startedByPlayer())
 			builder.append(ctx.getCommandSource().getDisplayName().getString());
-		} else {
+		else
 			builder.append(ctx.getInitiator().getName());
-		}
 
 		builder.append(" on: ");
 		builder.append(Utilities.getDateTimeFormatter().format(LocalDateTime.now()));

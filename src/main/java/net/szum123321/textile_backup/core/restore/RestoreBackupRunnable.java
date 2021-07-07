@@ -82,8 +82,7 @@ public class RestoreBackupRunnable implements Runnable {
         if(config.get().deleteOldBackupAfterRestore) {
             log.info("Deleting old backup");
 
-            if(!ctx.getFile().getFile().delete())
-                log.info("Something went wrong while deleting old backup");
+            if(!ctx.getFile().getFile().delete()) log.info("Something went wrong while deleting old backup");
         }
 
         //in case we're playing on client
