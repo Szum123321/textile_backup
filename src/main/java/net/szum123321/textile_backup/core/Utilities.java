@@ -92,9 +92,7 @@ public class Utilities {
 			if (path.getFileName().toString().equals("session.lock")) return true;
 		}
 
-		for(String i : config.get().fileBlacklist) if(path.startsWith(i)) return true;
-
-		return false;
+		return config.get().fileBlacklist.stream().anyMatch(path::startsWith);
 	}
 
 	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(String fileName) {
