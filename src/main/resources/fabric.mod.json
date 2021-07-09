@@ -40,7 +40,12 @@
     "fabricloader": ">=0.11",
     "fabric": "*",
     "minecraft": "1.17.*",
+    "autoconfig1u": "*",
     "java": ">=16"
+  },
+  "recommends": {
+    "cloth-config2": "*",
+    "modmenu": "*"
   },
 
   "custom": {
