@@ -51,8 +51,8 @@ dependencies {
 	include "org.tukaani:xz:1.8"
 
 	//Gzip compression, parallel, GITHUB
-	modImplementation 'com.github.shevek:parallelgzip:master-SNAPSHOT'
-	include 'com.github.shevek:parallelgzip:master-SNAPSHOT'
+	modImplementation "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
+	include "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
 
 	// Lazy DFU makes the dev env start up much faster by loading DataFixerUpper lazily, which would otherwise take a long time. We rarely need it anyway.
 	modRuntime("com.github.astei:lazydfu:${project.lazydfu_version}") {
