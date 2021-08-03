@@ -62,10 +62,10 @@ public abstract class AbstractCompressor {
         } catch(NoSpaceLeftOnDeviceException e) {
             log.error("""
             CRITICAL ERROR OCCURRED!
-            The backup is corrupted.;
+            The backup is corrupt!
             Don't panic! This is a known issue!
             For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems
-            In case this isn't it here's also the exception itself!""", e);
+            In case this isn't it here's also the exception itself""", e);
 
             if(ctx.getInitiator() == ActionInitiator.Player) {
                 log.sendError(ctx, "Backup failed. The file is corrupt.");

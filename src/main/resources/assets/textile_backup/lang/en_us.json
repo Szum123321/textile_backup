@@ -21,7 +21,7 @@
 
   "text.autoconfig.textile_backup.option.path": "Path to backup folder",
 
-  "text.autoconfig.textile_backup.option.fileBlacklist": "Blacklised files",
+  "text.autoconfig.textile_backup.option.fileBlacklist": "Blacklisted files",
 
   "text.autoconfig.textile_backup.option.deleteOldBackupAfterRestore": "Delete restored backup",
 
@@ -39,7 +39,7 @@
 
   "text.autoconfig.textile_backup.option.permissionLevel": "Min permission level required to run any command",
 
-  "text.autoconfig.textile_backup.option.alwaysSingleplayerAllowed": "Always allow on sigle-player",
+  "text.autoconfig.textile_backup.option.alwaysSingleplayerAllowed": "Always allow on single-player",
 
   "text.autoconfig.textile_backup.option.playerWhitelist": "Admin Whitelist",
 
