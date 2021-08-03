@@ -76,9 +76,11 @@ public abstract class AbstractCompressor {
         } catch (Exception e) {
             if(ctx.getInitiator() == ActionInitiator.Player)
                 log.sendError(ctx, "Something went wrong while compressing files!");
+        } finally {
+            close();
         }
 
-        close();
+        //  close();
 
         log.sendInfoAL(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
