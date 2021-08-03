@@ -43,7 +43,7 @@ public class ConfigPOJO implements ConfigData {
     public long backupInterval = 3600;
 
     @Comment("\nDelay in seconds between typing-in /backup restore and it actually starting\n")
-    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Tooltip()
     @ConfigEntry.Category("Restore")
     public int restoreDelay = 30;
 
@@ -91,11 +91,11 @@ public class ConfigPOJO implements ConfigData {
             \nMaximum size of backup folder in kilo bytes (1024).
             If set to 0 then backups will not be deleted
             """)
-    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Tooltip()
     public int maxSize = 0;
 
     @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
-    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Tooltip()
     @ConfigEntry.BoundedDiscrete(max = 9)
     @ConfigEntry.Category("Create")
     public int compression = 7;
@@ -104,7 +104,7 @@ public class ConfigPOJO implements ConfigData {
             \nLimit how many cores can be used for compression.
             0 means that all available cores will be used
             """)
-    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Tooltip()
     @ConfigEntry.Category("Create")
     public int compressionCoreCountLimit = 0;
 
@@ -116,7 +116,7 @@ public class ConfigPOJO implements ConfigData {
             LZMA - tar.xz using lzma compression
             TAR - .tar with no compression
             """)
-    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Tooltip()
     @ConfigEntry.Category("Create")
     @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
     public ArchiveFormat format = ArchiveFormat.ZIP;
