@@ -36,6 +36,4 @@ public class Statics {
     public static boolean disableWatchdog = false;
     public static AwaitThread restoreAwaitThread = null;
     public static Optional<File> untouchableFile = Optional.empty();
-
-    public static boolean tmpAvailable;
 }

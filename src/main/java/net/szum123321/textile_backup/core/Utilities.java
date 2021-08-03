@@ -59,16 +59,6 @@ public class Utilities {
 		return path;
 	}
 
-	//This is quite pointless
-	public static boolean isTmpAvailable() {
-		try {
-			File tmp = File.createTempFile("textile_backup_tmp_test", String.valueOf(Instant.now().getEpochSecond()));
-			return tmp.delete();
-		} catch (IOException ignored) {}
-
-		return false;
-	}
-
 	public static void disableWorldSaving(MinecraftServer server) {
 		for (ServerWorld serverWorld : server.getWorlds()) {
 			if (serverWorld != null && !serverWorld.savingDisabled)

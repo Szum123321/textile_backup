@@ -38,7 +38,6 @@ import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
-import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
@@ -57,17 +56,6 @@ public class TextileBackup implements ModInitializer {
         log.info("Starting Textile Backup by Szum123321");
 
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
-
-        //TODO: finish writing wiki
-        if(config.get().format == ConfigPOJO.ArchiveFormat.ZIP) {
-            Statics.tmpAvailable = Utilities.isTmpAvailable();
-            if(!Statics.tmpAvailable) {
-                log.warn("""
-                        WARNING! It seems like the temporary folder is not accessible on this system!
-                        This will cause problems with multithreaded zip compression, so a normal one will be used instead.
-                        For more info please read: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems""");
-            }
-        }
 
         ServerTickEvents.END_SERVER_TICK.register(new BackupScheduler()::tick);
 
