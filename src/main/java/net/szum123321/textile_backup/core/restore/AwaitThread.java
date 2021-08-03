@@ -18,7 +18,8 @@
 
 package net.szum123321.textile_backup.core.restore;
 
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     This thread waits some amount of time and then starts a new, independent thread
 */
 public class AwaitThread extends Thread {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static AtomicInteger threadCounter = new AtomicInteger(0);
 
     private final int delay;
@@ -40,13 +42,13 @@ public class AwaitThread extends Thread {
 
     @Override
     public void run() {
-        Statics.LOGGER.info("Countdown begins... Waiting {} second.", delay);
+        log.info("Countdown begins... Waiting {} second.", delay);
 
         // 𝄞 This is final count down! Tu ruru Tu, Tu Ru Tu Tu ♪
         try {
             Thread.sleep(delay * 1000L);
         } catch (InterruptedException e) {
-            Statics.LOGGER.info("Backup restoration cancelled.");
+            log.info("Backup restoration cancelled.");
             return;
         }
 

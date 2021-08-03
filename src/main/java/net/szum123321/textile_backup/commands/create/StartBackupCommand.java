@@ -23,12 +23,16 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 
 import javax.annotation.Nullable;
 
 public class StartBackupCommand {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("start")
                 .then(CommandManager.argument("comment", StringArgumentType.string())
@@ -51,7 +55,7 @@ public class StartBackupCommand {
                         )
                 );
             } catch (Exception e) {
-                Statics.LOGGER.error("Something went wrong while executing command!", e);
+                log.error("Something went wrong while executing command!", e);
                 throw e;
             }
         }

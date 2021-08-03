@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2021  Szum123321
+ * Copyright (C) 2021 Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core;
+package net.szum123321.textile_backup.config;
 
-public interface LivingServer {
-    boolean isAlive();
+import me.shedaniel.autoconfig.ConfigHolder;
+
+public class ConfigHelper {
+    public static final ConfigHelper INSTANCE = new ConfigHelper();
+    private ConfigHolder<ConfigPOJO> configHolder;
+
+    public static void updateInstance(ConfigHolder<ConfigPOJO> ch) { INSTANCE.configHolder = ch; }
+
+    public ConfigPOJO get() { return configHolder.get(); }
+
+    public void save() { configHolder.save(); }
 }

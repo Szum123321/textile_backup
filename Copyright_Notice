@@ -1,8 +1,8 @@
 This project uses third party libraries as its dependencies and includes them in jar. Those are :
 	Apache Commons Compress licensed under Apache License Version 2.0 which can be found at http://www.apache.org/licenses/
-	Cotton config, Cotton logging, and Jankson-Fabric all by Cotton team licensed under MIT license which can be found at https://github.com/CottonMC/Cotton
+	Cloth config by Shedaniel(https://github.com/shedaniel/cloth-config) under GPL 3
 	XZ for Java by Tukaani released as public domain. https://tukaani.org/xz/java.html
-	parallelgzip by shevek under Apache 2.0 http://www.apache.org/licenses/
+	parallelgzip by shevek (https://github.com/shevek/parallelgzip) under Apache 2.0 http://www.apache.org/licenses/
 
 To save on space Parallel BZip2 was unpacked
 	Parallel BZip2 compression by Karl Gustafsson at http://at4j.sourceforge.net/ under GPL v3
@@ -10,3 +10,5 @@ To save on space Parallel BZip2 was unpacked
 Some code was partially or fully inspired by:
     Parallel zip compression: https://stackoverflow.com/questions/54624695/how-to-implement-parallel-zip-creation-with-scatterzipoutputstream-with-zip64-su
         answer by: https://stackoverflow.com/users/2987755/dkb
+
+    Cotton logging by Cotton team licensed under MIT license which can be found at https://github.com/CottonMC/Cotton

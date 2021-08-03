@@ -21,22 +21,24 @@ package net.szum123321.textile_backup.commands.create;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.Utilities;
 
 public class CleanupCommand {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("cleanup")
                 .executes(ctx -> execute(ctx.getSource()));
     }
 
     private static int execute(ServerCommandSource source) {
-        Statics.LOGGER.sendInfo(
+        log.sendInfo(
                 source,
                 "Deleted: {} files.",
-                BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getMinecraftServer()))
+                BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getServer()))
         );
 
         return 1;

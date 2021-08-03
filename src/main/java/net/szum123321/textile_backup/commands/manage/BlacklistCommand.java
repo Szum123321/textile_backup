@@ -1,16 +1,38 @@
+/*
+ * A simple backup mod for Fabric
+ * Copyright (C) 2021  Szum123321
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package net.szum123321.textile_backup.commands.manage;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.github.cottonmc.cotton.config.ConfigManager;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.config.ConfigHelper;
 
 public class BlacklistCommand {
+	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+	private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
 	public static LiteralArgumentBuilder<ServerCommandSource> register() {
 		return CommandManager.literal("blacklist")
 				.then(CommandManager.literal("add")
@@ -27,7 +49,7 @@ public class BlacklistCommand {
 	}
 
 	private static int help(ServerCommandSource source) {
-		Statics.LOGGER.sendInfo(source, "Available command are: add [player], remove [player], list.");
+		log.sendInfo(source, "Available command are: add [player], remove [player], list.");
 
 		return 1;
 	}
@@ -37,12 +59,12 @@ public class BlacklistCommand {
 
 		builder.append("Currently on the blacklist are: ");
 
-		for(String name : Statics.CONFIG.playerBlacklist){
+		for(String name : config.get().playerBlacklist){
 			builder.append(name);
 			builder.append(", ");
 		}
 
-		Statics.LOGGER.sendInfo(source, builder.toString());
+		log.sendInfo(source, builder.toString());
 
 		return 1;
 	}
@@ -50,11 +72,11 @@ public class BlacklistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
-			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} is already blacklisted.", player.getEntityName());
+		if(config.get().playerBlacklist.contains(player.getEntityName())) {
+			log.sendInfo(ctx.getSource(), "Player: {} is already blacklisted.", player.getEntityName());
 		} else {
-			Statics.CONFIG.playerBlacklist.add(player.getEntityName());
-			ConfigManager.saveConfig(Statics.CONFIG);
+			config.get().playerBlacklist.add(player.getEntityName());
+			config.save();
 
 			StringBuilder builder = new StringBuilder();
 
@@ -62,16 +84,17 @@ public class BlacklistCommand {
 			builder.append(player.getEntityName());
 			builder.append(" added to the blacklist");
 
-			if(Statics.CONFIG.playerWhitelist.contains(player.getEntityName())){
-				Statics.CONFIG.playerWhitelist.remove(player.getEntityName());
+			if(config.get().playerWhitelist.contains(player.getEntityName())){
+				config.get().playerWhitelist.remove(player.getEntityName());
+				config.save();
 				builder.append(" and removed form the whitelist");
 			}
 
 			builder.append(" successfully.");
 
-			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
-			Statics.LOGGER.sendInfo(ctx.getSource(), builder.toString());
+			log.sendInfo(ctx.getSource(), builder.toString());
 		}
 
 		return 1;
@@ -80,15 +103,15 @@ public class BlacklistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!Statics.CONFIG.playerBlacklist.contains(player.getEntityName())) {
-			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} newer was blacklisted.", player.getEntityName());
+		if(!config.get().playerBlacklist.contains(player.getEntityName())) {
+			log.sendInfo(ctx.getSource(), "Player: {} newer was blacklisted.", player.getEntityName());
 		} else {
-			Statics.CONFIG.playerBlacklist.remove(player.getEntityName());
-			ConfigManager.saveConfig(Statics.CONFIG);
+			config.get().playerBlacklist.remove(player.getEntityName());
+			config.save();
 
-			ctx.getSource().getMinecraftServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
-			Statics.LOGGER.sendInfo(ctx.getSource(), "Player: {} removed from the blacklist successfully.", player.getEntityName());
+			log.sendInfo(ctx.getSource(), "Player: {} removed from the blacklist successfully.", player.getEntityName());
 		}
 
 		return 1;

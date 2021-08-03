@@ -23,10 +23,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 
 import java.util.Optional;
 
 public class KillRestoreCommand {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("killR")
                 .executes(ctx -> {
@@ -35,16 +38,16 @@ public class KillRestoreCommand {
                         Statics.globalShutdownBackupFlag.set(true);
                         Statics.untouchableFile = Optional.empty();
 
-                        Statics.LOGGER.info("{} cancelled backup restoration.", ctx.getSource().getEntity() instanceof PlayerEntity ?
+                        log.info("{} cancelled backup restoration.", ctx.getSource().getEntity() instanceof PlayerEntity ?
                                 "Player: " + ctx.getSource().getName() :
                                 "SERVER"
                                 );
 
                         if(ctx.getSource().getEntity() instanceof PlayerEntity)
-                            Statics.LOGGER.sendInfo(ctx.getSource(), "Backup restoration successfully stopped.");
+                            log.sendInfo(ctx.getSource(), "Backup restoration successfully stopped.");
 
                     } else {
-                        Statics.LOGGER.sendInfo(ctx.getSource(), "Failed to stop backup restoration");
+                        log.sendInfo(ctx.getSource(), "Failed to stop backup restoration");
                     }
                     return 1;
                 });

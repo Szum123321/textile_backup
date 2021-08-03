@@ -18,7 +18,10 @@
 
 package net.szum123321.textile_backup.core.restore;
 
-import net.szum123321.textile_backup.ConfigHandler;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.Statics;
@@ -31,6 +34,9 @@ import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 import java.io.File;
 
 public class RestoreBackupRunnable implements Runnable {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+    private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
     private final RestoreContext ctx;
 
     public RestoreBackupRunnable(RestoreContext ctx) {
@@ -41,12 +47,12 @@ public class RestoreBackupRunnable implements Runnable {
     public void run() {
         Statics.globalShutdownBackupFlag.set(false);
 
-        Statics.LOGGER.info("Shutting down server...");
+        log.info("Shutting down server...");
 
         ctx.getServer().stop(false);
         awaitServerShutdown();
 
-        if(Statics.CONFIG.backupOldWorlds) {
+        if(config.get().backupOldWorlds) {
             BackupHelper.create(
                     BackupContext.Builder
                             .newBackupContextBuilder()
@@ -59,31 +65,34 @@ public class RestoreBackupRunnable implements Runnable {
 
         File worldFile = Utilities.getWorldFolder(ctx.getServer());
 
-        Statics.LOGGER.info("Deleting old world...");
+        log.info("Deleting old world...");
 
         if(!deleteDirectory(worldFile))
-            Statics.LOGGER.error("Something went wrong while deleting old world!");
+            log.error("Something went wrong while deleting old world!");
 
         worldFile.mkdirs();
 
-        Statics.LOGGER.info("Starting decompression...");
+        log.info("Starting decompression...");
 
-        if(ctx.getFile().getArchiveFormat() == ConfigHandler.ArchiveFormat.ZIP)
+        if(ctx.getFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.ZIP)
             ZipDecompressor.decompress(ctx.getFile().getFile(), worldFile);
         else
             GenericTarDecompressor.decompress(ctx.getFile().getFile(), worldFile);
 
-        if(Statics.CONFIG.deleteOldBackupAfterRestore) {
-            Statics.LOGGER.info("Deleting old backup");
+        if(config.get().deleteOldBackupAfterRestore) {
+            log.info("Deleting old backup");
 
-            if(!ctx.getFile().getFile().delete())
-                Statics.LOGGER.info("Something went wrong while deleting old backup");
+            if(!ctx.getFile().getFile().delete()) log.info("Something went wrong while deleting old backup");
         }
 
         //in case we're playing on client
         Statics.globalShutdownBackupFlag.set(true);
 
-        Statics.LOGGER.info("Done!");
+        log.info("Done!");
+
+        //Might solve #37
+        //Idk if it's a good idea...
+        //Runtime.getRuntime().exit(0);
     }
 
     private void awaitServerShutdown() {
@@ -91,7 +100,7 @@ public class RestoreBackupRunnable implements Runnable {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                Statics.LOGGER.error("Exception occurred!", e);
+                log.error("Exception occurred!", e);
             }
         }
     }

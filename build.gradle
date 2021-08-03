@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.8-SNAPSHOT'
+	id 'fabric-loom' version '0.9-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -16,6 +16,13 @@ minecraft {
 repositories{
 	maven { url 'https://server.bbkr.space/artifactory/libs-release' }
 	maven { url 'https://jitpack.io' }
+	maven { url "https://maven.shedaniel.me/" }
+	maven {
+		url "https://maven.terraformersmc.com/releases/"
+		content {
+			includeGroup "com.terraformersmc"
+		}
+	}
 }
 
 dependencies {
@@ -27,20 +34,30 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation "io.github.cottonmc.cotton:cotton-config:1.0.0-rc.7"
+	//General config library
+	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
 
-	include "io.github.cottonmc:Jankson-Fabric:3.0.0+j1.2.0"
-	include "io.github.cottonmc.cotton:cotton-logging:1.0.0-rc.4"
-	include "io.github.cottonmc.cotton:cotton-config:1.0.0-rc.7"
+	//Mod menu
+	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
+	//General compression library
 	modImplementation "org.apache.commons:commons-compress:1.19"
 	include "org.apache.commons:commons-compress:1.19"
 
+	//LZMA support
 	modImplementation "org.tukaani:xz:1.8"
 	include "org.tukaani:xz:1.8"
 
-	modImplementation 'com.github.shevek:parallelgzip:master-SNAPSHOT'
-	include 'com.github.shevek:parallelgzip:master-SNAPSHOT'
+	//Gzip compression, parallel, GITHUB
+	modImplementation "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
+	include "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
+
+	// Lazy DFU makes the dev env start up much faster by loading DataFixerUpper lazily, which would otherwise take a long time. We rarely need it anyway.
+	modRuntime("com.github.astei:lazydfu:${project.lazydfu_version}") {
+		exclude(module: "fabric-loader")
+	}
 }
 
 processResources {

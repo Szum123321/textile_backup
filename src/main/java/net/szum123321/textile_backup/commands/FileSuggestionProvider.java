@@ -28,7 +28,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
-import org.lwjgl.system.CallbackI;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -43,7 +42,7 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
         String remaining = builder.getRemaining();
 
-        for (RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer())) {
+        for (RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getServer())) {
             String formattedCreationTime = file.getCreationTime().format(Statics.defaultDateTimeFormatter);
 
             if (formattedCreationTime.startsWith(remaining)) {

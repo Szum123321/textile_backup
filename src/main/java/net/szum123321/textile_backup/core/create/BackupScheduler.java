@@ -20,11 +20,14 @@ package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.MinecraftServer;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
 
 import java.time.Instant;
 
 public class BackupScheduler {
+    private final static ConfigHelper config = ConfigHelper.INSTANCE;
+
     private boolean scheduled;
     private long nextBackup;
 
@@ -34,9 +37,10 @@ public class BackupScheduler {
     }
 
     public void tick(MinecraftServer server) {
+        if(config.get().backupInterval < 1) return;
         long now = Instant.now().getEpochSecond();
 
-        if(Statics.CONFIG.doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
+        if(config.get().doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
             if(scheduled) {
                 if(nextBackup <= now) {
                     Statics.executorService.submit(
@@ -50,13 +54,13 @@ public class BackupScheduler {
                             )
                     );
 
-                    nextBackup = now + Statics.CONFIG.backupInterval;
+                    nextBackup = now + config.get().backupInterval;
                 }
             } else {
-                nextBackup = now + Statics.CONFIG.backupInterval;
+                nextBackup = now + config.get().backupInterval;
                 scheduled = true;
             }
-        } else if(!Statics.CONFIG.doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
+        } else if(!config.get().doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
             if(scheduled && nextBackup <= now) {
                 Statics.executorService.submit(
                         BackupHelper.create(

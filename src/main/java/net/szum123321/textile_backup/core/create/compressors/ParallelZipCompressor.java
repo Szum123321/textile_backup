@@ -18,7 +18,8 @@
 
 package net.szum123321.textile_backup.core.create.compressors;
 
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.NoSpaceLeftOnDeviceException;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.commons.compress.archivers.zip.*;
@@ -36,6 +37,8 @@ import java.util.zip.ZipEntry;
 	https://stackoverflow.com/users/2987755/dkb
 */
 public class ParallelZipCompressor extends ZipCompressor {
+	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
 	//These fields are used to discriminate against the issue #51
 	private final static SimpleStackTraceElement[] STACKTRACE = {
 			new SimpleStackTraceElement("sun.nio.ch.FileDispatcherImpl", "write0", true),
@@ -130,7 +133,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 			try {
 				return new FileInputStream(sourceFile);
 			} catch (IOException e) {
-				Statics.LOGGER.error("An exception occurred while trying to create an input stream from file: {}!", sourceFile.getName(), e);
+				log.error("An exception occurred while trying to create an input stream from file: {}!", sourceFile.getName(), e);
 			}
 
 			return null;
