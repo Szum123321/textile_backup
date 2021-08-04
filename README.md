@@ -36,4 +36,4 @@ If you have any suggestions or found a problem please report it on [Github](http
 
 And here's a link to my [discord server](https://discord.gg/ktasEy4) 
 
-For copyright info see: [Copyright Notice](../Copyright_Notice)
+For copyright info see: [Copyright Notice](/Copyright_Notice)
