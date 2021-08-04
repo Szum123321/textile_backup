@@ -29,6 +29,7 @@ Feel free to use this mod in your modpack or on a server!
 
 * Time format defaultly used by this mod is: dd.MM.yyyy_HH-mm-ss although it is configurable*.
 * _This mod contains **Cotton Config** and its dependencies as jars in a jar, which are property of **CottonMC**_.
+* Since 2.2.0 TxB depends on **Cloth config**
 
 \* - feature available since 1.1.0
 
