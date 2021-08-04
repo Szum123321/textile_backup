@@ -115,7 +115,7 @@ public record BackupContext(@NotNull MinecraftServer server,
             }
 
             if (server == null) {
-                if (commandSource != null) setServer(commandSource.getServer());
+                if (commandSource != null) setServer(commandSource.getMinecraftServer());
                 else
                     throw new RuntimeException("Neither MinecraftServer or ServerCommandSource were provided!");
             }

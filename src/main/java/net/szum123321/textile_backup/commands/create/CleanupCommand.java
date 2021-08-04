@@ -38,7 +38,7 @@ public class CleanupCommand {
         log.sendInfo(
                 source,
                 "Deleted: {} files.",
-                BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getServer()))
+                BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getMinecraftServer()))
         );
 
         return 1;

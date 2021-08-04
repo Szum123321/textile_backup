@@ -22,6 +22,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.logging.log4j.Level;
@@ -29,7 +30,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.MessageFactory;
 import org.apache.logging.log4j.message.ParameterizedMessageFactory;
-import org.apache.logging.log4j.util.StackLocatorUtil;
 
 /*
     This is practically just a copy-pate of Cotton's ModLogger with a few changes
@@ -43,18 +43,11 @@ public class TextileLogger {
     private final String prefix;
     private final MutableText prefixText;
 
-/*  public TextileLogger(String name, String prefix) {
-        this.messageFactory = ParameterizedMessageFactory.INSTANCE;
-        this.logger = LogManager.getLogger(name, messageFactory);
-        this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = new LiteralText(this.prefix).styled(style -> style.withColor(0x5B23DA));
-    }
-*/
     public TextileLogger(String prefix) {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
-        this.logger = LogManager.getLogger(StackLocatorUtil.getCallerClass(2), messageFactory);
+        this.logger = LogManager.getLogger(getCallerClass(2), messageFactory);
         this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = new LiteralText(this.prefix).styled(style -> style.withColor(0x5B23DA));
+        this.prefixText = new LiteralText(this.prefix).styled(style -> style.withColor(TextColor.fromRgb(0x5B23DA)));
     }
 
     public MutableText getPrefixText() {
@@ -150,5 +143,9 @@ public class TextileLogger {
 
     public void sendErrorAL(BackupContext context, String msg, Object... args) {
         sendErrorAL(context.getCommandSource(), msg, args);
+    }
+
+    private static String getCallerClass(int depth) {
+        return new Throwable().getStackTrace()[depth].getClassName();
     }
 }

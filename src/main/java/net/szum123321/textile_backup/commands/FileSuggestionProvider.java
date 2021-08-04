@@ -42,7 +42,7 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
         String remaining = builder.getRemaining();
 
-        for (RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getServer())) {
+        for (RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer())) {
             String formattedCreationTime = file.getCreationTime().format(Statics.defaultDateTimeFormatter);
 
             if (formattedCreationTime.startsWith(remaining)) {

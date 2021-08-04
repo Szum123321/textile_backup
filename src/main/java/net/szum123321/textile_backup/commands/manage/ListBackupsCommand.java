@@ -33,7 +33,7 @@ public class ListBackupsCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("list")
                 .executes(ctx -> { StringBuilder builder = new StringBuilder();
-                    List<RestoreHelper.RestoreableFile> backups = RestoreHelper.getAvailableBackups(ctx.getSource().getServer());
+                    List<RestoreHelper.RestoreableFile> backups = RestoreHelper.getAvailableBackups(ctx.getSource().getMinecraftServer());
 
                     if(backups.size() == 0) {
                         builder.append("There a no backups available for this world.");
