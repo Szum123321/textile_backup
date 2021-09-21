@@ -113,7 +113,7 @@ public class MakeBackupRunnable implements Runnable {
 
             BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
 
-            log.sendInfoAL(context, "Done!");
+            BackupHelper.notifyPlayers(context, "Server backup completed!");
         } finally {
             Utilities.enableWorldSaving(context.getServer());
             Statics.disableWatchdog = false;

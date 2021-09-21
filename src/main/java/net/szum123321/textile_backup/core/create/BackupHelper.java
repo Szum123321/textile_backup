@@ -44,7 +44,7 @@ public class BackupHelper {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
 	public static Runnable create(BackupContext ctx) {
-		notifyPlayers(ctx);
+		notifyPlayers(ctx, "Warning! Server backup will begin shortly. You may experience some lag.");
 
 		StringBuilder builder = new StringBuilder();
 
@@ -77,9 +77,9 @@ public class BackupHelper {
 		return new MakeBackupRunnable(ctx);
 	}
 
-	private static void notifyPlayers(BackupContext ctx) {
-		MutableText message = log.getPrefixText();
-		message.append(new LiteralText("Warning! Server backup will begin shortly. You may experience some lag.").formatted(Formatting.WHITE));
+	public static void notifyPlayers(BackupContext ctx, String message) {
+		MutableText text = log.getPrefixText();
+		text.append(new LiteralText(message).formatted(Formatting.WHITE));
 
 		UUID uuid;
 
@@ -88,7 +88,7 @@ public class BackupHelper {
 		else uuid = Util.NIL_UUID;
 
 		ctx.getServer().getPlayerManager().broadcastChatMessage(
-				message,
+				text,
 				MessageType.SYSTEM,
 				uuid
 		);
