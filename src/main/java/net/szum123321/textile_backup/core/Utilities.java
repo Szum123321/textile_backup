@@ -18,9 +18,15 @@
 
 package net.szum123321.textile_backup.core;
 
+import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.Statics;
@@ -35,9 +41,23 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 
 public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
+	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
+
+	public static void notifyPlayers(MinecraftServer server, UUID sender, String msg) {
+		MutableText message = log.getPrefixText();
+		message.append(new LiteralText(msg).formatted(Formatting.WHITE));
+
+		server.getPlayerManager().broadcastChatMessage(
+				message,
+				MessageType.SYSTEM,
+				sender
+		);
+	}
 
 	public static String getLevelName(MinecraftServer server) {
 		return 	((MinecraftServerSessionAccessor)server).getSession().getDirectoryName();

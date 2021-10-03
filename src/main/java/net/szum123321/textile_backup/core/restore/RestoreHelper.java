@@ -18,12 +18,7 @@
 
 package net.szum123321.textile_backup.core.restore;
 
-import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
@@ -62,35 +57,15 @@ public class RestoreHelper {
         else
             log.info("Backup restoration was initiated form Server Console");
 
-        notifyPlayers(ctx);
+        Utilities.notifyPlayers(
+                ctx.server(),
+                ctx.getInitiatorUUID(),
+                "Warning! The server is going to shut down in " + config.get().restoreDelay + " seconds!"
+        );
 
         return new AwaitThread(
                 config.get().restoreDelay,
                 new RestoreBackupRunnable(ctx)
-        );
-    }
-
-    private static void notifyPlayers(RestoreContext ctx) {
-        MutableText message = log.getPrefixText();
-        message.append(
-                new LiteralText(
-                        "Warning! The server is going to shut down in " +
-                                config.get().restoreDelay +
-                                " seconds!"
-                ).formatted(Formatting.WHITE)
-        );
-
-        UUID uuid;
-
-        if(ctx.getInitiator().equals(ActionInitiator.Player) && ctx.getCommandSource().getEntity() != null)
-            uuid = ctx.getCommandSource().getEntity().getUuid();
-        else
-            uuid = Util.NIL_UUID;
-
-        ctx.getServer().getPlayerManager().broadcastChatMessage(
-                message,
-                MessageType.SYSTEM,
-                uuid
         );
     }
 

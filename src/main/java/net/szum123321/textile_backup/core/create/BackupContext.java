@@ -21,8 +21,11 @@ package net.szum123321.textile_backup.core.create;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Util;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public record BackupContext(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
@@ -52,6 +55,10 @@ public record BackupContext(@NotNull MinecraftServer server,
 
     public String getComment() {
         return comment;
+    }
+
+    public UUID getInitiatorUUID() {
+        return initiator.equals(ActionInitiator.Player) && commandSource.getEntity() != null ? commandSource.getEntity().getUuid(): Util.NIL_UUID;
     }
 
     public static class Builder {

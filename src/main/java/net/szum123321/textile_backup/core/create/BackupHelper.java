@@ -18,17 +18,11 @@
 
 package net.szum123321.textile_backup.core.create;
 
-import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
-import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import org.apache.commons.io.FileUtils;
 
@@ -37,14 +31,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.UUID;
 
 public class BackupHelper {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
 	public static Runnable create(BackupContext ctx) {
-		notifyPlayers(ctx);
+		Utilities.notifyPlayers(ctx.getServer(),
+				ctx.getInitiatorUUID(),
+				"Warning! Server backup will begin shortly. You may experience some lag."
+				);
 
 		StringBuilder builder = new StringBuilder();
 
@@ -75,23 +71,6 @@ public class BackupHelper {
 		}
 
 		return new MakeBackupRunnable(ctx);
-	}
-
-	private static void notifyPlayers(BackupContext ctx) {
-		MutableText message = log.getPrefixText();
-		message.append(new LiteralText("Warning! Server backup will begin shortly. You may experience some lag.").formatted(Formatting.WHITE));
-
-		UUID uuid;
-
-		if(ctx.getInitiator().equals(ActionInitiator.Player) && ctx.getCommandSource().getEntity() != null)
-			uuid = ctx.getCommandSource().getEntity().getUuid();
-		else uuid = Util.NIL_UUID;
-
-		ctx.getServer().getPlayerManager().broadcastChatMessage(
-				message,
-				MessageType.SYSTEM,
-				uuid
-		);
 	}
 
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {

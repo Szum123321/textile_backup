@@ -21,9 +21,11 @@ package net.szum123321.textile_backup.core.restore;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Util;
 import net.szum123321.textile_backup.core.ActionInitiator;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public record RestoreContext(RestoreHelper.RestoreableFile file,
                              MinecraftServer server,
@@ -46,6 +48,10 @@ public record RestoreContext(RestoreHelper.RestoreableFile file,
 
     public ActionInitiator getInitiator() {
         return initiator;
+    }
+
+    public UUID getInitiatorUUID() {
+        return initiator.equals(ActionInitiator.Player) && commandSource.getEntity() != null ? commandSource.getEntity().getUuid(): Util.NIL_UUID;
     }
 
     public ServerCommandSource getCommandSource() {
