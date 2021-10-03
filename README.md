@@ -28,10 +28,12 @@ Feel free to use this mod in your modpack or on a server!
 ### Important
 
 * Time format defaultly used by this mod is: dd.MM.yyyy_HH-mm-ss although it is configurable*.
-* _This mod contains **Cotton Config** and its dependencies as jars in a jar, which are property of **CottonMC**_.
+* Since 2.2.0 TxB depends on **Cloth config**
 
 \* - feature available since 1.1.0
 
 If you have any suggestions or found a problem please report it on [Github](https://github.com/Szum123321/textile_backup).
 
 And here's a link to my [discord server](https://discord.gg/ktasEy4) 
+
+For copyright info see: [Copyright Notice](/Copyright_Notice)
