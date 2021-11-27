@@ -80,6 +80,15 @@ public class Utilities {
 		return path;
 	}
 
+	public static boolean updateTMPFSFlag(MinecraftServer server) {
+		Statics.disableTMPFiles = (FileUtils.sizeOfDirectory(Utilities.getWorldFolder(server)) >=
+				(new File(System.getProperty("java.io.tmpdir"))).getFreeSpace());
+
+		if(Statics.disableTMPFiles) log.warn("Not enough space left in tmp directory!\n Might cause: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
+
+		return Statics.disableTMPFiles;
+	}
+
 	public static void disableWorldSaving(MinecraftServer server) {
 		for (ServerWorld serverWorld : server.getWorlds()) {
 			if (serverWorld != null && !serverWorld.savingDisabled)

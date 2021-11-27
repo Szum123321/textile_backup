@@ -38,6 +38,7 @@ import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
@@ -59,9 +60,11 @@ public class TextileBackup implements ModInitializer {
 
         ServerTickEvents.END_SERVER_TICK.register(new BackupScheduler()::tick);
 
-        //Restart Executor Service in singleplayer
-        ServerLifecycleEvents.SERVER_STARTING.register(ignored -> {
+        //Restart Executor Service in single-player
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             if(Statics.executorService.isShutdown()) Statics.executorService = Executors.newSingleThreadExecutor();
+
+            Utilities.updateTMPFSFlag(server);
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {

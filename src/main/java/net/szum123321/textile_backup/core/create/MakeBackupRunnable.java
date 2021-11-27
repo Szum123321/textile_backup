@@ -92,7 +92,7 @@ public class MakeBackupRunnable implements Runnable {
 
             switch (config.get().format) {
                 case ZIP -> {
-                    if (coreCount > 1)
+                    if (coreCount > 1 && !Statics.disableTMPFiles)
                         ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                     else
                         ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
