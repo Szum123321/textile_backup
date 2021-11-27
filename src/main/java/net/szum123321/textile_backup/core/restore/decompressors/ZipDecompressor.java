@@ -21,8 +21,7 @@ package net.szum123321.textile_backup.core.restore.decompressors;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.Utilities;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
@@ -36,17 +35,8 @@ public class ZipDecompressor {
     public static void decompress(File inputFile, File target) {
         Instant start = Instant.now();
 
-        try (FileInputStream fileInputStream = new FileInputStream(inputFile);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-             ZipArchiveInputStream zipInputStream = new ZipArchiveInputStream((bufferedInputStream))) {
-            ZipArchiveEntry entry;
-
-            while ((entry = zipInputStream.getNextZipEntry()) != null) {
-                if(!zipInputStream.canReadEntryData(entry)){
-                    log.error("Something when wrong while trying to decompress {}", entry.getName());
-                    continue;
-                }
-
+        try(ZipFile zipFile = new ZipFile(inputFile)) {
+            zipFile.getEntries().asIterator().forEachRemaining(entry -> {
                 File file = target.toPath().resolve(entry.getName()).toFile();
 
                 if(entry.isDirectory()) {
@@ -59,13 +49,13 @@ public class ZipDecompressor {
                     } else {
                         try (OutputStream outputStream = Files.newOutputStream(file.toPath());
                              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                            IOUtils.copy(zipInputStream, bufferedOutputStream);
+                            IOUtils.copy(zipFile.getInputStream(entry), bufferedOutputStream);
                         } catch (IOException e) {
-                            log.error("An exception occurred while trying to decompress file: {}", file.getName(), e);
+                            log.error("An exception occurred while trying to decompress file: {}", entry.getName(), e);
                         }
                     }
                 }
-            }
+            });
         } catch (IOException e) {
             log.error("An exception occurred! ", e);
         }
