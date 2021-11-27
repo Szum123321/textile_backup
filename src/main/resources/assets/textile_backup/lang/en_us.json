@@ -12,6 +12,10 @@
   "text.autoconfig.textile_backup.option.restoreDelay": "Restore Delay",
   "text.autoconfig.textile_backup.option.restoreDelay.@Tooltip": "In seconds",
 
+  "text.autoconfig.textile_backup.option.broadcastBackupStart": "Announce backup start",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupDone": "Announce backup done",
+
   "text.autoconfig.textile_backup.option.doBackupsOnEmptyServer": "Make automatic backups on empty server",
 
   "text.autoconfig.textile_backup.option.shutdownBackup": "Make a backup on shutdown",

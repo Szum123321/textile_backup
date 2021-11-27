@@ -37,10 +37,14 @@ public class BackupHelper {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
 	public static Runnable create(BackupContext ctx) {
-		Utilities.notifyPlayers(ctx.getServer(),
-				ctx.getInitiatorUUID(),
-				"Warning! Server backup will begin shortly. You may experience some lag."
-				);
+		if(config.get().broadcastBackupStart) {
+			Utilities.notifyPlayers(ctx.getServer(),
+					ctx.getInitiatorUUID(),
+					"Warning! Server backup will begin shortly. You may experience some lag."
+			);
+		} else {
+			log.sendInfoAL(ctx, "Warning! Server backup will begin shortly. You may experience some lag.");
+		}
 
 		StringBuilder builder = new StringBuilder();
 

@@ -141,6 +141,16 @@ public class ConfigPOJO implements ConfigData {
     @ConfigEntry.Category("Manage")
     public List<String> playerBlacklist = new ArrayList<>();
 
+    @Comment("\nAnnounce to ALL players when backup starts\n")
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Category("Manage")
+    public boolean broadcastBackupStart = true;
+
+    @Comment("\nAnnounce to ALL players when backup finishes\n")
+    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Category("Manage")
+    public boolean broadcastBackupDone = true;
+
     @Comment("""
             \nFormat of date&time used to name backup files.
             Remember not to use '#' symbol or any other character that is not allowed by your operating system such as:

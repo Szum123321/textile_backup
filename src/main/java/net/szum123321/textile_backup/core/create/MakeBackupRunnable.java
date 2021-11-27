@@ -51,6 +51,8 @@ public class MakeBackupRunnable implements Runnable {
             Utilities.disableWorldSaving(context.getServer());
             Statics.disableWatchdog = true;
 
+            Utilities.updateTMPFSFlag(context.getServer());
+
             log.sendInfoAL(context, "Starting backup");
 
             File world = Utilities.getWorldFolder(context.getServer());
@@ -113,11 +115,15 @@ public class MakeBackupRunnable implements Runnable {
 
             BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
 
-            Utilities.notifyPlayers(
-                    context.getServer(),
-                    context.getInitiatorUUID(),
-                    "Done!"
-            );
+            if(config.get().broadcastBackupDone) {
+                Utilities.notifyPlayers(
+                        context.getServer(),
+                        context.getInitiatorUUID(),
+                        "Done!"
+                );
+            } else {
+                log.sendInfoAL(context, "Done!");
+            }
         } finally {
             Utilities.enableWorldSaving(context.getServer());
             Statics.disableWatchdog = false;
