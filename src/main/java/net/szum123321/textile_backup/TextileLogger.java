@@ -93,12 +93,9 @@ public class TextileLogger {
         if(source != null && source.getEntity() instanceof PlayerEntity) {
             LiteralText text = new LiteralText(messageFactory.newMessage(msg, args).getFormattedMessage());
 
-            if(level.intLevel() == Level.TRACE.intLevel())
-                text.formatted(Formatting.GREEN);
-            else if(level.intLevel() <= Level.WARN.intLevel())
-                text.formatted(Formatting.RED);
-            else
-                text.formatted(Formatting.WHITE);
+            if(level.intLevel() == Level.TRACE.intLevel()) text.formatted(Formatting.GREEN);
+            else if(level.intLevel() <= Level.WARN.intLevel()) text.formatted(Formatting.RED);
+            else text.formatted(Formatting.WHITE);
 
             source.sendFeedback(prefixText.shallowCopy().append(text), false);
 

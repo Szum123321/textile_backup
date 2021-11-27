@@ -31,6 +31,7 @@ import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,12 +48,11 @@ public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-
 	public static void notifyPlayers(MinecraftServer server, UUID sender, String msg) {
 		MutableText message = log.getPrefixText();
 		message.append(new LiteralText(msg).formatted(Formatting.WHITE));
 
-		server.getPlayerManager().broadcastChatMessage(
+		server.getPlayerManager().broadcast(
 				message,
 				MessageType.SYSTEM,
 				sender
@@ -66,7 +66,8 @@ public class Utilities {
 	public static File getWorldFolder(MinecraftServer server) {
 		return ((MinecraftServerSessionAccessor)server)
 				.getSession()
-				.getWorldDirectory(World.OVERWORLD);
+				.getWorldDirectory(World.OVERWORLD)
+				.toFile();
 	}
 	
 	public static File getBackupRootPath(String worldName) {

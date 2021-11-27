@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.9-SNAPSHOT'
+	id 'fabric-loom' version '0.10-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -23,6 +23,7 @@ repositories{
 			includeGroup "com.terraformersmc"
 		}
 	}
+	mavenCentral()
 }
 
 dependencies {
@@ -47,8 +48,8 @@ dependencies {
 	include "org.apache.commons:commons-compress:1.19"
 
 	//LZMA support
-	modImplementation "org.tukaani:xz:1.8"
-	include "org.tukaani:xz:1.8"
+	modImplementation 'org.tukaani:xz:1.9'
+	include "org.tukaani:xz:1.9"
 
 	//Gzip compression, parallel, GITHUB
 	modImplementation "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
@@ -115,6 +116,8 @@ publishing {
 
 static def getMcMinor(ver) {
 	String[] arr = ((String)ver).split("\\.");
+
+	if(arr.length < 2) return ver;
 
 	return (String)(arr[0] + "." + arr[1]);
 }
