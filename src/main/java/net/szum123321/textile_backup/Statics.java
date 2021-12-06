@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup;
 
-import net.szum123321.textile_backup.core.restore.AwaitThread;
+import net.szum123321.textile_backup.core.AwaitThread;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
