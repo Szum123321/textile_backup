@@ -146,6 +146,11 @@ public class ConfigPOJO implements ConfigData {
     @ConfigEntry.Category("Manage")
     public boolean broadcastBackupStart = true;
 
+    @Comment("\nDelay in seconds between backup lag warning message and actual backup/lag start\n")
+    @ConfigEntry.Gui.Tooltip()
+    @ConfigEntry.Category("Manage")
+    public int broadcastBackupDelayStart = 20;
+
     @Comment("\nAnnounce to ALL players when backup finishes\n")
     @ConfigEntry.Gui.NoTooltip()
     @ConfigEntry.Category("Manage")

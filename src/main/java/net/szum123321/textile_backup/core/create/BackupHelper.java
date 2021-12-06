@@ -23,7 +23,9 @@ import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.AwaitThread;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -37,44 +39,31 @@ public class BackupHelper {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
 	public static Runnable create(BackupContext ctx) {
+		int delay = 0;
+
 		if(config.get().broadcastBackupStart) {
-			Utilities.notifyPlayers(ctx.getServer(),
-					ctx.getInitiatorUUID(),
-					"Warning! Server backup will begin shortly. You may experience some lag."
-			);
+			if (ctx.getInitiator() != ActionInitiator.Restore) {
+				delay = config.get().broadcastBackupDelayStart;
+			}
+
+			String msg = "Warning! Server backup will begin shortly. You may experience some lag.";
+
+			if (delay > 0) {
+				msg = "Warning! Server backup will begin in " + delay + " seconds. You may experience some lag.";
+			}
+
+			Utilities.notifyPlayers(ctx.getServer(), ctx.getInitiatorUUID(), msg);
 		} else {
 			log.sendInfoAL(ctx, "Warning! Server backup will begin shortly. You may experience some lag.");
 		}
 
-		StringBuilder builder = new StringBuilder();
+		Runnable runnable = new MakeBackupRunnable(ctx);
 
-		builder.append("Backup started ");
-
-		builder.append(ctx.getInitiator().getPrefix());
-
-		if(ctx.startedByPlayer())
-			builder.append(ctx.getCommandSource().getDisplayName().getString());
-		else
-			builder.append(ctx.getInitiator().getName());
-
-		builder.append(" on: ");
-		builder.append(Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
-
-		log.info(builder.toString());
-
-		if (ctx.shouldSave()) {
-			log.sendInfoAL(ctx, "Saving server...");
-
-			ctx.getServer().getPlayerManager().saveAllPlayerData();
-
-			try {
-				ctx.getServer().save(false, true, true);
-			} catch (Exception e) {
-				log.sendErrorAL(ctx,"An exception occurred when trying to save the world!");
-			}
+		if (delay <= 0) {
+			return runnable;
+		} else {
+			return new AwaitThread(delay, runnable);
 		}
-
-		return new MakeBackupRunnable(ctx);
 	}
 
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
