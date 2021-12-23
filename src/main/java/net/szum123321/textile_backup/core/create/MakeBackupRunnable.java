@@ -48,6 +48,34 @@ public class MakeBackupRunnable implements Runnable {
     @Override
     public void run() {
         try {
+            StringBuilder builder = new StringBuilder();
+
+            builder.append("Backup started ");
+
+            builder.append(context.getInitiator().getPrefix());
+
+            if(context.startedByPlayer())
+                builder.append(context.getCommandSource().getDisplayName().getString());
+            else
+                builder.append(context.getInitiator().getName());
+
+            builder.append(" on: ");
+            builder.append(Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
+
+            log.info(builder.toString());
+
+            if (context.shouldSave()) {
+                log.sendInfoAL(context, "Saving server...");
+
+                context.getServer().getPlayerManager().saveAllPlayerData();
+
+                try {
+                    context.getServer().save(false, true, true);
+                } catch (Exception e) {
+                    log.sendErrorAL(context,"An exception occurred when trying to save the world!");
+                }
+            }
+
             Utilities.disableWorldSaving(context.getServer());
             Statics.disableWatchdog = true;
 

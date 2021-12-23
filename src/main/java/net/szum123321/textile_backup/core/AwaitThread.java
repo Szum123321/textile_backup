@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.restore;
+package net.szum123321.textile_backup.core;
 
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
@@ -48,7 +48,7 @@ public class AwaitThread extends Thread {
         try {
             Thread.sleep(delay * 1000L);
         } catch (InterruptedException e) {
-            log.info("Backup restoration cancelled.");
+            log.info("Backup thread cancelled.");
             return;
         }
 
@@ -57,6 +57,6 @@ public class AwaitThread extends Thread {
             But still it's farewell
             And maybe we'll come back
          */
-        new Thread(taskRunnable, "Textile Backup restore thread nr. " + thisThreadId).start();
+        new Thread(taskRunnable, "Textile Backup task thread nr. " + thisThreadId).start();
     }
 }
