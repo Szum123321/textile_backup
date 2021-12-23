@@ -40,7 +40,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
 	//These fields are used to discriminate against the issue #51
-	private final static SimpleStackTraceElement[] STACKTRACE = {
+	private final static SimpleStackTraceElement[] STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE = {
 			new SimpleStackTraceElement("sun.nio.ch.FileDispatcherImpl", "write0", true),
 			new SimpleStackTraceElement("sun.nio.ch.FileDispatcherImpl", "write", false),
 			new SimpleStackTraceElement("sun.nio.ch.IOUtil", "writeFromNativeBuffer", false),
@@ -84,7 +84,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 	protected void finish(OutputStream arc) throws InterruptedException, IOException, ExecutionException {
 		/*
 			This is perhaps the most dreadful line of this whole mess
-			This line causes the infamous Out of space error
+			This line causes the infamous Out of space error (#20 and #80)
 		*/
 		try {
 			scatterZipCreator.writeTo((ZipArchiveOutputStream) arc);
@@ -92,15 +92,13 @@ public class ParallelZipCompressor extends ZipCompressor {
 			Throwable cause;
 			if((cause = e.getCause()).getClass().equals(IOException.class)) {
 				//The out of space exception is thrown at sun.nio.ch.FileDispatcherImpl.write0(Native Method)
-				boolean match = (cause.getStackTrace().length >= STACKTRACE.length);
+				boolean match = (cause.getStackTrace().length >= STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE.length);
 				if(match) {
-					for(int i = 0; i < STACKTRACE.length && match; i++)
-						if(!STACKTRACE[i].equals(cause.getStackTrace()[i])) {
-							//Statics.LOGGER.error("Mismatch at: {}, classname: {}, methodname: {}, {}", i, cause.getStackTrace()[i].getClassName(), cause.getStackTrace()[i].getMethodName());
-							match = false;
-						}
+					for(int i = 0; i < STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE.length && match; i++)
+						if(!STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE[i].equals(cause.getStackTrace()[i])) match = false;
 
-					//For clarity sake let's not throw the ExecutionException itself rather only the cause, as the EE is just the wrapper
+
+					//For clarity' sake let's not throw the ExecutionException itself rather only the cause, as the EE is just the wrapper
 					if(match) throw new NoSpaceLeftOnDeviceException(cause);
 				}
 			}
@@ -109,7 +107,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 		}
 	}
 
-	private static record SimpleStackTraceElement (
+	private record SimpleStackTraceElement (
 			String className,
 			String methodName,
 			boolean isNative

@@ -80,13 +80,23 @@ public class Utilities {
 		return path;
 	}
 
-	public static boolean updateTMPFSFlag(MinecraftServer server) {
-		Statics.disableTMPFiles = (FileUtils.sizeOfDirectory(Utilities.getWorldFolder(server)) >=
-				(new File(System.getProperty("java.io.tmpdir"))).getFreeSpace());
+	public static void updateTMPFSFlag(MinecraftServer server) {
+		boolean flag = false;
+		Path tmp_dir = Path.of(System.getProperty("java.io.tmpdir"));
+		if(
+				FileUtils.sizeOfDirectory(Utilities.getWorldFolder(server)) >=
+				tmp_dir.toFile().getUsableSpace()
+		) {
+			log.error("Not enough space left in TMP directory! ({})", tmp_dir);
+			flag = true;
+		}
 
-		if(Statics.disableTMPFiles) log.warn("Not enough space left in tmp directory!\n Might cause: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
+		if(!Files.isWritable(tmp_dir.resolve("test_txb_file_2137"))) {
+			log.error("TMP filesystem ({}) is read-only!", tmp_dir);
+			flag = true;
+		}
 
-		return Statics.disableTMPFiles;
+		if((Statics.disableTMPFiles = flag)) log.error("Might cause: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
 	}
 
 	public static void disableWorldSaving(MinecraftServer server) {
