@@ -3,8 +3,8 @@ plugins {
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
@@ -14,7 +14,6 @@ minecraft {
 }
 
 repositories{
-	maven { url 'https://server.bbkr.space/artifactory/libs-release' }
 	maven { url 'https://jitpack.io' }
 	maven { url "https://maven.shedaniel.me/" }
 	maven {
@@ -115,9 +114,9 @@ publishing {
 }
 
 static def getMcMinor(ver) {
-	String[] arr = ((String)ver).split("\\.");
+	String[] arr = ((String)ver).split("\\.")
 
-	if(arr.length < 2) return ver;
+	if(arr.length < 2) return ver
 
-	return (String)(arr[0] + "." + arr[1]);
+	return (String)(arr[0] + "." + arr[1])
 }
