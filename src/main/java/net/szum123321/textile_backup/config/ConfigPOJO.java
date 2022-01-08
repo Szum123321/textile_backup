@@ -64,13 +64,24 @@ public class ConfigPOJO implements ConfigData {
 
     @Comment("\nA path to the backup folder\n")
     @ConfigEntry.Gui.NoTooltip()
-    public String path = "backup/";
+    public String path = "backup";
+
+    @Comment("""
+            \nShould the entire game folder be backed up?
+            In singleplayer, the entire game folder will be the .minecraft folder
+            (including all resource packs, saves, etc!)
+            In a server, it will be the server root.
+            If disabled, this mod will only backup the world.
+            """)
+    @ConfigEntry.Gui.Tooltip()
+    @ConfigEntry.Category("Create")
+    public boolean backupWholeGameDir = false;
 
     @Comment("""
             \nThis setting allows you to exclude files form being backed-up.
             Be very careful when setting it, as it is easy corrupt your world!
             """)
-    @ConfigEntry.Gui.NoTooltip()
+    @ConfigEntry.Gui.Tooltip()
     @ConfigEntry.Category("Create")
     public List<String> fileBlacklist = new ArrayList<>();
 

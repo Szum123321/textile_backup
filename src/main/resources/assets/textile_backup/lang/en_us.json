@@ -26,7 +26,11 @@
 
   "text.autoconfig.textile_backup.option.path": "Path to backup folder",
 
+  "text.autoconfig.textile_backup.option.backupWholeGameDir": "Backup entire game folder",
+  "text.autoconfig.textile_backup.option.backupWholeGameDir.@Tooltip": "Should the entire game folder be backed up?\nIn singleplayer, the entire game folder will be the .minecraft folder\n(including all resource packs, saves, etc!)\nIn a server, it will be the server root.\nIf disabled, this mod will only backup the world.",
+
   "text.autoconfig.textile_backup.option.fileBlacklist": "Blacklisted files",
+  "text.autoconfig.textile_backup.option.fileBlacklist.@Tooltip": "The backup folder is automatically excluded.",
 
   "text.autoconfig.textile_backup.option.deleteOldBackupAfterRestore": "Delete restored backup",
 

@@ -60,14 +60,20 @@ public class Utilities {
 	}
 
 	public static String getLevelName(MinecraftServer server) {
+		if (config.get().backupWholeGameDir) return ".";
+
 		return 	((MinecraftServerSessionAccessor)server).getSession().getDirectoryName();
 	}
 
 	public static File getWorldFolder(MinecraftServer server) {
-		return ((MinecraftServerSessionAccessor)server)
+		if (config.get().backupWholeGameDir) {
+			return server.getRunDirectory();
+		} else {
+			return ((MinecraftServerSessionAccessor)server)
 				.getSession()
 				.getWorldDirectory(World.OVERWORLD)
 				.toFile();
+		}
 	}
 	
 	public static File getBackupRootPath(String worldName) {
@@ -121,6 +127,10 @@ public class Utilities {
 		if(isWindows()) { //hotfix!
 			if (path.getFileName().toString().equals("session.lock")) return true;
 		}
+
+		// dont back up the backup folder
+		String absPath = new File(path.toString()).getAbsolutePath();
+		if (absPath.startsWith(new File(config.get().path).getAbsolutePath())) return true;
 
 		return config.get().fileBlacklist.stream().anyMatch(path::startsWith);
 	}
