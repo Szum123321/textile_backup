@@ -134,7 +134,7 @@ public class MakeBackupRunnable implements Runnable {
         LocalDateTime now = LocalDateTime.now();
 
         return Utilities.getDateTimeFormatter().format(now) +
-                (context.getComment() != null ? "#" + context.getComment().replace("#", "") : "") +
+                (context.getComment() != null ? "#" + context.getComment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
                 config.get().format.getCompleteString();
     }
 }
