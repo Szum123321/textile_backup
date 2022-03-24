@@ -22,7 +22,9 @@ import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.btrfs.BtrfsSnapshotHelper;
 import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
@@ -51,7 +53,8 @@ public class MakeBackupRunnable implements Runnable {
             Utilities.disableWorldSaving(context.getServer());
             Statics.disableWatchdog = true;
 
-            Utilities.updateTMPFSFlag(context.getServer());
+            if(config.get().format!= ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT)
+                Utilities.updateTMPFSFlag(context.getServer());
 
             log.sendInfoAL(context, "Starting backup");
 
@@ -70,7 +73,8 @@ public class MakeBackupRunnable implements Runnable {
             outFile.getParentFile().mkdirs();
 
             try {
-                outFile.createNewFile();
+                if(config.get().format!= ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT)
+                    outFile.createNewFile();
             } catch (IOException e) {
                 log.error("An exception occurred when trying to create new backup file!", e);
 
@@ -88,7 +92,8 @@ public class MakeBackupRunnable implements Runnable {
                 coreCount = Math.min(config.get().compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
             }
 
-            log.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
+            if(config.get().format!= ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT)
+                log.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
 
             switch (config.get().format) {
                 case ZIP -> {
@@ -105,6 +110,7 @@ public class MakeBackupRunnable implements Runnable {
                     }
                 }.createArchive(world, outFile, context, coreCount);
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
+                case BTRFS_SNAPSHOT -> BtrfsSnapshotHelper.createSnapshot(world, outFile, context);
                 default -> {
                     log.warn("Specified compressor ({}) is not supported! Zip will be used instead!", config.get().format);
                     if (context.getInitiator() == ActionInitiator.Player)

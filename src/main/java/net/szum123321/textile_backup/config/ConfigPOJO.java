@@ -18,11 +18,14 @@
 
 package net.szum123321.textile_backup.config;
 
+import com.sun.jna.Native;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.btrfs.BtrfsUtil;
+import net.szum123321.textile_backup.core.btrfs.BtrfsUtilJnaInterface;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -115,6 +118,7 @@ public class ConfigPOJO implements ConfigData {
             BZIP2 - tar.bz2 archive using bzip2 compression
             LZMA - tar.xz using lzma compression
             TAR - .tar with no compression
+            BTRFS_SNAPSHOT - btrfs snapshot name as the whole directory
             """)
     @ConfigEntry.Gui.Tooltip()
     @ConfigEntry.Category("Create")
@@ -173,6 +177,9 @@ public class ConfigPOJO implements ConfigData {
                     e
                     );
         }
+
+        if(format == ArchiveFormat.BTRFS_SNAPSHOT)
+           BtrfsUtil.buInterface = Native.load("btrfsutil", BtrfsUtilJnaInterface.class);
     }
 
     public enum ArchiveFormat {
@@ -180,7 +187,8 @@ public class ConfigPOJO implements ConfigData {
         GZIP("tar", "gz"),
         BZIP2("tar", "bz2"),
         LZMA("tar", "xz"),
-        TAR("tar");
+        TAR("tar"),
+        BTRFS_SNAPSHOT("snap");
 
         private final List<String> extensionPieces;
 

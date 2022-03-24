@@ -26,6 +26,8 @@ import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.btrfs.BtrfsSnapshotHelper;
+import net.szum123321.textile_backup.core.btrfs.BtrfsUtil;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecompressor;
@@ -70,19 +72,26 @@ public class RestoreBackupRunnable implements Runnable {
         if(!deleteDirectory(worldFile))
             log.error("Something went wrong while deleting old world!");
 
-        worldFile.mkdirs();
 
-        log.info("Starting decompression...");
+        if(config.get().format== ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT)
+            log.info("Starting snapshotting...");
+        else {
+            worldFile.mkdirs();
+            log.info("Starting decompression...");
+        }
 
         if(ctx.getFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.ZIP)
             ZipDecompressor.decompress(ctx.getFile().getFile(), worldFile);
+        else if(ctx.getFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT)
+            BtrfsSnapshotHelper.createSnapshot(ctx.getFile().getFile(), worldFile,null);
         else
             GenericTarDecompressor.decompress(ctx.getFile().getFile(), worldFile);
 
         if(config.get().deleteOldBackupAfterRestore) {
             log.info("Deleting old backup");
 
-            if(!ctx.getFile().getFile().delete()) log.info("Something went wrong while deleting old backup");
+            if((ctx.getFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT && !BtrfsUtil.deleteSubVol(ctx.getFile().getFile())) || (ctx.getFile().getArchiveFormat() != ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT && !ctx.getFile().getFile().delete()))
+                log.info("Something went wrong while deleting old backup");
         }
 
         //in case we're playing on client
@@ -113,6 +122,6 @@ public class RestoreBackupRunnable implements Runnable {
                 state &= deleteDirectory(f2);
         }
 
-        return f.delete() && state;
+        return (BtrfsUtil.isSubVol(f) ? BtrfsUtil.deleteSubVol(f) : f.delete()) && state;
     }
 }

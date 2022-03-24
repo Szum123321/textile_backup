@@ -69,7 +69,7 @@ public class Utilities {
 				.getWorldDirectory(World.OVERWORLD)
 				.toFile();
 	}
-	
+
 	public static File getBackupRootPath(String worldName) {
 		File path = new File(config.get().path).getAbsoluteFile();
 
@@ -81,6 +81,8 @@ public class Utilities {
 	}
 
 	public static void updateTMPFSFlag(MinecraftServer server) {
+		if(config.get().format== ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT)
+			return;
 		boolean flag = false;
 		Path tmp_dir = Path.of(System.getProperty("java.io.tmpdir"));
 		if(
@@ -177,7 +179,7 @@ public class Utilities {
 	}
 
 	public static boolean isFileOk(File f) {
-		return f.exists() && f.isFile();
+		return f.exists() && (f.isFile() || (config.get().format == ConfigPOJO.ArchiveFormat.BTRFS_SNAPSHOT && f.isDirectory()));
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter() {
