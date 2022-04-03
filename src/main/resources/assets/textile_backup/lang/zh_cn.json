@@ -1,0 +1,60 @@
+{
+  "text.autoconfig.textile_backup.title": "服务器备份配置",
+
+  "text.autoconfig.textile_backup.category.default": "常规",
+  "text.autoconfig.textile_backup.category.Create": "备份设置",
+  "text.autoconfig.textile_backup.category.Restore": "恢复",
+  "text.autoconfig.textile_backup.category.Manage": "管理",
+
+  "text.autoconfig.textile_backup.option.backupInterval": "备份间隔",
+  "text.autoconfig.textile_backup.option.backupInterval.@Tooltip": "每次自动备份之间的时间间隔 (单位：秒)",
+
+  "text.autoconfig.textile_backup.option.restoreDelay": "恢复延迟",
+  "text.autoconfig.textile_backup.option.restoreDelay.@Tooltip": "单位：秒",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupStart": "公布备份开始",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupDone": "公布备份结束",
+
+  "text.autoconfig.textile_backup.option.doBackupsOnEmptyServer": "在无人在线时进行自动备份",
+
+  "text.autoconfig.textile_backup.option.shutdownBackup": "停止服务器时自动备份",
+
+  "text.autoconfig.textile_backup.option.backupOldWorlds": "备份旧世界",
+
+  "text.autoconfig.textile_backup.option.perWorldBackup": "为不同的世界使用不同的文件夹",
+
+  "text.autoconfig.textile_backup.option.path": "备份文件夹路径",
+
+  "text.autoconfig.textile_backup.option.fileBlacklist": "黑名单文件",
+
+  "text.autoconfig.textile_backup.option.deleteOldBackupAfterRestore": "删除已恢复的备份",
+
+  "text.autoconfig.textile_backup.option.backupsToKeep": "保留备份数量",
+
+  "text.autoconfig.textile_backup.option.maxAge": "备份的最长时间",
+  "text.autoconfig.textile_backup.option.maxAge.@Tooltip": "从创建完毕起的秒数",
+
+  "text.autoconfig.textile_backup.option.maxSize": "备份文件夹最大占用空间",
+  "text.autoconfig.textile_backup.option.maxSize.@Tooltip": "单位：KB(KBytes)",
+
+  "text.autoconfig.textile_backup.option.compression": "压缩级别",
+  "text.autoconfig.textile_backup.option.compression.@Tooltip": "仅影响zip",
+
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit": "用于压缩的最大核心数",
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit.@Tooltip": "设置为0使用全部核心",
+
+  "text.autoconfig.textile_backup.option.format": "归档和压缩格式",
+  "text.autoconfig.textile_backup.option.format.@Tooltip": "参见: https://github.com/Szum123321/textile_backup/wiki/Configuration#format",
+
+  "text.autoconfig.textile_backup.option.permissionLevel": "最低权限等级",
+
+  "text.autoconfig.textile_backup.option.alwaysSingleplayerAllowed": "始终允许在单人游戏中使用",
+
+  "text.autoconfig.textile_backup.option.playerWhitelist": "管理员白名单",
+
+  "text.autoconfig.textile_backup.option.playerBlacklist": "管理员黑名单",
+
+  "text.autoconfig.textile_backup.option.dateTimeFormat": "日期&时间格式",
+  "text.autoconfig.textile_backup.option.dateTimeFormat.@Tooltip": "参见: https://github.com/Szum123321/textile_backup/wiki/Date-time-format"
+}
