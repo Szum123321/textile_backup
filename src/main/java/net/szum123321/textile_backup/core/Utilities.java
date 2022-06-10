@@ -87,8 +87,8 @@ public class Utilities {
 			log.error("Not enough space left in TMP directory! ({})", tmp_dir);
 			flag = true;
 		}
-
-		if(!Files.isWritable(tmp_dir.resolve("test_txb_file_2137"))) {
+		//!Files.isWritable(tmp_dir.resolve("test_txb_file_2137")) - Unsure why this was resolving to a file that isn't being created (at least not in Windows)
+		if(!Files.isWritable(tmp_dir)) {
 			log.error("TMP filesystem ({}) is read-only!", tmp_dir);
 			flag = true;
 		}
