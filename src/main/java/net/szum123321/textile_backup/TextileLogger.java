@@ -20,7 +20,7 @@ package net.szum123321.textile_backup;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.szum123321.textile_backup.core.create.BackupContext;
@@ -54,11 +54,11 @@ public class TextileLogger {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
         this.logger = LogManager.getLogger(StackLocatorUtil.getCallerClass(2), messageFactory);
         this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = new LiteralText(this.prefix).styled(style -> style.withColor(0x5B23DA));
+        this.prefixText = Text.literal(this.prefix).styled(style -> style.withColor(0x5B23DA));
     }
 
     public MutableText getPrefixText() {
-        return prefixText.shallowCopy();
+        return prefixText.copy();
     }
 
     public void log(Level level, String msg, Object... data) {
@@ -91,13 +91,13 @@ public class TextileLogger {
 
     boolean sendFeedback(Level level, ServerCommandSource source, String msg, Object... args) {
         if(source != null && source.getEntity() instanceof PlayerEntity) {
-            LiteralText text = new LiteralText(messageFactory.newMessage(msg, args).getFormattedMessage());
+            MutableText text = Text.literal(messageFactory.newMessage(msg, args).getFormattedMessage());
 
             if(level.intLevel() == Level.TRACE.intLevel()) text.formatted(Formatting.GREEN);
             else if(level.intLevel() <= Level.WARN.intLevel()) text.formatted(Formatting.RED);
             else text.formatted(Formatting.WHITE);
 
-            source.sendFeedback(prefixText.shallowCopy().append(text), false);
+            source.sendFeedback(prefixText.copy().append(text), false);
 
             return true;
         } else {

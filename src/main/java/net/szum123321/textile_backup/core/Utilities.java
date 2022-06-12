@@ -18,11 +18,11 @@
 
 package net.szum123321.textile_backup.core;
 
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 import net.szum123321.textile_backup.TextileBackup;
@@ -32,6 +32,7 @@ import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,15 +49,11 @@ public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-	public static void notifyPlayers(MinecraftServer server, UUID sender, String msg) {
+	public static void notifyPlayers(@NotNull MinecraftServer server, String msg) {
 		MutableText message = log.getPrefixText();
-		message.append(new LiteralText(msg).formatted(Formatting.WHITE));
+		message.append(Text.literal(msg).formatted(Formatting.WHITE));
 
-		server.getPlayerManager().broadcast(
-				message,
-				MessageType.SYSTEM,
-				sender
-		);
+		server.getPlayerManager().broadcast(message, MessageType.SYSTEM);
 	}
 
 	public static String getLevelName(MinecraftServer server) {
@@ -90,8 +87,8 @@ public class Utilities {
 			log.error("Not enough space left in TMP directory! ({})", tmp_dir);
 			flag = true;
 		}
-
-		if(!Files.isWritable(tmp_dir.resolve("test_txb_file_2137"))) {
+		//!Files.isWritable(tmp_dir.resolve("test_txb_file_2137")) - Unsure why this was resolving to a file that isn't being created (at least not in Windows)
+		if(!Files.isWritable(tmp_dir)) {
 			log.error("TMP filesystem ({}) is read-only!", tmp_dir);
 			flag = true;
 		}
