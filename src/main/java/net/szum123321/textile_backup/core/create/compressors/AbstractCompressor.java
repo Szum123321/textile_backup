@@ -31,27 +31,27 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 public abstract class AbstractCompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public void createArchive(File inputFile, File outputFile, BackupContext ctx, int coreLimit) {
+    public void createArchive(Path inputFile, Path outputFile, BackupContext ctx, int coreLimit) {
         Instant start = Instant.now();
 
-        try (FileOutputStream outStream = new FileOutputStream(outputFile);
+        try (OutputStream outStream = Files.newOutputStream(outputFile);
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
-             OutputStream arc = createArchiveOutputStream(bufferedOutputStream, ctx, coreLimit)) {
+             OutputStream arc = createArchiveOutputStream(bufferedOutputStream, ctx, coreLimit);
+             Stream<Path> fileStream = Files.walk(inputFile)) {
 
-            Files.walk(inputFile.toPath())
-                    .filter(path -> !Utilities.isBlacklisted(inputFile.toPath().relativize(path)))
-                    .map(Path::toFile)
-                    .filter(File::isFile)
-                    .forEach(file -> {
+            fileStream
+                    .filter(path -> !Utilities.isBlacklisted(inputFile.relativize(path)))
+                    .filter(Files::isRegularFile).forEach(file -> {
                         try {
                             //hopefully one broken file won't spoil the whole archive
-                            addEntry(file, inputFile.toPath().relativize(file.toPath()).toString(), arc);
+                            addEntry(file, inputFile.relativize(file).toString(), arc);
                         } catch (IOException e) {
-                            log.error("An exception occurred while trying to compress: {}", inputFile.toPath().relativize(file.toPath()).toString(), e);
+                            log.error("An exception occurred while trying to compress: {}", inputFile.relativize(file).toString(), e);
 
                             if (ctx.getInitiator() == ActionInitiator.Player)
                                 log.sendError(ctx, "Something went wrong while compressing files!");
@@ -86,13 +86,13 @@ public abstract class AbstractCompressor {
     }
 
     protected abstract OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException;
-    protected abstract void addEntry(File file, String entryName, OutputStream arc) throws IOException;
+    protected abstract void addEntry(Path file, String entryName, OutputStream arc) throws IOException;
 
     protected void finish(OutputStream arc) throws InterruptedException, ExecutionException, IOException {
-        ;//Basically this function is only needed for the ParallelZipCompressor to write out ParallelScatterZipCreator
+        //Basically this function is only needed for the ParallelZipCompressor to write out ParallelScatterZipCreator
     }
 
     protected void close() {
-        ;//Same as above, just for ParallelGzipCompressor to shutdown ExecutorService
+        //Same as above, just for ParallelGzipCompressor to shut down ExecutorService
     }
 }

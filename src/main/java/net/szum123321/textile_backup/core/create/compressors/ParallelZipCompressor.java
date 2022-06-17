@@ -26,6 +26,8 @@ import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
@@ -65,13 +67,13 @@ public class ParallelZipCompressor extends ZipCompressor {
 	}
 
 	@Override
-	protected void addEntry(File file, String entryName, OutputStream arc) throws IOException {
+	protected void addEntry(Path file, String entryName, OutputStream arc) throws IOException {
 		ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
 
-		if(ZipCompressor.isDotDat(file.getName())) {
-			entry.setMethod(ZipArchiveOutputStream.STORED);
-			entry.setSize(file.length());
-			entry.setCompressedSize(file.length());
+		if(ZipCompressor.isDotDat(file.getFileName().toString())) {
+			entry.setMethod(ZipEntry.STORED);
+			entry.setSize(Files.size(file));
+			entry.setCompressedSize(Files.size(file));
 			entry.setCrc(getCRC(file));
 		} else entry.setMethod(ZipEntry.DEFLATED);
 
@@ -126,12 +128,12 @@ public class ParallelZipCompressor extends ZipCompressor {
 		}
 	}
 
-	record FileInputStreamSupplier(File sourceFile) implements InputStreamSupplier {
+	record FileInputStreamSupplier(Path sourceFile) implements InputStreamSupplier {
 		public InputStream get() {
 			try {
-				return new FileInputStream(sourceFile);
+				return Files.newInputStream(sourceFile);
 			} catch (IOException e) {
-				log.error("An exception occurred while trying to create an input stream from file: {}!", sourceFile.getName(), e);
+				log.error("An exception occurred while trying to create an input stream from file: {}!", sourceFile.toString(), e);
 			}
 
 			return null;

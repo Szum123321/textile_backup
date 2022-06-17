@@ -30,9 +30,10 @@ import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Co
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
 import org.apache.commons.compress.compressors.lzma.LZMACompressorOutputStream;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 public class MakeBackupRunnable implements Runnable {
@@ -55,22 +56,22 @@ public class MakeBackupRunnable implements Runnable {
 
             log.sendInfoAL(context, "Starting backup");
 
-            File world = Utilities.getWorldFolder(context.getServer());
+            Path world = Utilities.getWorldFolder(context.getServer()).toPath();
 
             log.trace("Minecraft world is: {}", world);
 
-            File outFile = Utilities
+            Path outFile = Utilities
                     .getBackupRootPath(Utilities.getLevelName(context.getServer()))
                     .toPath()
-                    .resolve(getFileName())
-                    .toFile();
-
+                    .resolve(getFileName());
             log.trace("Outfile is: {}", outFile);
 
-            outFile.getParentFile().mkdirs();
+           // outFile.getParentFile().mkdirs();
 
             try {
-                outFile.createNewFile();
+                //outFile.createNewFile();
+                Files.createDirectories(outFile.getParent());
+                Files.createFile(outFile);
             } catch (IOException e) {
                 log.error("An exception occurred when trying to create new backup file!", e);
 
