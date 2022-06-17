@@ -32,18 +32,20 @@ import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.SimplePathVisitor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.UUID;
 
 public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -78,6 +80,22 @@ public class Utilities {
 		}
 
 		return path;
+	}
+
+	public static void deleteDirectory(Path path) throws IOException {
+		Files.walkFileTree(path, new SimplePathVisitor() {
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				Files.delete(dir);
+				return FileVisitResult.CONTINUE;
+			}
+		});
 	}
 
 	public static void updateTMPFSFlag(MinecraftServer server) {

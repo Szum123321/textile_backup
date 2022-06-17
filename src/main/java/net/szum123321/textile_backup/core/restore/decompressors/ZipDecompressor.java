@@ -35,7 +35,7 @@ import java.util.Iterator;
 public class ZipDecompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static void decompress(Path inputFile, Path target) {
+    public static void decompress(Path inputFile, Path target) throws IOException {
         Instant start = Instant.now();
 
         try(ZipFile zipFile = new ZipFile(inputFile.toFile())) {
@@ -50,14 +50,9 @@ public class ZipDecompressor {
                     try (OutputStream outputStream = Files.newOutputStream(file);
                          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
                         IOUtils.copy(zipFile.getInputStream(entry), bufferedOutputStream);
-                    } catch (IOException e) {
-                        log.error("An exception occurred while trying to decompress file: {}", entry.getName(), e);
                     }
                 }
-
             }
-        } catch (IOException e) {
-            log.error("An exception occurred! ", e);
         }
 
         log.info("Decompression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));

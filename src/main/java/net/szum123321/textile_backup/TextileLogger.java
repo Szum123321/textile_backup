@@ -85,12 +85,16 @@ public class TextileLogger {
         log(Level.ERROR, msg, data);
     }
 
+    void error(String message, Throwable throwable) {
+        logger.error(prefix + message, throwable);
+    }
+
     public void fatal(String msg, Object... data) {
         log(Level.FATAL, msg, data);
     }
 
     boolean sendFeedback(Level level, ServerCommandSource source, String msg, Object... args) {
-        if(source != null && source.getEntity() instanceof PlayerEntity) {
+        if(source != null && source.isExecutedByPlayer()) {
             MutableText text = Text.literal(messageFactory.newMessage(msg, args).getFormattedMessage());
 
             if(level.intLevel() == Level.TRACE.intLevel()) text.formatted(Formatting.GREEN);

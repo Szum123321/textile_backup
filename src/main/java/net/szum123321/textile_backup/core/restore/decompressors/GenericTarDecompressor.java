@@ -36,7 +36,7 @@ import java.time.Instant;
 public class GenericTarDecompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static void decompress(Path input, Path target) {
+    public static void decompress(Path input, Path target) throws IOException {
         Instant start = Instant.now();
 
         try (InputStream fileInputStream = Files.newInputStream(input);
@@ -60,13 +60,11 @@ public class GenericTarDecompressor {
                     try (OutputStream outputStream = Files.newOutputStream(file);
                          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
                         IOUtils.copy(archiveInputStream, bufferedOutputStream);
-                    } catch (IOException e) {
-                        log.error("An exception occurred while trying to decompress file: {}", file.getFileName().toString(), e);
                     }
                 }
             }
-        } catch (IOException | CompressorException e) {
-            log.error("An exception occurred! ", e);
+        } catch (CompressorException e) {
+            throw new IOException(e);
         }
 
         log.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));

@@ -98,9 +98,9 @@ public class RestoreHelper {
 
         private RestoreableFile(Path file) throws NoSuchElementException {
             this.file = file;
-            archiveFormat = Utilities.getArchiveExtension(file).orElseThrow(() -> new NoSuchElementException("Couldn't get restoreableFile extension!"));
+            archiveFormat = Utilities.getArchiveExtension(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file extension!"));
             String extension = archiveFormat.getCompleteString();
-            creationTime = Utilities.getFileCreationTime(file).orElseThrow(() -> new NoSuchElementException("Couldn't get restoreableFile creation time!"));
+            creationTime = Utilities.getFileCreationTime(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file creation time!"));
 
             final String filename = file.getFileName().toString();
 

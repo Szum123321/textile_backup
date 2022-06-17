@@ -31,7 +31,7 @@ import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecompressor;
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -51,70 +51,65 @@ public class RestoreBackupRunnable implements Runnable {
 
         log.info("Shutting down server...");
 
-        ctx.getServer().stop(false);
+        ctx.server().stop(false);
         awaitServerShutdown();
 
         if(config.get().backupOldWorlds) {
             BackupHelper.create(
                     BackupContext.Builder
                             .newBackupContextBuilder()
-                            .setServer(ctx.getServer())
+                            .setServer(ctx.server())
                             .setInitiator(ActionInitiator.Restore)
-                            .setComment("Old_World" + (ctx.getComment() != null ? "_" + ctx.getComment() : ""))
+                            .setComment("Old_World" + (ctx.comment() != null ? "_" + ctx.comment() : ""))
                             .build()
             ).run();
         }
 
-        Path worldFile = Utilities.getWorldFolder(ctx.getServer()).toPath();
+        Path worldFile = Utilities.getWorldFolder(ctx.server());
 
-        log.info("Deleting old world...");
+        try {
+            Path tmp = Files.createTempDirectory (
+                    worldFile.getParent(),
+                    ctx.restoreableFile().getFile().getFileName().toString()
+            );
 
-        if(!deleteDirectory(worldFile))
-            log.error("Something went wrong while deleting old world!");
+            tmp.toFile().deleteOnExit();
 
-        Files.createDirectories(worldFile);
+            log.info("Starting decompression...");
 
-        log.info("Starting decompression...");
+            if (ctx.restoreableFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.ZIP)
+                ZipDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
+            else
+                GenericTarDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
 
-        if(ctx.getFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.ZIP)
-            ZipDecompressor.decompress(ctx.getFile().getFile().toPath(), worldFile);
-        else
-            GenericTarDecompressor.decompress(ctx.getFile().getFile().toPath(), worldFile);
+            log.info("Deleting old world...");
 
-        if(config.get().deleteOldBackupAfterRestore) {
-            log.info("Deleting old backup");
+            Utilities.deleteDirectory(worldFile);
 
-            if(!ctx.getFile().getFile().delete()) log.info("Something went wrong while deleting old backup");
+            Files.move(tmp, worldFile);
+
+            if (config.get().deleteOldBackupAfterRestore) {
+                log.info("Deleting old backup");
+
+                Files.delete(ctx.restoreableFile().getFile());
+            }
+        } catch (IOException e) {
+            log.error("An exception occurred while trying to restore a backup!", e);
         }
 
         //in case we're playing on client
         Statics.globalShutdownBackupFlag.set(true);
 
         log.info("Done!");
-
-        //Might solve #37
-        //Idk if it's a good idea...
-        //Runtime.getRuntime().exit(0);
     }
 
     private void awaitServerShutdown() {
-        while(((LivingServer)ctx.getServer()).isAlive()) {
+        while(((LivingServer)ctx.server()).isAlive()) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 log.error("Exception occurred!", e);
             }
         }
-    }
-
-    private static boolean deleteDirectory(File f) {
-        boolean state = true;
-
-        if(f.isDirectory()) {
-            for(File f2 : f.listFiles())
-                state &= deleteDirectory(f2);
-        }
-
-        return f.delete() && state;
     }
 }
