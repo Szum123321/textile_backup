@@ -32,6 +32,8 @@ import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecomp
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class RestoreBackupRunnable implements Runnable {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
@@ -63,21 +65,21 @@ public class RestoreBackupRunnable implements Runnable {
             ).run();
         }
 
-        File worldFile = Utilities.getWorldFolder(ctx.getServer());
+        Path worldFile = Utilities.getWorldFolder(ctx.getServer()).toPath();
 
         log.info("Deleting old world...");
 
         if(!deleteDirectory(worldFile))
             log.error("Something went wrong while deleting old world!");
 
-        worldFile.mkdirs();
+        Files.createDirectories(worldFile);
 
         log.info("Starting decompression...");
 
         if(ctx.getFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.ZIP)
-            ZipDecompressor.decompress(ctx.getFile().getFile(), worldFile);
+            ZipDecompressor.decompress(ctx.getFile().getFile().toPath(), worldFile);
         else
-            GenericTarDecompressor.decompress(ctx.getFile().getFile(), worldFile);
+            GenericTarDecompressor.decompress(ctx.getFile().getFile().toPath(), worldFile);
 
         if(config.get().deleteOldBackupAfterRestore) {
             log.info("Deleting old backup");
