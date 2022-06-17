@@ -56,13 +56,12 @@ public class MakeBackupRunnable implements Runnable {
 
             log.sendInfoAL(context, "Starting backup");
 
-            Path world = Utilities.getWorldFolder(context.getServer()).toPath();
+            Path world = Utilities.getWorldFolder(context.getServer());
 
             log.trace("Minecraft world is: {}", world);
 
             Path outFile = Utilities
                     .getBackupRootPath(Utilities.getLevelName(context.getServer()))
-                    .toPath()
                     .resolve(getFileName());
             log.trace("Outfile is: {}", outFile);
 

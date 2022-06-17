@@ -20,7 +20,7 @@ package net.szum123321.textile_backup;
 
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +35,6 @@ public class Statics {
     public static final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
     public static boolean disableWatchdog = false;
     public static AwaitThread restoreAwaitThread = null;
-    public static Optional<File> untouchableFile = Optional.empty();
+    public static Optional<Path> untouchableFile = Optional.empty();
     public static boolean disableTMPFiles = false;
 }

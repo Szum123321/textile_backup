@@ -60,19 +60,22 @@ public class Utilities {
 		return 	((MinecraftServerSessionAccessor)server).getSession().getDirectoryName();
 	}
 
-	public static File getWorldFolder(MinecraftServer server) {
+	public static Path getWorldFolder(MinecraftServer server) {
 		return ((MinecraftServerSessionAccessor)server)
 				.getSession()
-				.getWorldDirectory(World.OVERWORLD)
-				.toFile();
+				.getWorldDirectory(World.OVERWORLD);
 	}
 	
-	public static File getBackupRootPath(String worldName) {
-		File path = new File(config.get().path).getAbsoluteFile();
+	public static Path getBackupRootPath(String worldName) {
+		Path path = Path.of(config.get().path).toAbsolutePath();
 
-		if (config.get().perWorldBackup) path = path.toPath().resolve(worldName).toFile();
+		if (config.get().perWorldBackup) path = path.resolve(worldName);
 
-		if (!path.exists()) path.mkdirs();
+		try {
+			Files.createDirectories(path);
+		} catch (IOException e) {
+			//I REALLY shouldn't be handling this here
+		}
 
 		return path;
 	}
@@ -81,7 +84,7 @@ public class Utilities {
 		boolean flag = false;
 		Path tmp_dir = Path.of(System.getProperty("java.io.tmpdir"));
 		if(
-				FileUtils.sizeOfDirectory(Utilities.getWorldFolder(server)) >=
+				FileUtils.sizeOfDirectory(Utilities.getWorldFolder(server).toFile()) >=
 				tmp_dir.toFile().getUsableSpace()
 		) {
 			log.error("Not enough space left in TMP directory! ({})", tmp_dir);
@@ -130,11 +133,11 @@ public class Utilities {
 				.findAny();
 	}
 
-	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(File f) {
-		return getArchiveExtension(f.getName());
+	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(Path f) {
+		return getArchiveExtension(f.getFileName().toString());
 	}
 
-	public static Optional<LocalDateTime> getFileCreationTime(File file) {
+	public static Optional<LocalDateTime> getFileCreationTime(Path file) {
 		LocalDateTime creationTime = null;
 
 		if(getArchiveExtension(file).isPresent()) {
@@ -143,7 +146,7 @@ public class Utilities {
 			try {
 				creationTime = LocalDateTime.from(
 						Utilities.getDateTimeFormatter().parse(
-								file.getName().split(fileExtension)[0].split("#")[0]
+								file.getFileName().toString().split(fileExtension)[0].split("#")[0]
 						)
 				);
 			} catch (Exception ignored) {}
@@ -152,7 +155,7 @@ public class Utilities {
 				try {
 					creationTime = LocalDateTime.from(
 							Utilities.getBackupDateTimeFormatter().parse(
-									file.getName().split(fileExtension)[0].split("#")[0]
+									file.getFileName().toString().split(fileExtension)[0].split("#")[0]
 							)
 					);
 				} catch (Exception ignored2){}
@@ -160,7 +163,7 @@ public class Utilities {
 
 			if(creationTime == null) {
 				try {
-					FileTime fileTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+					FileTime fileTime = (FileTime) Files.getAttribute(file, "creationTime");
 					creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
 				} catch (IOException ignored3) {}
 			}
@@ -169,12 +172,16 @@ public class Utilities {
 		return Optional.ofNullable(creationTime);
 	}
 
-	public static boolean isValidBackup(File f) {
+	public static boolean isValidBackup(Path f) {
 		return getArchiveExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
 	}
 
 	public static boolean isFileOk(File f) {
 		return f.exists() && f.isFile();
+	}
+
+	public static boolean isFileOk(Path f) {
+		return Files.exists(f) && Files.isRegularFile(f);
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter() {

@@ -82,7 +82,7 @@ public class RestoreBackupCommand {
             Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
 
             if(backupFile.isPresent()) {
-                log.info("Found file to restore {}", backupFile.get().getFile().getName());
+                log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
             } else {
                 log.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
 
