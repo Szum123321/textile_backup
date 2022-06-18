@@ -24,7 +24,6 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.Utilities;
-import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +31,8 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 public class BackupHelper {
@@ -89,39 +90,67 @@ public class BackupHelper {
 
 				try(Stream<Path> stream = Files.list(root)) {
 					deletedFiles += stream
-							.filter(Utilities::isValidBackup)// We check if we can get restoreableFile's creation date so that the next line won't throw an exception
+							.filter(Utilities::isValidBackup)// We check if we can get file's creation date so that the next line won't throw an exception
 							.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
-							.map(f -> deleteFile(f, ctx))
-							.filter(b -> b).count(); //a bit awkward
+							.mapToInt(f -> deleteFile(f, ctx))
+							.sum();
 				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-			if (config.get().backupsToKeep > 0 /*&& root.listFiles().length > config.get().backupsToKeep*/) {
-				try(Stream<Path> stream = Files.list(root)) {
-					deletedFiles += stream
-							.filter(Utilities::isValidBackup)
-							.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime((Path) f).get()).reversed())
-							.skip(config.get().backupsToKeep)
-							.map(f -> deleteFile(f, ctx))
-							.filter(b -> b).count();
-				} catch (IOException e) {
-					throw new RuntimeException(e);
+					log.error("An exception occurred while trying to delete old files!", e);
 				}
 			}
 
-			//It is fucking quadratic!
-			/*if (config.get().maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > config.get().maxSize) {
-				deletedFiles += Arrays.stream(root.listFiles())
+			int noToKeep = config.get().backupsToKeep > 0 ? config.get().backupsToKeep : Integer.MAX_VALUE;
+			long maxSize = config.get().maxSize > 0 ? config.get().maxSize : Long.MAX_VALUE;
+
+			AtomicInteger currentNo = new AtomicInteger(countBackups(root));
+			AtomicLong currentSize = new AtomicLong(countSize(root));
+
+			try(Stream<Path> stream = Files.list(root)) {
+				deletedFiles += stream
 						.filter(Utilities::isValidBackup)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.takeWhile(f -> FileUtils.sizeOfDirectory(root) / 1024 > config.get().maxSize)
-						.map(f -> deleteFile(f, ctx))
-						.filter(b -> b).count();
-			}*/
+						.takeWhile(f -> (currentNo.get() > noToKeep) || (currentSize.get() > maxSize))
+						.peek(f -> currentNo.decrementAndGet())
+						.peek(f -> {
+							try {
+								currentSize.addAndGet(Files.size(f));
+							} catch (IOException e) {
+								currentSize.set(0);
+							}
+						})
+						.mapToInt(f -> deleteFile(f, ctx))
+						.sum();
+			} catch (IOException e) {
+				log.error("An exception occurred while trying to delete old files!", e);
+			}
 		}
 
 		return deletedFiles;
+	}
+
+	private static int countBackups(Path path) {
+		try(Stream<Path> stream = Files.list(path)) {
+			return (int) stream
+					.filter(Utilities::isValidBackup)
+					.count();
+		} catch (IOException ignored) {}
+		return 0;
+	}
+
+	private static long countSize(Path path) {
+		try(Stream<Path> stream = Files.list(path)) {
+			return (int) stream
+					.filter(Utilities::isValidBackup)
+					.mapToLong(f -> {
+						try {
+							return Files.size(f);
+						} catch (IOException e) {
+							return 0;
+						}
+					})
+					.sum();
+		} catch (IOException ignored) {}
+		return 0;
 	}
 
 	private static boolean isEmpty(Path path) {
@@ -136,7 +165,8 @@ public class BackupHelper {
 		return false;
 	}
 
-	private static boolean deleteFile(Path f, ServerCommandSource ctx) {
+	//1 -> ok, 0 -> err
+	private static int deleteFile(Path f, ServerCommandSource ctx) {
 		if(Statics.untouchableFile.isEmpty()|| !Statics.untouchableFile.get().equals(f)) {
 			try {
 				Files.delete(f);
@@ -144,11 +174,11 @@ public class BackupHelper {
 			} catch (IOException e) {
 				if(ctx.isExecutedByPlayer()) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
 				log.error("Something went wrong while deleting: {}.", f, e);
-				return false;
+				return 0;
 			}
-			return true;
+			return 1;
 		}
 
-		return false;
+		return 0;
 	}
 }
