@@ -42,8 +42,8 @@ dependencies {
 	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
 	//General compression library
-	modImplementation "org.apache.commons:commons-compress:1.19"
-	include "org.apache.commons:commons-compress:1.19"
+	modImplementation "org.apache.commons:commons-compress:1.21"
+	include "org.apache.commons:commons-compress:1.21"
 
 	//LZMA support
 	modImplementation 'org.tukaani:xz:1.9'
@@ -52,6 +52,10 @@ dependencies {
 	//Gzip compression, parallel, GITHUB
 	modImplementation "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
 	include "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
+
+	// Zstd compression
+	modImplementation "com.github.luben:zstd-jni:1.5.2-3"
+	include "com.github.luben:zstd-jni:1.5.2-3"
 
 	// Lazy DFU makes the dev env start up much faster by loading DataFixerUpper lazily, which would otherwise take a long time. We rarely need it anyway.
 	// I couldn't get this working in my environment - IzzyBizzy

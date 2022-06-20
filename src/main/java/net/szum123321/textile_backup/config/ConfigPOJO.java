@@ -94,9 +94,8 @@ public class ConfigPOJO implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     public int maxSize = 0;
 
-    @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
+    @Comment("\nCompression level\n0 - 9 for Zip\n1 - 22 for Zstd\nAffects Zip and Zstd compression.\n")
     @ConfigEntry.Gui.Tooltip()
-    @ConfigEntry.BoundedDiscrete(max = 9)
     @ConfigEntry.Category("Create")
     public int compression = 7;
 
@@ -114,6 +113,7 @@ public class ConfigPOJO implements ConfigData {
             GZIP - tar.gz using gzip compression
             BZIP2 - tar.bz2 archive using bzip2 compression
             LZMA - tar.xz using lzma compression
+            ZSTD - tar.zstd using Zstandard compression
             TAR - .tar with no compression
             """)
     @ConfigEntry.Gui.Tooltip()
@@ -180,6 +180,7 @@ public class ConfigPOJO implements ConfigData {
         GZIP("tar", "gz"),
         BZIP2("tar", "bz2"),
         LZMA("tar", "xz"),
+        ZSTD("tar", "zst"),
         TAR("tar");
 
         private final List<String> extensionPieces;
