@@ -24,13 +24,16 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.Utilities;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 public class BackupHelper {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
@@ -38,7 +41,7 @@ public class BackupHelper {
 
 	public static Runnable create(BackupContext ctx) {
 		if(config.get().broadcastBackupStart) {
-			Utilities.notifyPlayers(ctx.getServer(),
+			Utilities.notifyPlayers(ctx.server(),
 					"Warning! Server backup will begin shortly. You may experience some lag."
 			);
 		} else {
@@ -49,12 +52,12 @@ public class BackupHelper {
 
 		builder.append("Backup started ");
 
-		builder.append(ctx.getInitiator().getPrefix());
+		builder.append(ctx.initiator().getPrefix());
 
 		if(ctx.startedByPlayer())
-			builder.append(ctx.getCommandSource().getDisplayName().getString());
+			builder.append(ctx.commandSource().getDisplayName().getString());
 		else
-			builder.append(ctx.getInitiator().getName());
+			builder.append(ctx.initiator().getName());
 
 		builder.append(" on: ");
 		builder.append(Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
@@ -64,10 +67,10 @@ public class BackupHelper {
 		if (ctx.shouldSave()) {
 			log.sendInfoAL(ctx, "Saving server...");
 
-			ctx.getServer().getPlayerManager().saveAllPlayerData();
+			ctx.server().getPlayerManager().saveAllPlayerData();
 
 			try {
-				ctx.getServer().save(false, true, true);
+				ctx.server().save(false, true, true);
 			} catch (Exception e) {
 				log.sendErrorAL(ctx,"An exception occurred when trying to save the world!");
 			}
@@ -77,52 +80,105 @@ public class BackupHelper {
 	}
 
 	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
-		File root = Utilities.getBackupRootPath(worldName);
+		Path root = Utilities.getBackupRootPath(worldName);
 		int deletedFiles = 0;
 
-		if (root.isDirectory() && root.exists() && root.listFiles() != null) {
+
+		if (Files.isDirectory(root) && Files.exists(root) && !isEmpty(root)) {
 			if (config.get().maxAge > 0) { // delete files older that configured
 				final LocalDateTime now = LocalDateTime.now();
 
-				deletedFiles += Arrays.stream(root.listFiles())
-						.filter(Utilities::isValidBackup)// We check if we can get file's creation date so that the next line won't throw an exception
-						.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
-						.map(f -> deleteFile(f, ctx))
-						.filter(b -> b).count(); //a bit awkward
+				try(Stream<Path> stream = Files.list(root)) {
+					deletedFiles += stream
+							.filter(Utilities::isValidBackup)// We check if we can get file's creation date so that the next line won't throw an exception
+							.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
+							.mapToInt(f -> deleteFile(f, ctx))
+							.sum();
+				} catch (IOException e) {
+					log.error("An exception occurred while trying to delete old files!", e);
+				}
 			}
 
-			if (config.get().backupsToKeep > 0 && root.listFiles().length > config.get().backupsToKeep) {
-				deletedFiles += Arrays.stream(root.listFiles())
-						.filter(Utilities::isValidBackup)
-						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime((File) f).get()).reversed())
-						.skip(config.get().backupsToKeep)
-						.map(f -> deleteFile(f, ctx))
-						.filter(b -> b).count();
-			}
+			int noToKeep = config.get().backupsToKeep > 0 ? config.get().backupsToKeep : Integer.MAX_VALUE;
+			long maxSize = config.get().maxSize > 0 ? config.get().maxSize : Long.MAX_VALUE;
 
-			if (config.get().maxSize > 0 && FileUtils.sizeOfDirectory(root) / 1024 > config.get().maxSize) {
-				deletedFiles += Arrays.stream(root.listFiles())
+			AtomicInteger currentNo = new AtomicInteger(countBackups(root));
+			AtomicLong currentSize = new AtomicLong(countSize(root));
+
+			try(Stream<Path> stream = Files.list(root)) {
+				deletedFiles += stream
 						.filter(Utilities::isValidBackup)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
-						.takeWhile(f -> FileUtils.sizeOfDirectory(root) / 1024 > config.get().maxSize)
-						.map(f -> deleteFile(f, ctx))
-						.filter(b -> b).count();
+						.takeWhile(f -> (currentNo.get() > noToKeep) || (currentSize.get() > maxSize))
+						.peek(f -> currentNo.decrementAndGet())
+						.peek(f -> {
+							try {
+								currentSize.addAndGet(Files.size(f));
+							} catch (IOException e) {
+								currentSize.set(0);
+							}
+						})
+						.mapToInt(f -> deleteFile(f, ctx))
+						.sum();
+			} catch (IOException e) {
+				log.error("An exception occurred while trying to delete old files!", e);
 			}
 		}
 
 		return deletedFiles;
 	}
 
-	private static boolean deleteFile(File f, ServerCommandSource ctx) {
-		if(Statics.untouchableFile.isEmpty()|| !Statics.untouchableFile.get().equals(f)) {
-			if(f.delete()) {
-				log.sendInfoAL(ctx, "Deleting: {}", f.getName());
-				return true;
-			} else {
-				log.sendErrorAL(ctx, "Something went wrong while deleting: {}.", f.getName());
+	private static int countBackups(Path path) {
+		try(Stream<Path> stream = Files.list(path)) {
+			return (int) stream
+					.filter(Utilities::isValidBackup)
+					.count();
+		} catch (IOException ignored) {}
+		return 0;
+	}
+
+	private static long countSize(Path path) {
+		try(Stream<Path> stream = Files.list(path)) {
+			return (int) stream
+					.filter(Utilities::isValidBackup)
+					.mapToLong(f -> {
+						try {
+							return Files.size(f);
+						} catch (IOException e) {
+							return 0;
+						}
+					})
+					.sum();
+		} catch (IOException ignored) {}
+		return 0;
+	}
+
+	private static boolean isEmpty(Path path) {
+		if (Files.isDirectory(path)) {
+			try (Stream<Path> entries = Files.list(path)) {
+				return entries.findFirst().isEmpty();
+			} catch (IOException e) {
+				return false;
 			}
 		}
 
 		return false;
+	}
+
+	//1 -> ok, 0 -> err
+	private static int deleteFile(Path f, ServerCommandSource ctx) {
+		if(Statics.untouchableFile.isEmpty()|| !Statics.untouchableFile.get().equals(f)) {
+			try {
+				Files.delete(f);
+				log.sendInfoAL(ctx, "Deleting: {}", f);
+			} catch (IOException e) {
+				if(ctx.isExecutedByPlayer()) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
+				log.error("Something went wrong while deleting: {}.", f, e);
+				return 0;
+			}
+			return 1;
+		}
+
+		return 0;
 	}
 }

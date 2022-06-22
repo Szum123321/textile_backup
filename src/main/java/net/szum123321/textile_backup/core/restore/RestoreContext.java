@@ -21,43 +21,15 @@ package net.szum123321.textile_backup.core.restore;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Util;
 import net.szum123321.textile_backup.core.ActionInitiator;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
 
-public record RestoreContext(RestoreHelper.RestoreableFile file,
+public record RestoreContext(RestoreHelper.RestoreableFile restoreableFile,
                              MinecraftServer server,
                              @Nullable String comment,
                              ActionInitiator initiator,
                              ServerCommandSource commandSource) {
-
-    public RestoreHelper.RestoreableFile getFile() {
-        return file;
-    }
-
-    public MinecraftServer getServer() {
-        return server;
-    }
-
-    @Nullable
-    public String getComment() {
-        return comment;
-    }
-
-    public ActionInitiator getInitiator() {
-        return initiator;
-    }
-
-    public UUID getInitiatorUUID() {
-        return initiator.equals(ActionInitiator.Player) && commandSource.getEntity() != null ? commandSource.getEntity().getUuid(): Util.NIL_UUID;
-    }
-
-    public ServerCommandSource getCommandSource() {
-        return commandSource;
-    }
-
     public static final class Builder {
         private RestoreHelper.RestoreableFile file;
         private MinecraftServer server;

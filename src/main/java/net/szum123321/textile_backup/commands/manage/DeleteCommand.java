@@ -21,7 +21,6 @@ package net.szum123321.textile_backup.commands.manage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
@@ -31,11 +30,13 @@ import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
 import net.szum123321.textile_backup.core.Utilities;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class DeleteCommand {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
@@ -57,28 +58,28 @@ public class DeleteCommand {
             throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
         }
 
-        File root = Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer()));
+        Path root = Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer()));
 
-        Optional<File> optionalFile =  Arrays.stream(root.listFiles())
-                .filter(Utilities::isValidBackup)
-                .filter(file -> Utilities.getFileCreationTime(file).orElse(LocalDateTime.MIN).equals(dateTime))
-                .findFirst();
+        try (Stream<Path> stream = Files.list(root)) {
+            stream.filter(Utilities::isValidBackup)
+                    .filter(file -> Utilities.getFileCreationTime(file).orElse(LocalDateTime.MIN).equals(dateTime))
+                    .findFirst().ifPresent(file -> {
+                        if(Statics.untouchableFile.isEmpty() || !Statics.untouchableFile.get().equals(file)) {
+                            try {
+                                Files.delete(file);
+                                log.sendInfo(source, "File {} successfully deleted!", file);
 
-        if(optionalFile.isPresent()) {
-            if(Statics.untouchableFile.isEmpty() || !Statics.untouchableFile.get().equals(optionalFile.get())) {
-                if(optionalFile.get().delete()) {
-                    log.sendInfo(source, "File {} successfully deleted!", optionalFile.get().getName());
-
-                    if(source.getEntity() instanceof PlayerEntity)
-                        log.info("Player {} deleted {}.", source.getPlayer().getName(), optionalFile.get().getName());
-                } else {
-                    log.sendError(source, "Something went wrong while deleting file!");
-                }
-            } else {
-                log.sendError(source, "Couldn't delete the file because it's being restored right now.");
-                log.sendHint(source, "If you want to abort restoration then use: /backup killR");
-            }
-        } else {
+                                if(source.isExecutedByPlayer())
+                                    log.info("Player {} deleted {}.", source.getPlayer().getName(), file);
+                            } catch (IOException e) {
+                                log.sendError(source, "Something went wrong while deleting file!");
+                            }
+                        } else {
+                            log.sendError(source, "Couldn't delete the file because it's being restored right now.");
+                            log.sendHint(source, "If you want to abort restoration then use: /backup killR");
+                        }
+                    });
+        } catch (IOException ignored) {
             log.sendError(source, "Couldn't find file by this name.");
             log.sendHint(source, "Maybe try /backup list");
         }

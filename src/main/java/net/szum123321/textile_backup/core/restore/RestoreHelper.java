@@ -28,23 +28,31 @@ import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RestoreHelper {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
     public static Optional<RestoreableFile> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
-        File root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
+        Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
-        Optional<RestoreableFile> optionalFile =  Arrays.stream(root.listFiles())
-                .map(RestoreableFile::newInstance)
-                .flatMap(Optional::stream)
-                .filter(rf -> rf.getCreationTime().equals(backupTime))
-                .findFirst();
+        Optional<RestoreableFile> optionalFile;
+        try (Stream<Path> stream = Files.list(root)) {
+            optionalFile =  stream
+                    .map(RestoreableFile::newInstance)
+                    .flatMap(Optional::stream)
+                    .filter(rf -> rf.getCreationTime().equals(backupTime))
+                    .findFirst();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         Statics.untouchableFile = optionalFile.map(RestoreableFile::getFile);
 
@@ -52,8 +60,8 @@ public class RestoreHelper {
     }
 
     public static AwaitThread create(RestoreContext ctx) {
-        if(ctx.getInitiator() == ActionInitiator.Player)
-            log.info("Backup restoration was initiated by: {}", ctx.getCommandSource().getName());
+        if(ctx.initiator() == ActionInitiator.Player)
+            log.info("Backup restoration was initiated by: {}", ctx.commandSource().getName());
         else
             log.info("Backup restoration was initiated form Server Console");
 
@@ -69,28 +77,32 @@ public class RestoreHelper {
     }
 
     public static List<RestoreableFile> getAvailableBackups(MinecraftServer server) {
-        File root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
+        Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
-        return Arrays.stream(root.listFiles())
-                .filter(Utilities::isValidBackup)
-                .map(RestoreableFile::newInstance)
-                .flatMap(Optional::stream)
-                .collect(Collectors.toList());
+        try (Stream<Path> stream = Files.list(root)) {
+            return stream.filter(Utilities::isValidBackup)
+                    .map(RestoreableFile::newInstance)
+                    .flatMap(Optional::stream)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            log.error("Error while listing available backups", e);
+            return new LinkedList<>();
+        }
     }
 
     public static class RestoreableFile implements Comparable<RestoreableFile> {
-        private final File file;
+        private final Path file;
         private final ConfigPOJO.ArchiveFormat archiveFormat;
         private final LocalDateTime creationTime;
         private final String comment;
 
-        private RestoreableFile(File file) throws NoSuchElementException {
+        private RestoreableFile(Path file) throws NoSuchElementException {
             this.file = file;
             archiveFormat = Utilities.getArchiveExtension(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file extension!"));
             String extension = archiveFormat.getCompleteString();
             creationTime = Utilities.getFileCreationTime(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file creation time!"));
 
-            final String filename = file.getName();
+            final String filename = file.getFileName().toString();
 
             if(filename.split("#").length > 1) {
                 this.comment = filename.split("#")[1].split(extension)[0];
@@ -99,7 +111,7 @@ public class RestoreHelper {
             }
         }
 
-        public static Optional<RestoreableFile> newInstance(File file) {
+        public static Optional<RestoreableFile> newInstance(Path file) {
             try {
                 return Optional.of(new RestoreableFile(file));
             } catch (NoSuchElementException ignored) {}
@@ -107,7 +119,7 @@ public class RestoreHelper {
             return Optional.empty();
         }
 
-        public File getFile() {
+        public Path getFile() {
             return file;
         }
 

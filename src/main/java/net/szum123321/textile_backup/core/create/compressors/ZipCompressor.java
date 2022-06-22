@@ -27,9 +27,12 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
+import java.util.zip.ZipEntry;
 
 public class ZipCompressor extends AbstractCompressor {
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -51,14 +54,14 @@ public class ZipCompressor extends AbstractCompressor {
     }
 
     @Override
-    protected void addEntry(File file, String entryName, OutputStream arc) throws IOException {
-        try (FileInputStream fileInputStream = new FileInputStream(file)){
+    protected void addEntry(Path file, String entryName, OutputStream arc) throws IOException {
+        try (InputStream fileInputStream = Files.newInputStream(file)){
             ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
 
-            if(isDotDat(file.getName())) {
-                entry.setMethod(ZipArchiveOutputStream.STORED);
-                entry.setSize(file.length());
-                entry.setCompressedSize(file.length());
+            if(isDotDat(file.getFileName().toString())) {
+                entry.setMethod(ZipEntry.STORED);
+                entry.setSize(Files.size(file));
+                entry.setCompressedSize(Files.size(file));
                 entry.setCrc(getCRC(file));
             }
 
@@ -76,15 +79,15 @@ public class ZipCompressor extends AbstractCompressor {
         return arr[arr.length - 1].contains("dat"); //includes dat_old
     }
 
-    protected static long getCRC(File file) throws IOException {
+    protected static long getCRC(Path file) throws IOException {
         Checksum sum = new CRC32();
         byte[] buffer = new byte[8192];
         int len;
 
-        try (InputStream stream = new FileInputStream(file)) {
+        try (InputStream stream = Files.newInputStream(file)) {
             while ((len = stream.read(buffer)) != -1) sum.update(buffer, 0, len);
         } catch (IOException e) {
-            throw new IOException("Error while calculating CRC of: " + file.getAbsolutePath(), e);
+            throw new IOException("Error while calculating CRC of: " + file.toAbsolutePath(), e);
         }
 
         return sum.getValue();

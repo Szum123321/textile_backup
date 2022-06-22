@@ -21,43 +21,38 @@ package net.szum123321.textile_backup.core.restore.decompressors;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.Utilities;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Iterator;
 
 public class ZipDecompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static void decompress(File inputFile, File target) {
+    public static void decompress(Path inputFile, Path target) throws IOException {
         Instant start = Instant.now();
 
-        try(ZipFile zipFile = new ZipFile(inputFile)) {
-            zipFile.getEntries().asIterator().forEachRemaining(entry -> {
-                File file = target.toPath().resolve(entry.getName()).toFile();
+        try(ZipFile zipFile = new ZipFile(inputFile.toFile())) {
+            for (Iterator<ZipArchiveEntry> it = zipFile.getEntries().asIterator(); it.hasNext(); ) {
+                ZipArchiveEntry entry = it.next();
+                Path file = target.resolve(entry.getName());
 
                 if(entry.isDirectory()) {
-                    file.mkdirs();
+                    Files.createDirectories(file);
                 } else {
-                    File parent = file.getParentFile();
-
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        log.error("Failed to create {}", parent);
-                    } else {
-                        try (OutputStream outputStream = Files.newOutputStream(file.toPath());
-                             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                            IOUtils.copy(zipFile.getInputStream(entry), bufferedOutputStream);
-                        } catch (IOException e) {
-                            log.error("An exception occurred while trying to decompress file: {}", entry.getName(), e);
-                        }
+                    Files.createDirectories(file.getParent());
+                    try (OutputStream outputStream = Files.newOutputStream(file);
+                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                        IOUtils.copy(zipFile.getInputStream(entry), bufferedOutputStream);
                     }
                 }
-            });
-        } catch (IOException e) {
-            log.error("An exception occurred! ", e);
+            }
         }
 
         log.info("Decompression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));

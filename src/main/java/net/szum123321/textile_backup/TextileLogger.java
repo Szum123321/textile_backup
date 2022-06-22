@@ -85,12 +85,16 @@ public class TextileLogger {
         log(Level.ERROR, msg, data);
     }
 
+    void error(String message, Throwable throwable) {
+        logger.error(prefix + message, throwable);
+    }
+
     public void fatal(String msg, Object... data) {
         log(Level.FATAL, msg, data);
     }
 
     boolean sendFeedback(Level level, ServerCommandSource source, String msg, Object... args) {
-        if(source != null && source.getEntity() instanceof PlayerEntity) {
+        if(source != null && source.isExecutedByPlayer()) {
             MutableText text = Text.literal(messageFactory.newMessage(msg, args).getFormattedMessage());
 
             if(level.intLevel() == Level.TRACE.intLevel()) text.formatted(Formatting.GREEN);
@@ -116,7 +120,7 @@ public class TextileLogger {
     }
 
     public void sendInfo(BackupContext context, String msg, Object... args) {
-        sendInfo(context.getCommandSource(), msg, args);
+        sendInfo(context.commandSource(), msg, args);
     }
 
     public void sendError(ServerCommandSource source, String msg, Object... args) {
@@ -124,7 +128,7 @@ public class TextileLogger {
     }
 
     public void sendError(BackupContext context, String msg, Object... args) {
-        sendError(context.getCommandSource(), msg, args);
+        sendError(context.commandSource(), msg, args);
     }
 
     public void sendToPlayerAndLog(Level level, ServerCommandSource source, String msg, Object... args) {
@@ -138,7 +142,7 @@ public class TextileLogger {
     }
 
     public void sendInfoAL(BackupContext context, String msg, Object... args) {
-        sendInfoAL(context.getCommandSource(), msg, args);
+        sendInfoAL(context.commandSource(), msg, args);
     }
 
     public void sendErrorAL(ServerCommandSource source, String msg, Object... args) {
@@ -146,6 +150,6 @@ public class TextileLogger {
     }
 
     public void sendErrorAL(BackupContext context, String msg, Object... args) {
-        sendErrorAL(context.getCommandSource(), msg, args);
+        sendErrorAL(context.commandSource(), msg, args);
     }
 }
