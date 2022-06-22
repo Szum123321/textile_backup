@@ -33,32 +33,12 @@ public record BackupContext(@NotNull MinecraftServer server,
                             boolean save,
                             String comment) {
 
-    public MinecraftServer getServer() {
-        return server;
-    }
-
-    public ServerCommandSource getCommandSource() {
-        return commandSource;
-    }
-
-    public ActionInitiator getInitiator() {
-        return initiator;
-    }
-
     public boolean startedByPlayer() {
         return initiator == ActionInitiator.Player;
     }
 
     public boolean shouldSave() {
         return save;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public UUID getInitiatorUUID() {
-        return initiator.equals(ActionInitiator.Player) && commandSource.getEntity() != null ? commandSource.getEntity().getUuid(): Util.NIL_UUID;
     }
 
     public static class Builder {

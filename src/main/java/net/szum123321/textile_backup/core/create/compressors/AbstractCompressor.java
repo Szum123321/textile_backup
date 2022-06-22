@@ -53,7 +53,7 @@ public abstract class AbstractCompressor {
                         } catch (IOException e) {
                             log.error("An exception occurred while trying to compress: {}", inputFile.relativize(file).toString(), e);
 
-                            if (ctx.getInitiator() == ActionInitiator.Player)
+                            if (ctx.initiator() == ActionInitiator.Player)
                                 log.sendError(ctx, "Something went wrong while compressing files!");
                         }
                     });
@@ -67,14 +67,14 @@ public abstract class AbstractCompressor {
             For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems
             In case this isn't it here's also the exception itself""", e);
 
-            if(ctx.getInitiator() == ActionInitiator.Player) {
+            if(ctx.initiator() == ActionInitiator.Player) {
                 log.sendError(ctx, "Backup failed. The file is corrupt.");
                 log.error("For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
             }
         } catch (IOException | InterruptedException | ExecutionException e) {
             log.error("An exception occurred!", e);
         } catch (Exception e) {
-            if(ctx.getInitiator() == ActionInitiator.Player)
+            if(ctx.initiator() == ActionInitiator.Player)
                 log.sendError(ctx, "Something went wrong while compressing files!");
         } finally {
             close();

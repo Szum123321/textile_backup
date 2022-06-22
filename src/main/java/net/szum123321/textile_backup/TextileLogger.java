@@ -120,7 +120,7 @@ public class TextileLogger {
     }
 
     public void sendInfo(BackupContext context, String msg, Object... args) {
-        sendInfo(context.getCommandSource(), msg, args);
+        sendInfo(context.commandSource(), msg, args);
     }
 
     public void sendError(ServerCommandSource source, String msg, Object... args) {
@@ -128,7 +128,7 @@ public class TextileLogger {
     }
 
     public void sendError(BackupContext context, String msg, Object... args) {
-        sendError(context.getCommandSource(), msg, args);
+        sendError(context.commandSource(), msg, args);
     }
 
     public void sendToPlayerAndLog(Level level, ServerCommandSource source, String msg, Object... args) {
@@ -142,7 +142,7 @@ public class TextileLogger {
     }
 
     public void sendInfoAL(BackupContext context, String msg, Object... args) {
-        sendInfoAL(context.getCommandSource(), msg, args);
+        sendInfoAL(context.commandSource(), msg, args);
     }
 
     public void sendErrorAL(ServerCommandSource source, String msg, Object... args) {
@@ -150,6 +150,6 @@ public class TextileLogger {
     }
 
     public void sendErrorAL(BackupContext context, String msg, Object... args) {
-        sendErrorAL(context.getCommandSource(), msg, args);
+        sendErrorAL(context.commandSource(), msg, args);
     }
 }

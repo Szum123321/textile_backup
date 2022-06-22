@@ -68,12 +68,9 @@ public class RestoreBackupRunnable implements Runnable {
         Path worldFile = Utilities.getWorldFolder(ctx.server());
 
         try {
-            Path tmp = Files.createTempDirectory (
+            Path tmp = Files.createTempDirectory(
                     worldFile.getParent(),
                     ctx.restoreableFile().getFile().getFileName().toString());
-
-            //leave it as it is
-            //tmp.toFile().deleteOnExit();
 
             log.info("Starting decompression...");
 

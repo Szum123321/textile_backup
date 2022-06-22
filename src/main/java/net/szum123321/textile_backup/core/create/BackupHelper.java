@@ -41,7 +41,7 @@ public class BackupHelper {
 
 	public static Runnable create(BackupContext ctx) {
 		if(config.get().broadcastBackupStart) {
-			Utilities.notifyPlayers(ctx.getServer(),
+			Utilities.notifyPlayers(ctx.server(),
 					"Warning! Server backup will begin shortly. You may experience some lag."
 			);
 		} else {
@@ -52,12 +52,12 @@ public class BackupHelper {
 
 		builder.append("Backup started ");
 
-		builder.append(ctx.getInitiator().getPrefix());
+		builder.append(ctx.initiator().getPrefix());
 
 		if(ctx.startedByPlayer())
-			builder.append(ctx.getCommandSource().getDisplayName().getString());
+			builder.append(ctx.commandSource().getDisplayName().getString());
 		else
-			builder.append(ctx.getInitiator().getName());
+			builder.append(ctx.initiator().getName());
 
 		builder.append(" on: ");
 		builder.append(Utilities.getDateTimeFormatter().format(LocalDateTime.now()));
@@ -67,10 +67,10 @@ public class BackupHelper {
 		if (ctx.shouldSave()) {
 			log.sendInfoAL(ctx, "Saving server...");
 
-			ctx.getServer().getPlayerManager().saveAllPlayerData();
+			ctx.server().getPlayerManager().saveAllPlayerData();
 
 			try {
-				ctx.getServer().save(false, true, true);
+				ctx.server().save(false, true, true);
 			} catch (Exception e) {
 				log.sendErrorAL(ctx,"An exception occurred when trying to save the world!");
 			}

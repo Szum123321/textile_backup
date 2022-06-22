@@ -49,32 +49,30 @@ public class MakeBackupRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            Utilities.disableWorldSaving(context.getServer());
+            Utilities.disableWorldSaving(context.server());
             Statics.disableWatchdog = true;
 
-            Utilities.updateTMPFSFlag(context.getServer());
+            Utilities.updateTMPFSFlag(context.server());
 
             log.sendInfoAL(context, "Starting backup");
 
-            Path world = Utilities.getWorldFolder(context.getServer());
+            Path world = Utilities.getWorldFolder(context.server());
 
             log.trace("Minecraft world is: {}", world);
 
             Path outFile = Utilities
-                    .getBackupRootPath(Utilities.getLevelName(context.getServer()))
+                    .getBackupRootPath(Utilities.getLevelName(context.server()))
                     .resolve(getFileName());
+
             log.trace("Outfile is: {}", outFile);
 
-           // outFile.getParentFile().mkdirs();
-
             try {
-                //outFile.createNewFile();
                 Files.createDirectories(outFile.getParent());
                 Files.createFile(outFile);
             } catch (IOException e) {
                 log.error("An exception occurred when trying to create new backup file!", e);
 
-                if(context.getInitiator() == ActionInitiator.Player)
+                if(context.initiator() == ActionInitiator.Player)
                     log.sendError(context, "An exception occurred when trying to create new backup file!");
 
                 return;
@@ -92,10 +90,13 @@ public class MakeBackupRunnable implements Runnable {
 
             switch (config.get().format) {
                 case ZIP -> {
-                    if (coreCount > 1 && !Statics.disableTMPFiles)
+                    if (coreCount > 1 && !Statics.disableTMPFiles) {
                         ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
-                    else
+                        log.trace("Using PARALLEL Zip Compressor. Threads: {}", coreCount);
+                    } else {
                         ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
+                        log.trace("Using REGULAR Zip Compressor. Threads: {}");
+                    }
                 }
                 case BZIP2 -> ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);
                 case GZIP -> ParallelGzipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
@@ -105,26 +106,20 @@ public class MakeBackupRunnable implements Runnable {
                     }
                 }.createArchive(world, outFile, context, coreCount);
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
-                default -> {
-                    log.warn("Specified compressor ({}) is not supported! Zip will be used instead!", config.get().format);
-                    if (context.getInitiator() == ActionInitiator.Player)
-                        log.sendError(context.getCommandSource(), "Error! No correct compression format specified! Using default compressor!");
-                    ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
-                }
             }
 
-            BackupHelper.executeFileLimit(context.getCommandSource(), Utilities.getLevelName(context.getServer()));
+            BackupHelper.executeFileLimit(context.commandSource(), Utilities.getLevelName(context.server()));
 
             if(config.get().broadcastBackupDone) {
                 Utilities.notifyPlayers(
-                        context.getServer(),
+                        context.server(),
                         "Done!"
                 );
             } else {
                 log.sendInfoAL(context, "Done!");
             }
         } finally {
-            Utilities.enableWorldSaving(context.getServer());
+            Utilities.enableWorldSaving(context.server());
             Statics.disableWatchdog = false;
         }
     }
@@ -133,7 +128,7 @@ public class MakeBackupRunnable implements Runnable {
         LocalDateTime now = LocalDateTime.now();
 
         return Utilities.getDateTimeFormatter().format(now) +
-                (context.getComment() != null ? "#" + context.getComment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
+                (context.comment() != null ? "#" + context.comment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
                 config.get().format.getCompleteString();
     }
 }
