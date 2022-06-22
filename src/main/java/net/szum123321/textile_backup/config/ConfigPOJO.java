@@ -92,7 +92,7 @@ public class ConfigPOJO implements ConfigData {
             If set to 0 then backups will not be deleted
             """)
     @ConfigEntry.Gui.Tooltip()
-    public int maxSize = 0;
+    public long maxSize = 0;
 
     @Comment("\nCompression level \n0 - 9\n Only affects zip compression.\n")
     @ConfigEntry.Gui.Tooltip()

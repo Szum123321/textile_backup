@@ -86,12 +86,12 @@ public class BackupHelper {
 
 		if (Files.isDirectory(root) && Files.exists(root) && !isEmpty(root)) {
 			if (config.get().maxAge > 0) { // delete files older that configured
-				final LocalDateTime now = LocalDateTime.now();
+				final long now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
 				try(Stream<Path> stream = Files.list(root)) {
 					deletedFiles += stream
 							.filter(Utilities::isValidBackup)// We check if we can get file's creation date so that the next line won't throw an exception
-							.filter(f -> now.toEpochSecond(ZoneOffset.UTC) - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
+							.filter(f -> now - Utilities.getFileCreationTime(f).get().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
 							.mapToInt(f -> deleteFile(f, ctx))
 							.sum();
 				} catch (IOException e) {
@@ -99,8 +99,8 @@ public class BackupHelper {
 				}
 			}
 
-			int noToKeep = config.get().backupsToKeep > 0 ? config.get().backupsToKeep : Integer.MAX_VALUE;
-			long maxSize = config.get().maxSize > 0 ? config.get().maxSize : Long.MAX_VALUE;
+			final int noToKeep = config.get().backupsToKeep > 0 ? config.get().backupsToKeep : Integer.MAX_VALUE;
+			final long maxSize = config.get().maxSize > 0 ? config.get().maxSize * 1024: Long.MAX_VALUE;
 
 			AtomicInteger currentNo = new AtomicInteger(countBackups(root));
 			AtomicLong currentSize = new AtomicLong(countSize(root));
@@ -110,10 +110,10 @@ public class BackupHelper {
 						.filter(Utilities::isValidBackup)
 						.sorted(Comparator.comparing(f -> Utilities.getFileCreationTime(f).get()))
 						.takeWhile(f -> (currentNo.get() > noToKeep) || (currentSize.get() > maxSize))
-						.peek(f -> currentNo.decrementAndGet())
 						.peek(f -> {
+							currentNo.decrementAndGet();
 							try {
-								currentSize.addAndGet(Files.size(f));
+								currentSize.addAndGet(-Files.size(f));
 							} catch (IOException e) {
 								currentSize.set(0);
 							}
@@ -133,23 +133,28 @@ public class BackupHelper {
 			return (int) stream
 					.filter(Utilities::isValidBackup)
 					.count();
-		} catch (IOException ignored) {}
+		} catch (IOException e) {
+			log.error("Error while counting files!", e);
+		}
 		return 0;
 	}
 
 	private static long countSize(Path path) {
 		try(Stream<Path> stream = Files.list(path)) {
-			return (int) stream
+			return stream
 					.filter(Utilities::isValidBackup)
 					.mapToLong(f -> {
 						try {
 							return Files.size(f);
 						} catch (IOException e) {
+							log.error("Couldn't delete a file!", e);
 							return 0;
 						}
 					})
 					.sum();
-		} catch (IOException ignored) {}
+		} catch (IOException e) {
+			log.error("Error while counting files!", e);
+		}
 		return 0;
 	}
 
