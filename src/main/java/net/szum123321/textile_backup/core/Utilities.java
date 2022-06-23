@@ -18,11 +18,11 @@
 
 package net.szum123321.textile_backup.core;
 
-import net.minecraft.network.message.MessageType;
+import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 import net.szum123321.textile_backup.TextileBackup;
@@ -32,7 +32,6 @@ import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.file.SimplePathVisitor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -40,22 +39,28 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 
 public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-	public static void notifyPlayers(@NotNull MinecraftServer server, String msg) {
+	public static void notifyPlayers(@NotNull MinecraftServer server, UUID sender, String msg) {
 		MutableText message = log.getPrefixText();
-		message.append(Text.literal(msg).formatted(Formatting.WHITE));
+		message.append(new LiteralText(msg).formatted(Formatting.WHITE));
 
-		server.getPlayerManager().broadcast(message, MessageType.SYSTEM);
+		server.getPlayerManager().broadcastChatMessage(
+				message,
+				MessageType.SYSTEM,
+				sender
+		);
 	}
 
 	public static String getLevelName(MinecraftServer server) {
@@ -65,7 +70,7 @@ public class Utilities {
 	public static Path getWorldFolder(MinecraftServer server) {
 		return ((MinecraftServerSessionAccessor)server)
 				.getSession()
-				.getWorldDirectory(World.OVERWORLD);
+				.getWorldDirectory(World.OVERWORLD).toPath();
 	}
 	
 	public static Path getBackupRootPath(String worldName) {
@@ -83,7 +88,7 @@ public class Utilities {
 	}
 
 	public static void deleteDirectory(Path path) throws IOException {
-		Files.walkFileTree(path, new SimplePathVisitor() {
+		Files.walkFileTree(path, new SimpleFileVisitor<>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				Files.delete(file);

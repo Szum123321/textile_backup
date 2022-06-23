@@ -21,6 +21,7 @@ package net.szum123321.textile_backup.commands.manage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
@@ -35,7 +36,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class DeleteCommand {
@@ -69,10 +69,11 @@ public class DeleteCommand {
                                 Files.delete(file);
                                 log.sendInfo(source, "File {} successfully deleted!", file);
 
-                                if(source.isExecutedByPlayer())
+                                if(source.getEntity() instanceof PlayerEntity)
                                     log.info("Player {} deleted {}.", source.getPlayer().getName(), file);
                             } catch (IOException e) {
                                 log.sendError(source, "Something went wrong while deleting file!");
+                            } catch (CommandSyntaxException ignored) {
                             }
                         } else {
                             log.sendError(source, "Couldn't delete the file because it's being restored right now.");

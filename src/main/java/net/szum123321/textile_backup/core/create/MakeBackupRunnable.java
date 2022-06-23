@@ -113,6 +113,7 @@ public class MakeBackupRunnable implements Runnable {
             if(config.get().broadcastBackupDone) {
                 Utilities.notifyPlayers(
                         context.server(),
+                        context.getInitiatorUUID(),
                         "Done!"
                 );
             } else {

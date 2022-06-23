@@ -41,6 +41,10 @@ public record BackupContext(@NotNull MinecraftServer server,
         return save;
     }
 
+    public UUID getInitiatorUUID() {
+        return initiator.equals(ActionInitiator.Player) && commandSource.getEntity() != null ? commandSource.getEntity().getUuid(): Util.NIL_UUID;
+    }
+
     public static class Builder {
         private MinecraftServer server;
         private ServerCommandSource commandSource;

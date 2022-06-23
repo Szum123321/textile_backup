@@ -18,6 +18,7 @@
 
 package net.szum123321.textile_backup.core.create;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.TextileBackup;
@@ -42,6 +43,7 @@ public class BackupHelper {
 	public static Runnable create(BackupContext ctx) {
 		if(config.get().broadcastBackupStart) {
 			Utilities.notifyPlayers(ctx.server(),
+					ctx.getInitiatorUUID(),
 					"Warning! Server backup will begin shortly. You may experience some lag."
 			);
 		} else {
@@ -177,7 +179,7 @@ public class BackupHelper {
 				Files.delete(f);
 				log.sendInfoAL(ctx, "Deleting: {}", f);
 			} catch (IOException e) {
-				if(ctx.isExecutedByPlayer()) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
+				if(ctx.getEntity() instanceof PlayerEntity) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
 				log.error("Something went wrong while deleting: {}.", f, e);
 				return 0;
 			}
