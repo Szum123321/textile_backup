@@ -1,0 +1,60 @@
+{
+  "text.autoconfig.textile_backup.title": "Textile Backup 환경설정",
+
+  "text.autoconfig.textile_backup.category.default": "일반",
+  "text.autoconfig.textile_backup.category.Create": "백업 설정",
+  "text.autoconfig.textile_backup.category.Restore": "복구",
+  "text.autoconfig.textile_backup.category.Manage": "관리",
+
+  "text.autoconfig.textile_backup.option.backupInterval": "백업 주기",
+  "text.autoconfig.textile_backup.option.backupInterval.@Tooltip": "자동 백업 주기(초) 입니다.",
+
+  "text.autoconfig.textile_backup.option.restoreDelay": "복구 딜레이",
+  "text.autoconfig.textile_backup.option.restoreDelay.@Tooltip": "초",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupStart": "백업 시작 알림",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupDone": "백업 완료 알림",
+
+  "text.autoconfig.textile_backup.option.doBackupsOnEmptyServer": "빈 서버에 자동 백업을 생성합니다.",
+
+  "text.autoconfig.textile_backup.option.shutdownBackup": "종료 시 백업 생성",
+
+  "text.autoconfig.textile_backup.option.backupOldWorlds": "이전 월드 백업",
+
+  "text.autoconfig.textile_backup.option.perWorldBackup": "다른 월드를 위해 폴더 구분 사용",
+
+  "text.autoconfig.textile_backup.option.path": "백업 폴더 경로",
+
+  "text.autoconfig.textile_backup.option.fileBlacklist": "블랙리스트 등록된 파일",
+
+  "text.autoconfig.textile_backup.option.deleteOldBackupAfterRestore": "복구된 백업 삭제",
+
+  "text.autoconfig.textile_backup.option.backupsToKeep": "보존할 백업본 개수",
+
+  "text.autoconfig.textile_backup.option.maxAge": "백업 최대 기간",
+  "text.autoconfig.textile_backup.option.maxAge.@Tooltip": "생성 이후 초 단위",
+
+  "text.autoconfig.textile_backup.option.maxSize": "백업 폴더 최대 크기",
+  "text.autoconfig.textile_backup.option.maxSize.@Tooltip": "KBytes 단위",
+
+  "text.autoconfig.textile_backup.option.compression": "압축 수준",
+  "text.autoconfig.textile_backup.option.compression.@Tooltip": "zip 파일에만 영향을 줍니다.",
+
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit": "압축에 사용할 최대 코어 수",
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit.@Tooltip": "0으로 설정 시 사용 가능한 모든 코어로 설정합니다.",
+
+  "text.autoconfig.textile_backup.option.format": "아카이브 및 압축 형식",
+  "text.autoconfig.textile_backup.option.format.@Tooltip": "참고: https://github.com/Szum123321/textile_backup/wiki/Configuration#format",
+
+  "text.autoconfig.textile_backup.option.permissionLevel": "최소 권한 수준",
+
+  "text.autoconfig.textile_backup.option.alwaysSingleplayerAllowed": "싱글플레이어에서 항상 허용",
+
+  "text.autoconfig.textile_backup.option.playerWhitelist": "관리자 화이트리스트",
+
+  "text.autoconfig.textile_backup.option.playerBlacklist": "관리자 블랙리스트",
+
+  "text.autoconfig.textile_backup.option.dateTimeFormat": "날짜&시간 서식",
+  "text.autoconfig.textile_backup.option.dateTimeFormat.@Tooltip": "참고: https://github.com/Szum123321/textile_backup/wiki/Date-time-format"
+}
