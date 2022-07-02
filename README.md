@@ -32,7 +32,7 @@ Feel free to use this mod in your modpack or on a server!
 ### Contact:
 
 If you need any help then you can join the [Discord](https://discord.gg/ktasEy4) server  
-In case on an issue please report it [HERE](https://github.com/Szum123321/textile_backup/issues)
+In case of an issue please report it [HERE](https://github.com/Szum123321/textile_backup/issues)
 
 If you'd like to support me:
 [![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/bc1qwnqrdv5rs36tkfgxmnkw5f7qx4nhsncy5kj69s)](https://en.cryptobadges.io/donate/bc1qwnqrdv5rs36tkfgxmnkw5f7qx4nhsncy5kj69s)[![Donate with Ethereum](https://en.cryptobadges.io/badge/micro/0xF196c12b0A013d91015c541E63A87BA636851871)](https://en.cryptobadges.io/donate/0xF196c12b0A013d91015c541E63A87BA636851871)
