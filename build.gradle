@@ -10,8 +10,6 @@ archivesBaseName = project.archives_base_name
 version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
 group = project.maven_group
 
-
-
 repositories{
 	maven { url 'https://jitpack.io' }
 	maven { url "https://maven.shedaniel.me/" }
@@ -55,9 +53,7 @@ dependencies {
 
 	// Lazy DFU makes the dev env start up much faster by loading DataFixerUpper lazily, which would otherwise take a long time. We rarely need it anyway.
 	// I couldn't get this working in my environment - IzzyBizzy
-	//modRuntime("com.github.astei:lazydfu:${project.lazydfu_version}") {
-	//	exclude(module: "fabric-loader")
-	//}
+	//modLocalRuntime("com.github.astei:lazydfu:${project.lazydfu_version}")
 }
 
 processResources {

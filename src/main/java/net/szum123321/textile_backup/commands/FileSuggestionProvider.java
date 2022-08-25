@@ -24,9 +24,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
 import java.util.concurrent.CompletableFuture;
@@ -46,7 +46,7 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
             String formattedCreationTime = file.getCreationTime().format(Statics.defaultDateTimeFormatter);
 
             if (formattedCreationTime.startsWith(remaining)) {
-                if (ctx.getSource().getEntity() instanceof PlayerEntity) {  //was typed by player
+                if (Utilities.wasSentByPlayer(ctx.getSource())) {  //was typed by player
                     if (file.getComment() != null) {
                         builder.suggest(formattedCreationTime, new LiteralMessage("Comment: " + file.getComment()));
                     } else {

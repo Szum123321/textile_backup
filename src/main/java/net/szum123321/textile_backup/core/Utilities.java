@@ -18,8 +18,8 @@
 
 package net.szum123321.textile_backup.core;
 
-import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -47,15 +47,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
+
 public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
+	public static boolean wasSentByPlayer(ServerCommandSource source) {
+		return source.isExecutedByPlayer();
+	}
 
 	public static void notifyPlayers(@NotNull MinecraftServer server, String msg) {
 		MutableText message = log.getPrefixText();
 		message.append(Text.literal(msg).formatted(Formatting.WHITE));
 
-		server.getPlayerManager().broadcast(message, MessageType.SYSTEM);
+		server.getPlayerManager().broadcast(message, false);
 	}
 
 	public static String getLevelName(MinecraftServer server) {
@@ -156,38 +162,31 @@ public class Utilities {
 	}
 
 	public static Optional<LocalDateTime> getFileCreationTime(Path file) {
-		LocalDateTime creationTime = null;
+		if(getArchiveExtension(file).isEmpty()) return Optional.empty();
+		try {
+			FileTime fileTime = Files.readAttributes(file, BasicFileAttributes.class, NOFOLLOW_LINKS).creationTime();
+			return Optional.of(LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault()));
+		} catch (IOException ignored) {}
 
-		if(getArchiveExtension(file).isPresent()) {
-			String fileExtension = getArchiveExtension(file).get().getCompleteString();
+		String fileExtension = getArchiveExtension(file).get().getCompleteString();
 
-			try {
-				creationTime = LocalDateTime.from(
-						Utilities.getDateTimeFormatter().parse(
-								file.getFileName().toString().split(fileExtension)[0].split("#")[0]
-						)
-				);
-			} catch (Exception ignored) {}
+		try {
+			return Optional.of(
+					LocalDateTime.from(
+							Utilities.getDateTimeFormatter().parse(
+									file.getFileName().toString().split(fileExtension)[0].split("#")[0]
+					)));
+		} catch (Exception ignored) {}
 
-			if(creationTime == null) {
-				try {
-					creationTime = LocalDateTime.from(
+		try {
+			return Optional.of(
+					LocalDateTime.from(
 							Utilities.getBackupDateTimeFormatter().parse(
 									file.getFileName().toString().split(fileExtension)[0].split("#")[0]
-							)
-					);
-				} catch (Exception ignored2){}
-			}
+							)));
+		} catch (Exception ignored) {}
 
-			if(creationTime == null) {
-				try {
-					FileTime fileTime = (FileTime) Files.getAttribute(file, "creationTime");
-					creationTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault());
-				} catch (IOException ignored3) {}
-			}
-		}
-
-		return Optional.ofNullable(creationTime);
+		return Optional.empty();
 	}
 
 	public static boolean isValidBackup(Path f) {

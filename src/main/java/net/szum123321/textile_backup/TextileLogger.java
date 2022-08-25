@@ -18,11 +18,11 @@
 
 package net.szum123321.textile_backup;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
+import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -43,13 +43,6 @@ public class TextileLogger {
     private final String prefix;
     private final MutableText prefixText;
 
-/*  public TextileLogger(String name, String prefix) {
-        this.messageFactory = ParameterizedMessageFactory.INSTANCE;
-        this.logger = LogManager.getLogger(name, messageFactory);
-        this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = new LiteralText(this.prefix).styled(style -> style.withColor(0x5B23DA));
-    }
-*/
     public TextileLogger(String prefix) {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
         this.logger = LogManager.getLogger(StackLocatorUtil.getCallerClass(2), messageFactory);
@@ -94,7 +87,7 @@ public class TextileLogger {
     }
 
     boolean sendFeedback(Level level, ServerCommandSource source, String msg, Object... args) {
-        if(source != null && source.isExecutedByPlayer()) {
+        if(source != null && Utilities.wasSentByPlayer(source)) {
             MutableText text = Text.literal(messageFactory.newMessage(msg, args).getFormattedMessage());
 
             if(level.intLevel() == Level.TRACE.intLevel()) text.formatted(Formatting.GREEN);

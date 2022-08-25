@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class DeleteCommand {
@@ -69,7 +68,7 @@ public class DeleteCommand {
                                 Files.delete(file);
                                 log.sendInfo(source, "File {} successfully deleted!", file);
 
-                                if(source.isExecutedByPlayer())
+                                if(Utilities.wasSentByPlayer(source))
                                     log.info("Player {} deleted {}.", source.getPlayer().getName(), file);
                             } catch (IOException e) {
                                 log.sendError(source, "Something went wrong while deleting file!");

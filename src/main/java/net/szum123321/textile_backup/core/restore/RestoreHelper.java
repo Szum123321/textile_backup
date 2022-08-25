@@ -104,11 +104,8 @@ public class RestoreHelper {
 
             final String filename = file.getFileName().toString();
 
-            if(filename.split("#").length > 1) {
-                this.comment = filename.split("#")[1].split(extension)[0];
-            } else {
-                this.comment = null;
-            }
+            if(filename.split("#").length > 1) this.comment = filename.split("#")[1].split(extension)[0];
+            else this.comment = null;
         }
 
         public static Optional<RestoreableFile> newInstance(Path file) {

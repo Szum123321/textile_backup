@@ -177,7 +177,7 @@ public class BackupHelper {
 				Files.delete(f);
 				log.sendInfoAL(ctx, "Deleting: {}", f);
 			} catch (IOException e) {
-				if(ctx.isExecutedByPlayer()) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
+				if(Utilities.wasSentByPlayer(ctx)) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
 				log.error("Something went wrong while deleting: {}.", f, e);
 				return 0;
 			}
