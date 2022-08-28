@@ -51,6 +51,10 @@ dependencies {
 	modImplementation "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
 	include "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
 
+	// Zstd compression
+	modImplementation "com.github.luben:zstd-jni:1.5.2-3"
+	include "com.github.luben:zstd-jni:1.5.2-3"
+
 	// Lazy DFU makes the dev env start up much faster by loading DataFixerUpper lazily, which would otherwise take a long time. We rarely need it anyway.
 	// I couldn't get this working in my environment - IzzyBizzy
 	//modLocalRuntime("com.github.astei:lazydfu:${project.lazydfu_version}")

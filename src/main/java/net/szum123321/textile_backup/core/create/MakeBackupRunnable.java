@@ -28,6 +28,7 @@ import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
+import net.szum123321.textile_backup.core.create.compressors.tar.ParallelZstdCompressor;
 import org.apache.commons.compress.compressors.lzma.LZMACompressorOutputStream;
 
 import java.io.IOException;
@@ -105,6 +106,7 @@ public class MakeBackupRunnable implements Runnable {
                         return new LZMACompressorOutputStream(stream);
                     }
                 }.createArchive(world, outFile, context, coreCount);
+                case ZSTD -> ParallelZstdCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
             }
 
