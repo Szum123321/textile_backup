@@ -18,13 +18,13 @@
 
 package net.szum123321.textile_backup.core.restore;
 
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.LivingServer;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupHelper;
@@ -47,7 +47,7 @@ public class RestoreBackupRunnable implements Runnable {
 
     @Override
     public void run() {
-        Statics.globalShutdownBackupFlag.set(false);
+        Globals.INSTANCE.globalShutdownBackupFlag.set(false);
 
         log.info("Shutting down server...");
 
@@ -95,7 +95,7 @@ public class RestoreBackupRunnable implements Runnable {
         }
 
         //in case we're playing on client
-        Statics.globalShutdownBackupFlag.set(true);
+        Globals.INSTANCE.globalShutdownBackupFlag.set(true);
 
         log.info("Done!");
     }

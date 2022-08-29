@@ -19,7 +19,7 @@
 package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.MinecraftServer;
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
 
@@ -43,7 +43,7 @@ public class BackupScheduler {
         if(config.get().doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
             if(scheduled) {
                 if(nextBackup <= now) {
-                    Statics.executorService.submit(
+                    Globals.INSTANCE.getQueueExecutor().submit(
                             BackupHelper.create(
                                     BackupContext.Builder
                                             .newBackupContextBuilder()
@@ -62,7 +62,7 @@ public class BackupScheduler {
             }
         } else if(!config.get().doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
             if(scheduled && nextBackup <= now) {
-                Statics.executorService.submit(
+                Globals.INSTANCE.getQueueExecutor().submit(
                         BackupHelper.create(
                                 BackupContext.Builder
                                         .newBackupContextBuilder()

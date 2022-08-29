@@ -19,7 +19,7 @@
 package net.szum123321.textile_backup.core.create;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
@@ -172,7 +172,7 @@ public class BackupHelper {
 
 	//1 -> ok, 0 -> err
 	private static int deleteFile(Path f, ServerCommandSource ctx) {
-		if(Statics.untouchableFile.isEmpty()|| !Statics.untouchableFile.get().equals(f)) {
+		if(Globals.INSTANCE.getLockedFile().filter(p -> p == f).isEmpty()) {
 			try {
 				Files.delete(f);
 				log.sendInfoAL(ctx, "Deleting: {}", f);

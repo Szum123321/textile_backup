@@ -24,10 +24,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
 import net.szum123321.textile_backup.core.restore.RestoreContext;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
@@ -70,41 +70,42 @@ public class RestoreBackupCommand {
     }
 
     private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
-        if(Statics.restoreAwaitThread == null || (Statics.restoreAwaitThread != null && !Statics.restoreAwaitThread.isAlive())) {
-            LocalDateTime dateTime;
-
-            try {
-                dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
-            } catch (DateTimeParseException e) {
-                throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
-            }
-
-            Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
-
-            if(backupFile.isPresent()) {
-                log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
-            } else {
-                log.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
-
-                return 0;
-            }
-
-            Statics.restoreAwaitThread = RestoreHelper.create(
-                    RestoreContext.Builder.newRestoreContextBuilder()
-                        .setCommandSource(source)
-                        .setFile(backupFile.get())
-                        .setComment(comment)
-                        .build()
-            );
-
-            Statics.restoreAwaitThread.start();
-
-            return 1;
-        } else {
+        if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isPresent()) {
             log.sendInfo(source, "Someone has already started another restoration.");
 
-            return 0;
+            return -1;
         }
+
+        LocalDateTime dateTime;
+
+        try {
+            dateTime = LocalDateTime.from(Globals.defaultDateTimeFormatter.parse(file));
+        } catch (DateTimeParseException e) {
+            throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
+        }
+
+        Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
+
+        if(backupFile.isPresent()) {
+            log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
+        } else {
+            log.sendInfo(source, "No file created on {} was found!", dateTime.format(Globals.defaultDateTimeFormatter));
+            return -1;
+        }
+
+        Globals.INSTANCE.setAwaitThread(
+                RestoreHelper.create(
+                    RestoreContext.Builder.newRestoreContextBuilder()
+                            .setCommandSource(source)
+                            .setFile(backupFile.get())
+                            .setComment(comment)
+                            .build()
+                )
+        );
+
+        Globals.INSTANCE.getAwaitThread().get().start();
+
+        return 1;
     }
 
 }

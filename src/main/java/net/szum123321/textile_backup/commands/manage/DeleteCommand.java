@@ -23,10 +23,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
 import net.szum123321.textile_backup.core.Utilities;
 
@@ -52,7 +52,7 @@ public class DeleteCommand {
         LocalDateTime dateTime;
 
         try {
-            dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(fileName));
+            dateTime = LocalDateTime.from(Globals.defaultDateTimeFormatter.parse(fileName));
         } catch (DateTimeParseException e) {
             throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
         }
@@ -63,7 +63,7 @@ public class DeleteCommand {
             stream.filter(Utilities::isValidBackup)
                     .filter(file -> Utilities.getFileCreationTime(file).orElse(LocalDateTime.MIN).equals(dateTime))
                     .findFirst().ifPresent(file -> {
-                        if(Statics.untouchableFile.isEmpty() || !Statics.untouchableFile.get().equals(file)) {
+                        if(Globals.INSTANCE.getLockedFile().filter(p -> p == file).isEmpty()) {
                             try {
                                 Files.delete(file);
                                 log.sendInfo(source, "File {} successfully deleted!", file);

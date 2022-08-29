@@ -19,11 +19,11 @@
 package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Utilities;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +45,7 @@ public class RestoreHelper {
 
         Optional<RestoreableFile> optionalFile;
         try (Stream<Path> stream = Files.list(root)) {
-            optionalFile =  stream
+            optionalFile = stream
                     .map(RestoreableFile::newInstance)
                     .flatMap(Optional::stream)
                     .filter(rf -> rf.getCreationTime().equals(backupTime))
@@ -54,7 +54,7 @@ public class RestoreHelper {
             throw new RuntimeException(e);
         }
 
-        Statics.untouchableFile = optionalFile.map(RestoreableFile::getFile);
+        optionalFile.ifPresent(r -> Globals.INSTANCE.setLockedFile(r.getFile()));
 
         return optionalFile;
     }
@@ -138,7 +138,7 @@ public class RestoreHelper {
         }
 
         public String toString() {
-            return this.getCreationTime().format(Statics.defaultDateTimeFormatter) + (comment != null ? "#" + comment : "");
+            return this.getCreationTime().format(Globals.defaultDateTimeFormatter) + (comment != null ? "#" + comment : "");
         }
     }
 }

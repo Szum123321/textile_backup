@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core.create;
 
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
@@ -42,7 +42,7 @@ public class MakeBackupRunnable implements Runnable {
 
     private final BackupContext context;
 
-    public MakeBackupRunnable(BackupContext context){
+    public MakeBackupRunnable(BackupContext context) {
         this.context = context;
     }
 
@@ -50,9 +50,9 @@ public class MakeBackupRunnable implements Runnable {
     public void run() {
         try {
             Utilities.disableWorldSaving(context.server());
-            Statics.disableWatchdog = true;
+            Globals.INSTANCE.disableWatchdog = true;
 
-            Utilities.updateTMPFSFlag(context.server());
+            Globals.INSTANCE.updateTMPFSFlag(context.server());
 
             log.sendInfoAL(context, "Starting backup");
 
@@ -90,7 +90,7 @@ public class MakeBackupRunnable implements Runnable {
 
             switch (config.get().format) {
                 case ZIP -> {
-                    if (coreCount > 1 && !Statics.disableTMPFiles) {
+                    if (coreCount > 1 && !Globals.INSTANCE.disableTMPFS()) {
                         ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                         log.trace("Using PARALLEL Zip Compressor. Threads: {}", coreCount);
                     } else {
@@ -120,7 +120,7 @@ public class MakeBackupRunnable implements Runnable {
             }
         } finally {
             Utilities.enableWorldSaving(context.server());
-            Statics.disableWatchdog = false;
+            Globals.INSTANCE.disableWatchdog = false;
         }
     }
 
