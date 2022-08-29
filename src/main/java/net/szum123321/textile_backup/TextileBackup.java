@@ -39,8 +39,8 @@ import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
+import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_NAME = "Textile Backup";
@@ -67,7 +67,7 @@ public class TextileBackup implements ModInitializer {
             Globals.INSTANCE.shutdownQueueExecutor(60000);
 
             if (config.get().shutdownBackup && Globals.INSTANCE.globalShutdownBackupFlag.get()) {
-                BackupHelper.create(
+                MakeBackupRunnableFactory.create(
                         BackupContext.Builder
                                 .newBackupContextBuilder()
                                 .setServer(server)

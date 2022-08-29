@@ -23,6 +23,7 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.Cleanup;
 import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
@@ -108,7 +109,7 @@ public class MakeBackupRunnable implements Runnable {
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
             }
 
-            BackupHelper.executeFileLimit(context.commandSource(), Utilities.getLevelName(context.server()));
+            Cleanup.executeFileLimit(context.commandSource(), Utilities.getLevelName(context.server()));
 
             if(config.get().broadcastBackupDone) {
                 Utilities.notifyPlayers(

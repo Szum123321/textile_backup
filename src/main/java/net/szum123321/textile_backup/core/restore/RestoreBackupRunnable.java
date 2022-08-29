@@ -27,7 +27,7 @@ import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.BackupHelper;
+import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
 import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecompressor;
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
@@ -55,7 +55,7 @@ public class RestoreBackupRunnable implements Runnable {
         awaitServerShutdown();
 
         if(config.get().backupOldWorlds) {
-            BackupHelper.create(
+            MakeBackupRunnableFactory.create(
                     BackupContext.Builder
                             .newBackupContextBuilder()
                             .setServer(ctx.server())

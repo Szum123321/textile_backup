@@ -44,7 +44,7 @@ public class BackupScheduler {
             if(scheduled) {
                 if(nextBackup <= now) {
                     Globals.INSTANCE.getQueueExecutor().submit(
-                            BackupHelper.create(
+                            MakeBackupRunnableFactory.create(
                                     BackupContext.Builder
                                             .newBackupContextBuilder()
                                             .setServer(server)
@@ -63,7 +63,7 @@ public class BackupScheduler {
         } else if(!config.get().doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
             if(scheduled && nextBackup <= now) {
                 Globals.INSTANCE.getQueueExecutor().submit(
-                        BackupHelper.create(
+                        MakeBackupRunnableFactory.create(
                                 BackupContext.Builder
                                         .newBackupContextBuilder()
                                         .setServer(server)

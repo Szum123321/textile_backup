@@ -26,7 +26,7 @@ import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.BackupHelper;
+import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
 
 import javax.annotation.Nullable;
 
@@ -43,7 +43,7 @@ public class StartBackupCommand {
     private static int execute(ServerCommandSource source, @Nullable String comment) {
         try {
             Globals.INSTANCE.getQueueExecutor().submit(
-                    BackupHelper.create(
+                    MakeBackupRunnableFactory.create(
                             BackupContext.Builder
                                     .newBackupContextBuilder()
                                     .setCommandSource(source)

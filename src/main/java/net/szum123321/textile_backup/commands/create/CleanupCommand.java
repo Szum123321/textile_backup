@@ -23,7 +23,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
-import net.szum123321.textile_backup.core.create.BackupHelper;
+import net.szum123321.textile_backup.core.Cleanup;
 import net.szum123321.textile_backup.core.Utilities;
 
 public class CleanupCommand {
@@ -38,7 +38,7 @@ public class CleanupCommand {
         log.sendInfo(
                 source,
                 "Deleted: {} files.",
-                BackupHelper.executeFileLimit(source, Utilities.getLevelName(source.getServer()))
+                Cleanup.executeFileLimit(source, Utilities.getLevelName(source.getServer()))
         );
 
         return 1;
