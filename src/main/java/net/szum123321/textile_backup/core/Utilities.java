@@ -25,11 +25,9 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
-import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
-import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 import org.apache.commons.io.file.SimplePathVisitor;
 import org.jetbrains.annotations.NotNull;
@@ -40,13 +38,8 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Optional;
-
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -72,20 +65,7 @@ public class Utilities {
 				.getSession()
 				.getWorldDirectory(World.OVERWORLD);
 	}
-	
-	public static Path getBackupRootPath(String worldName) {
-		Path path = Path.of(config.get().backupDirectoryPath).toAbsolutePath();
 
-		if (config.get().perWorldBackup) path = path.resolve(worldName);
-
-		try {
-			Files.createDirectories(path);
-		} catch (IOException e) {
-			//I REALLY shouldn't be handling this here
-		}
-
-		return path;
-	}
 
 	public static void deleteDirectory(Path path) throws IOException {
 		Files.walkFileTree(path, new SimplePathVisitor() {
@@ -121,64 +101,26 @@ public class Utilities {
 		return System.getProperty("os.name").toLowerCase().contains("win");
 	}
 
+	public static Path getBackupRootPath(String worldName) {
+		Path path = Path.of(config.get().backupDirectoryPath).toAbsolutePath();
+
+		if (config.get().perWorldBackup) path = path.resolve(worldName);
+
+		try {
+			Files.createDirectories(path);
+		} catch (IOException e) {
+			//I REALLY shouldn't be handling this here
+		}
+
+		return path;
+	}
+
 	public static boolean isBlacklisted(Path path) {
 		if(isWindows()) { //hotfix!
 			if (path.getFileName().toString().equals("session.lock")) return true;
 		}
 
 		return config.get().fileBlacklist.stream().anyMatch(path::startsWith);
-	}
-
-	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(String fileName) {
-		String[] parts = fileName.split("\\.");
-
-		return Arrays.stream(ConfigPOJO.ArchiveFormat.values())
-				.filter(format -> format.getLastPiece().equals(parts[parts.length - 1]))
-				.findAny();
-	}
-
-	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(Path f) {
-		return getArchiveExtension(f.getFileName().toString());
-	}
-
-	public static Optional<LocalDateTime> getFileCreationTime(Path file) {
-		if(getArchiveExtension(file).isEmpty()) return Optional.empty();
-		try {
-			FileTime fileTime = Files.readAttributes(file, BasicFileAttributes.class, NOFOLLOW_LINKS).creationTime();
-			return Optional.of(LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault()));
-		} catch (IOException ignored) {}
-
-		String fileExtension = getArchiveExtension(file).get().getCompleteString();
-
-		try {
-			return Optional.of(
-					LocalDateTime.from(
-							Utilities.getDateTimeFormatter().parse(
-									file.getFileName().toString().split(fileExtension)[0].split("#")[0]
-					)));
-		} catch (Exception ignored) {}
-
-		try {
-			return Optional.of(
-					LocalDateTime.from(
-							Globals.defaultDateTimeFormatter.parse(
-									file.getFileName().toString().split(fileExtension)[0].split("#")[0]
-							)));
-		} catch (Exception ignored) {}
-
-		return Optional.empty();
-	}
-
-	public static boolean isValidBackup(Path f) {
-		return getArchiveExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
-	}
-
-	public static boolean isFileOk(File f) {
-		return f.exists() && f.isFile();
-	}
-
-	public static boolean isFileOk(Path f) {
-		return Files.exists(f) && Files.isRegularFile(f);
 	}
 
 	public static DateTimeFormatter getDateTimeFormatter() {

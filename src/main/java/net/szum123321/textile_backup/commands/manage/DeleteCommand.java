@@ -28,6 +28,7 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
+import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.Utilities;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 public class DeleteCommand {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
@@ -59,30 +60,29 @@ public class DeleteCommand {
 
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer()));
 
-        try (Stream<Path> stream = Files.list(root)) {
-            stream.filter(Utilities::isValidBackup)
-                    .filter(file -> Utilities.getFileCreationTime(file).orElse(LocalDateTime.MIN).equals(dateTime))
-                    .findFirst().ifPresent(file -> {
-                        if(Globals.INSTANCE.getLockedFile().filter(p -> p == file).isEmpty()) {
-                            try {
-                                Files.delete(file);
-                                log.sendInfo(source, "File {} successfully deleted!", file);
+        RestoreableFile.applyOnFiles(root, Optional.empty(),
+                e -> {
+                    log.sendError(source, "Couldn't find file by this name.");
+                    log.sendHint(source, "Maybe try /backup list");
+                },
+                stream -> stream.filter(f -> f.getCreationTime().equals(dateTime)).map(RestoreableFile::getFile).findFirst()
+                ).ifPresent(file -> {
+                    if(Globals.INSTANCE.getLockedFile().filter(p -> p == file).isEmpty()) {
+                        try {
+                            Files.delete((Path) file);
+                            log.sendInfo(source, "File {} successfully deleted!", file);
 
-                                if(Utilities.wasSentByPlayer(source))
-                                    log.info("Player {} deleted {}.", source.getPlayer().getName(), file);
-                            } catch (IOException e) {
-                                log.sendError(source, "Something went wrong while deleting file!");
-                            }
-                        } else {
-                            log.sendError(source, "Couldn't delete the file because it's being restored right now.");
-                            log.sendHint(source, "If you want to abort restoration then use: /backup killR");
+                            if(Utilities.wasSentByPlayer(source))
+                                log.info("Player {} deleted {}.", source.getPlayer().getName(), file);
+                        } catch (IOException e) {
+                            log.sendError(source, "Something went wrong while deleting file!");
                         }
-                    });
-        } catch (IOException ignored) {
-            log.sendError(source, "Couldn't find file by this name.");
-            log.sendHint(source, "Maybe try /backup list");
-        }
-
+                    } else {
+                        log.sendError(source, "Couldn't delete the file because it's being restored right now.");
+                        log.sendHint(source, "If you want to abort restoration then use: /backup killR");
+                    }
+                }
+        );
         return 0;
     }
 }

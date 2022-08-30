@@ -23,6 +23,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
 import java.util.*;
@@ -33,7 +34,7 @@ public class ListBackupsCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("list")
                 .executes(ctx -> { StringBuilder builder = new StringBuilder();
-                    List<RestoreHelper.RestoreableFile> backups = RestoreHelper.getAvailableBackups(ctx.getSource().getServer());
+                    List<RestoreableFile> backups = RestoreHelper.getAvailableBackups(ctx.getSource().getServer());
 
                     if(backups.size() == 0) {
                         builder.append("There a no backups available for this world.");
@@ -42,7 +43,7 @@ public class ListBackupsCommand {
                         builder.append(backups.get(0).toString());
                     } else {
                         backups.sort(null);
-                        Iterator<RestoreHelper.RestoreableFile> iterator = backups.iterator();
+                        Iterator<RestoreableFile> iterator = backups.iterator();
                         builder.append("Available backups:\n");
 
                         builder.append(iterator.next());

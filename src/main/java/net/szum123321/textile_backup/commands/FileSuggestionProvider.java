@@ -20,12 +20,12 @@ package net.szum123321.textile_backup.commands;
 
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Globals;
+import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
@@ -42,7 +42,7 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
         String remaining = builder.getRemaining();
 
-        for (RestoreHelper.RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getServer())) {
+        for (RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getServer())) {
             String formattedCreationTime = file.getCreationTime().format(Globals.defaultDateTimeFormatter);
 
             if (formattedCreationTime.startsWith(remaining)) {
@@ -61,6 +61,7 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
                 }
             }
         }
+
         return builder.buildFuture();
     }
 }

@@ -29,6 +29,7 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
+import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.restore.RestoreContext;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
@@ -84,7 +85,7 @@ public class RestoreBackupCommand {
             throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
         }
 
-        Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
+        Optional<RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
 
         if(backupFile.isPresent()) {
             log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
