@@ -30,8 +30,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Objects;
+import java.util.stream.BaseStream;
 import java.util.stream.Stream;
 
 public class Cleanup {
@@ -47,11 +47,11 @@ public class Cleanup {
 		if (config.get().maxAge > 0) { // delete files older that configured
 			final long now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
-			deletedFiles += RestoreableFile.applyOnFiles(root, 0,
-					e -> log.error("An exception occurred while trying to delete old files!", e),
+			deletedFiles += RestoreableFile.applyOnFiles(root, 0L,
+					e -> log.error("An exception occurred while trying to delete an old files!", e),
 					stream -> stream.filter(f -> now - f.getCreationTime().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
-							.mapToInt(f -> deleteFile(f.getFile(), ctx))
-							.sum()
+							.filter(f -> deleteFile(f.getFile(), ctx))
+							.count()
 			);
 		}
 
@@ -59,26 +59,26 @@ public class Cleanup {
 		final long maxSize = config.get().maxSize > 0 ? config.get().maxSize * 1024: Long.MAX_VALUE;
 
 		long[] counts = count(root);
+		long n = counts[0], size = counts[1];
 
-		AtomicInteger currentNo = new AtomicInteger((int) counts[0]);
-		AtomicLong currentSize = new AtomicLong(counts[1]);
+		var it =  RestoreableFile.applyOnFiles(root, null,
+				e -> log.error("An exception occurred while trying to delete old files!", e), BaseStream::iterator);
 
-		deletedFiles += RestoreableFile.applyOnFiles(root, 0,
-				e -> log.error("An exception occurred while trying to delete old files!", e),
-				stream -> stream.sequential()
-						.takeWhile(f -> (currentNo.get() > noToKeep) || (currentSize.get() > maxSize))
-						.map(RestoreableFile::getFile)
-						.peek(f -> {
-							try {
-								currentSize.addAndGet(-Files.size(f));
-							} catch (IOException e) {
-								currentSize.set(0);
-								return;
-							}
-							currentNo.decrementAndGet();
-						})
-						.mapToInt(f -> deleteFile(f, ctx))
-						.sum());
+		if(Objects.isNull(it)) return deletedFiles;
+
+		while(it.hasNext() && (n > noToKeep || size > maxSize)) {
+			Path f = it.next().getFile();
+			long x;
+			try {
+				x = Files.size(f);
+			} catch (IOException e) { size = 0; continue; }
+
+			if(!deleteFile(f, ctx)) continue;
+
+			size -= x;
+			n--;
+			deletedFiles++;
+		}
 
 		return deletedFiles;
 	}
@@ -111,16 +111,16 @@ public class Cleanup {
 	}
 
 	//1 -> ok, 0 -> err
-	private static int deleteFile(Path f, ServerCommandSource ctx) {
-		if(Globals.INSTANCE.getLockedFile().filter(p -> p == f).isPresent()) return 0;
+	private static boolean deleteFile(Path f, ServerCommandSource ctx) {
+		if(Globals.INSTANCE.getLockedFile().filter(p -> p == f).isPresent()) return false;
 		try {
 			Files.delete(f);
 			log.sendInfoAL(ctx, "Deleted: {}", f);
 		} catch (IOException e) {
 			if(Utilities.wasSentByPlayer(ctx)) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
 			log.error("Something went wrong while deleting: {}.", f, e);
-			return 0;
+			return false;
 		}
-		return 1;
+		return true;
 	}
 }
