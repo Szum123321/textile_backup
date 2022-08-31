@@ -73,7 +73,6 @@ public abstract class AbstractCompressor {
             }
         } catch (IOException | InterruptedException | ExecutionException e) {
             log.error("An exception occurred!", e);
-        } catch (Exception e) {
             if(ctx.initiator() == ActionInitiator.Player)
                 log.sendError(ctx, "Something went wrong while compressing files!");
         } finally {
