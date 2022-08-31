@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
-import java.util.stream.BaseStream;
 import java.util.stream.Stream;
 
 public class Cleanup {
@@ -61,8 +60,9 @@ public class Cleanup {
 		long[] counts = count(root);
 		long n = counts[0], size = counts[1];
 
-		var it =  RestoreableFile.applyOnFiles(root, null,
-				e -> log.error("An exception occurred while trying to delete old files!", e), BaseStream::iterator);
+		var it = RestoreableFile.applyOnFiles(root, null,
+				e -> log.error("An exception occurred while trying to delete old files!", e),
+				s -> s.sorted().iterator());
 
 		if(Objects.isNull(it)) return deletedFiles;
 
