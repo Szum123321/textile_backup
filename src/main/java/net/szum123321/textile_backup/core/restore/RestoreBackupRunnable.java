@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+//TODO: Verify backup's validity?
 public class RestoreBackupRunnable implements Runnable {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;

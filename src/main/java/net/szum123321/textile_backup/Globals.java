@@ -36,16 +36,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Globals {
     public static final Globals INSTANCE = new Globals();
-    public final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
-
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+    public final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     public final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
-
     public boolean disableWatchdog = false;
     private boolean disableTMPFiles = false;
-
     private AwaitThread restoreAwaitThread = null;
     private Path lockedPath = null;
 

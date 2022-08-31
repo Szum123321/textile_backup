@@ -40,6 +40,9 @@ import java.util.stream.Stream;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
+/**
+ * This class parses backup files, extracting its creation time, format and possibly comment
+ */
 public class RestoreableFile implements Comparable<RestoreableFile> {
     private final Path file;
     private final ConfigPOJO.ArchiveFormat archiveFormat;
@@ -53,6 +56,7 @@ public class RestoreableFile implements Comparable<RestoreableFile> {
         this.comment = comment;
     }
 
+    //removes repetition of the files stream thingy with awfully large lambdas
     public static <T> T applyOnFiles(Path root, T def,  Consumer<IOException> errorConsumer, Function<Stream<RestoreableFile>, T> streamConsumer) {
         try (Stream<Path> stream = Files.list(root)) {
             return streamConsumer.apply(stream.flatMap(f -> RestoreableFile.build(f).stream()));

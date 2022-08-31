@@ -25,24 +25,32 @@ import net.szum123321.textile_backup.core.ActionInitiator;
 
 import java.time.Instant;
 
+/**
+ * Runs backup on a preset interval
+ * <br>
+ * The important thing to note: <br>
+ * In the case that <code>doBackupsOnEmptyServer == false</code> and there have been made backups with players online,
+ * then everyone left the backup that was scheduled with player is still going to run. So it might appear as though there
+ * has been made backup with no players online despite the config. This is the expected behaviour
+ * <br>
+ * Furthermore, it uses system time
+ */
 public class BackupScheduler {
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
-    private boolean scheduled;
-    private long nextBackup;
+    //Scheduled flag tells whether we have decided to run another backup
+    private static boolean scheduled = false;
+    private static long nextBackup = - 1;
 
-    public BackupScheduler() {
-        scheduled = false;
-        nextBackup = -1;
-    }
-
-    public void tick(MinecraftServer server) {
+    public static void tick(MinecraftServer server) {
         if(config.get().backupInterval < 1) return;
         long now = Instant.now().getEpochSecond();
 
         if(config.get().doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
+            //Either just run backup with no one playing or there's at least one player
             if(scheduled) {
                 if(nextBackup <= now) {
+                    //It's time to run
                     Globals.INSTANCE.getQueueExecutor().submit(
                             MakeBackupRunnableFactory.create(
                                     BackupContext.Builder
@@ -57,11 +65,15 @@ public class BackupScheduler {
                     nextBackup = now + config.get().backupInterval;
                 }
             } else {
+                //Either server just started or a new player joined after the last backup has finished
+                //So let's schedule one some time from now
                 nextBackup = now + config.get().backupInterval;
                 scheduled = true;
             }
         } else if(!config.get().doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
+            //Do the final backup. No one's on-line and doBackupsOnEmptyServer == false
             if(scheduled && nextBackup <= now) {
+                //Verify we hadn't done the final one and its time to do so
                 Globals.INSTANCE.getQueueExecutor().submit(
                         MakeBackupRunnableFactory.create(
                                 BackupContext.Builder

@@ -55,7 +55,7 @@ public class TextileBackup implements ModInitializer {
 
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
 
-        ServerTickEvents.END_SERVER_TICK.register(new BackupScheduler()::tick);
+        ServerTickEvents.END_SERVER_TICK.register(BackupScheduler::tick);
 
         //Restart Executor Service in single-player
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
@@ -63,6 +63,7 @@ public class TextileBackup implements ModInitializer {
             Globals.INSTANCE.updateTMPFSFlag(server);
         });
 
+        //Wait 60s for already submited backups to finish. After that kill the bastards and run the one last if required
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             Globals.INSTANCE.shutdownQueueExecutor(60000);
 

@@ -25,6 +25,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
+/**
+ * This mixin should numb Watchdog while a backup runs.
+ * If works as intended solves issues with watchdog errors
+ */
 @Mixin(DedicatedServerWatchdog.class)
 public class DedicatedServerWatchdogMixin {
 

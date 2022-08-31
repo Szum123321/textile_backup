@@ -37,6 +37,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+/**
+ * The actual object responsible for creating the backup
+ */
 public class MakeBackupRunnable implements Runnable {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -87,7 +90,7 @@ public class MakeBackupRunnable implements Runnable {
                         log.trace("Using PARALLEL Zip Compressor. Threads: {}", coreCount);
                     } else {
                         ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
-                        log.trace("Using REGULAR Zip Compressor. Threads: {}");
+                        log.trace("Using REGULAR Zip Compressor.");
                     }
                 }
                 case BZIP2 -> ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);

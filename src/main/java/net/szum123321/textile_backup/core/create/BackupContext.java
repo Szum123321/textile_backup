@@ -21,11 +21,8 @@ package net.szum123321.textile_backup.core.create;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Util;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.UUID;
 
 public record BackupContext(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
@@ -103,8 +100,7 @@ public record BackupContext(@NotNull MinecraftServer server,
 
             if (server == null) {
                 if (commandSource != null) setServer(commandSource.getServer());
-                else
-                    throw new RuntimeException("Neither MinecraftServer or ServerCommandSource were provided!");
+                else throw new RuntimeException("Neither MinecraftServer or ServerCommandSource were provided!");
             }
 
             return new BackupContext(server, commandSource, initiator, save, comment);

@@ -33,6 +33,9 @@ import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+/**
+ * Set of utility used for removing old backups
+ */
 public class Cleanup {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -55,7 +58,7 @@ public class Cleanup {
 		}
 
 		final int noToKeep = config.get().backupsToKeep > 0 ? config.get().backupsToKeep : Integer.MAX_VALUE;
-		final long maxSize = config.get().maxSize > 0 ? config.get().maxSize * 1024: Long.MAX_VALUE;
+		final long maxSize = config.get().maxSize > 0 ? config.get().maxSize * 1024: Long.MAX_VALUE; //max number of bytes to keep
 
 		long[] counts = count(root);
 		long n = counts[0], size = counts[1];
