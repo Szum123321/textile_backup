@@ -34,9 +34,7 @@ import java.util.concurrent.CompletableFuture;
 public final class FileSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
     private static final FileSuggestionProvider INSTANCE = new FileSuggestionProvider();
 
-    public static FileSuggestionProvider Instance() {
-        return INSTANCE;
-    }
+    public static FileSuggestionProvider Instance() { return INSTANCE; }
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
@@ -47,14 +45,14 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
 
             if (formattedCreationTime.startsWith(remaining)) {
                 if (Utilities.wasSentByPlayer(ctx.getSource())) {  //was typed by player
-                    if (file.getComment() != null) {
-                        builder.suggest(formattedCreationTime, new LiteralMessage("Comment: " + file.getComment()));
+                    if (file.getComment().isPresent()) {
+                        builder.suggest(formattedCreationTime, new LiteralMessage("Comment: " + file.getComment().get()));
                     } else {
                         builder.suggest(formattedCreationTime);
                     }
                 } else {  //was typed from server console
-                    if (file.getComment() != null) {
-                        builder.suggest(file.getCreationTime() + "#" + file.getComment());
+                    if (file.getComment().isPresent()) {
+                        builder.suggest(file.getCreationTime() + "#" + file.getComment().get());
                     } else {
                         builder.suggest(formattedCreationTime);
                     }

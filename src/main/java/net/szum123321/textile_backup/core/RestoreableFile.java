@@ -107,7 +107,7 @@ public class RestoreableFile implements Comparable<RestoreableFile> {
 
      public LocalDateTime getCreationTime() { return creationTime; }
 
-    public String getComment() { return comment; }
+    public Optional<String> getComment() { return Optional.ofNullable(comment); }
 
     @Override
     public int compareTo(@NotNull RestoreableFile o) { return creationTime.compareTo(o.creationTime); }
