@@ -67,17 +67,8 @@ public class MakeBackupRunnable implements Runnable {
 
             log.trace("Outfile is: {}", outFile);
 
-            try {
-                Files.createDirectories(outFile.getParent());
-                Files.createFile(outFile);
-            } catch (IOException e) {
-                log.error("An exception occurred when trying to create new backup file!", e);
-
-                if(context.initiator() == ActionInitiator.Player)
-                    log.sendError(context, "An exception occurred when trying to create new backup file!");
-
-                return;
-            }
+            Files.createDirectories(outFile.getParent());
+            Files.createFile(outFile);
 
             int coreCount;
 
@@ -119,6 +110,11 @@ public class MakeBackupRunnable implements Runnable {
             } else {
                 log.sendInfoAL(context, "Done!");
             }
+        } catch (IOException e) {
+            log.error("An exception occurred when trying to create new backup file!", e);
+
+            if(context.initiator() == ActionInitiator.Player)
+                log.sendError(context, "An exception occurred when trying to create new backup file!");
         } finally {
             Utilities.enableWorldSaving(context.server());
             Globals.INSTANCE.disableWatchdog = false;
