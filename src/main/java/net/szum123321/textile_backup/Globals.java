@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,7 +40,7 @@ public class Globals {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     public final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService = null;// = Executors.newSingleThreadExecutor();
     public final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
     public boolean disableWatchdog = false;
     private boolean disableTMPFiles = false;
@@ -51,7 +52,7 @@ public class Globals {
     public ExecutorService getQueueExecutor() { return executorService; }
 
     public void resetQueueExecutor()  {
-        if(!executorService.isShutdown()) return;
+        if(Objects.nonNull(executorService) && !executorService.isShutdown()) return;
         executorService = Executors.newSingleThreadExecutor();
     }
 

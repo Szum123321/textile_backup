@@ -24,8 +24,9 @@ import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Cleanup;
-import net.szum123321.textile_backup.core.create.compressors.*;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
+import net.szum123321.textile_backup.core.create.compressors.ZipCompressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
@@ -86,11 +87,11 @@ public class MakeBackupRunnable implements Runnable {
             switch (config.get().format) {
                 case ZIP -> {
                     if (coreCount > 1 && !Globals.INSTANCE.disableTMPFS()) {
-                        ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                         log.trace("Using PARALLEL Zip Compressor. Threads: {}", coreCount);
+                        ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                     } else {
-                        ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                         log.trace("Using REGULAR Zip Compressor.");
+                        ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                     }
                 }
                 case BZIP2 -> ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);
@@ -113,7 +114,8 @@ public class MakeBackupRunnable implements Runnable {
             } else {
                 log.sendInfoAL(context, "Done!");
             }
-        } catch (IOException e) {
+        } catch (Throwable e) {
+            //ExecutorService swallows exception, so I need to catch everythin
             log.error("An exception occurred when trying to create new backup file!", e);
 
             if(context.initiator() == ActionInitiator.Player)
