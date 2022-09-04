@@ -65,7 +65,7 @@ public class Cleanup {
 
 		var it = RestoreableFile.applyOnFiles(root, null,
 				e -> log.error("An exception occurred while trying to delete old files!", e),
-				s -> s.sorted().iterator());
+				s -> s.sorted().toList().iterator());
 
 		if(Objects.isNull(it)) return deletedFiles;
 
