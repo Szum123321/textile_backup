@@ -41,7 +41,7 @@ public class RestoreHelper {
 
         Optional<RestoreableFile> optionalFile =
                 RestoreableFile.applyOnFiles(root, Optional.empty(),
-                        e -> log.error("An error occurred while trying to lock file!", e),
+                        e -> log.error("An exception occurred while trying to lock the file!", e),
                         s -> s.filter(rf -> rf.getCreationTime().equals(backupTime))
                                 .findFirst());
 

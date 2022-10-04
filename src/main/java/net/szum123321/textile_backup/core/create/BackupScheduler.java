@@ -27,12 +27,13 @@ import java.time.Instant;
 
 /**
  * Runs backup on a preset interval
- * <br>
+ * <br><br>
  * The important thing to note: <br>
- * In the case that <code>doBackupsOnEmptyServer == false</code> and there have been made backups with players online,
- * then everyone left the backup that was scheduled with player is still going to run. So it might appear as though there
- * has been made backup with no players online despite the config. This is the expected behaviour
- * <br>
+ * The decision of whether to do a backup or not is made at the time of scheduling, that is, whenever the <code>nextBackup</code>
+ * flag is set. This means that even if doBackupsOnEmptyServer=false, the backup that was scheduled with players online will
+ * still go thorough. <br>
+ * It might appear as though there has been made a backup with no players online despite the config. This is the expected behaviour
+ * <br><br>
  * Furthermore, it uses system time
  */
 public class BackupScheduler {
@@ -73,7 +74,7 @@ public class BackupScheduler {
         } else if(!config.get().doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
             //Do the final backup. No one's on-line and doBackupsOnEmptyServer == false
             if(scheduled && nextBackup <= now) {
-                //Verify we hadn't done the final one and its time to do so
+                //Verify we hadn't done the final one, and it's time to do so
                 Globals.INSTANCE.getQueueExecutor().submit(
                         MakeBackupRunnableFactory.create(
                                 BackupContext.Builder

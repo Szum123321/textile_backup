@@ -50,7 +50,7 @@ public class Cleanup {
 			final long now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
 			deletedFiles += RestoreableFile.applyOnFiles(root, 0L,
-					e -> log.error("An exception occurred while trying to delete an old files!", e),
+					e -> log.error("An exception occurred while trying to delete old files!", e),
 					stream -> stream.filter(f -> now - f.getCreationTime().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
 							.filter(f -> deleteFile(f.getFile(), ctx))
 							.count()
