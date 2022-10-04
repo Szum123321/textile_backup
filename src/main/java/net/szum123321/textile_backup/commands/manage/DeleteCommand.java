@@ -61,12 +61,9 @@ public class DeleteCommand {
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer()));
 
         RestoreableFile.applyOnFiles(root, Optional.empty(),
-                e -> {
-                    log.sendError(source, "Couldn't find file by this name.");
-                    log.sendHint(source, "Maybe try /backup list");
-                },
+                e -> log.sendErrorAL(source, "An exception occurred while trying to delete a file!", e),
                 stream -> stream.filter(f -> f.getCreationTime().equals(dateTime)).map(RestoreableFile::getFile).findFirst()
-                ).ifPresent(file -> {
+                ).ifPresentOrElse(file -> {
                     if(Globals.INSTANCE.getLockedFile().filter(p -> p == file).isEmpty()) {
                         try {
                             Files.delete((Path) file);
@@ -81,6 +78,9 @@ public class DeleteCommand {
                         log.sendError(source, "Couldn't delete the file because it's being restored right now.");
                         log.sendHint(source, "If you want to abort restoration then use: /backup killR");
                     }
+                }, () -> {
+                    log.sendInfo(source, "Couldn't find file by this name.");
+                    log.sendInfo(source, "Maybe try /backup list");
                 }
         );
         return 0;
