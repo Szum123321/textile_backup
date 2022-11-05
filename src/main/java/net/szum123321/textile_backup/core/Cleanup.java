@@ -31,16 +31,25 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
 /**
  * Utility used for removing old backups
  */
-public class Cleanup {
+public class Cleanup implements Callable<Integer> {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
-	public static int executeFileLimit(ServerCommandSource ctx, String worldName) {
+	private final ServerCommandSource ctx;
+	private final String worldName;
+
+	public Cleanup(ServerCommandSource ctx, String worldName) {
+		this.ctx = ctx;
+		this.worldName = worldName;
+	}
+
+	public Integer call() {
 		Path root = Utilities.getBackupRootPath(worldName);
 		int deletedFiles = 0;
 
@@ -86,7 +95,7 @@ public class Cleanup {
 		return deletedFiles;
 	}
 
-	private static long[] count(Path root) {
+	private long[] count(Path root) {
 		long n = 0, size = 0;
 
 		try(Stream<Path> stream = Files.list(root)) {
@@ -108,13 +117,13 @@ public class Cleanup {
 		return new long[]{n, size};
 	}
 
-	private static boolean isEmpty(Path root) {
+	private boolean isEmpty(Path root) {
 		if (!Files.isDirectory(root)) return false;
 		return RestoreableFile.applyOnFiles(root, false, e -> {}, s -> s.findFirst().isEmpty());
 	}
 
 	//1 -> ok, 0 -> err
-	private static boolean deleteFile(Path f, ServerCommandSource ctx) {
+	private boolean deleteFile(Path f, ServerCommandSource ctx) {
 		if(Globals.INSTANCE.getLockedFile().filter(p -> p == f).isPresent()) return false;
 		try {
 			Files.delete(f);

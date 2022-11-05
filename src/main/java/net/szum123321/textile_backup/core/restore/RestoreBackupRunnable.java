@@ -83,7 +83,6 @@ public class RestoreBackupRunnable implements Runnable {
             log.info("Deleting old world...");
 
             Utilities.deleteDirectory(worldFile);
-
             Files.move(tmp, worldFile);
 
             if (config.get().deleteOldBackupAfterRestore) {

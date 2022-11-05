@@ -38,7 +38,7 @@ public class CleanupCommand {
         log.sendInfo(
                 source,
                 "Deleted: {} files.",
-                Cleanup.executeFileLimit(source, Utilities.getLevelName(source.getServer()))
+                new Cleanup(source, Utilities.getLevelName(source.getServer())).call()
         );
 
         return 1;

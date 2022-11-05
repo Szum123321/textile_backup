@@ -104,7 +104,7 @@ public class MakeBackupRunnable implements Runnable {
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
             }
 
-            Cleanup.executeFileLimit(context.commandSource(), Utilities.getLevelName(context.server()));
+            new Cleanup(context.commandSource(), Utilities.getLevelName(context.server())).call();
 
             if(config.get().broadcastBackupDone) {
                 Utilities.notifyPlayers(
