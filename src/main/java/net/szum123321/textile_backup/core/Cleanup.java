@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * Set of utility used for removing old backups
+ * Utility used for removing old backups
  */
 public class Cleanup {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);

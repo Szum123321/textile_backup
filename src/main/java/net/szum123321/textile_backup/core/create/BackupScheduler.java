@@ -31,7 +31,7 @@ import java.time.Instant;
  * The important thing to note: <br>
  * The decision of whether to do a backup or not is made at the time of scheduling, that is, whenever the <code>nextBackup</code>
  * flag is set. This means that even if doBackupsOnEmptyServer=false, the backup that was scheduled with players online will
- * still go thorough. <br>
+ * still go through. <br>
  * It might appear as though there has been made a backup with no players online despite the config. This is the expected behaviour
  * <br><br>
  * Furthermore, it uses system time
