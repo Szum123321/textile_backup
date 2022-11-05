@@ -10,7 +10,7 @@ archivesBaseName = project.archives_base_name
 version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
 group = project.maven_group
 
-repositories{
+repositories {
 	maven { url 'https://jitpack.io' }
 	maven { url "https://maven.shedaniel.me/" }
 	maven { url "https://maven.terraformersmc.com/releases/" }
@@ -35,7 +35,7 @@ dependencies {
 	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
 	//General compression library
-	modImplementation "org.apache.commons:commons-compress:1.21"
+	implementation "org.apache.commons:commons-compress:1.21"
 	include "org.apache.commons:commons-compress:1.21"
 
 	//LZMA support
