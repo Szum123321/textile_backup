@@ -62,6 +62,12 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
             }
         }
 
+        if("latest".startsWith(remaining) && !files.isEmpty()) //suggest latest
+            builder.suggest("latest", new LiteralMessage (
+                    files.getLast().getCreationTime().format(Globals.defaultDateTimeFormatter) +
+                            (files.getLast().getComment().map(s -> "#" + s).orElse("")))
+            );
+
         return builder.buildFuture();
     }
 }

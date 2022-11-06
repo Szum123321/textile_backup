@@ -50,6 +50,17 @@ public class RestoreHelper {
         return optionalFile;
     }
 
+    public static Optional<RestoreableFile> getLatestAndLockIfPresent( MinecraftServer server) {
+        var available = RestoreHelper.getAvailableBackups(server);
+
+        if(available.isEmpty()) return Optional.empty();
+        else {
+            var latest = available.getLast();
+            Globals.INSTANCE.setLockedFile(latest.getFile());
+            return Optional.of(latest);
+        }
+    }
+
     public static AwaitThread create(RestoreContext ctx) {
         if(ctx.initiator() == ActionInitiator.Player)
             log.info("Backup restoration was initiated by: {}", ctx.commandSource().getName());
@@ -67,11 +78,11 @@ public class RestoreHelper {
         );
     }
 
-    public static List<RestoreableFile> getAvailableBackups(MinecraftServer server) {
+    public static LinkedList<RestoreableFile> getAvailableBackups(MinecraftServer server) {
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
-        return RestoreableFile.applyOnFiles(root, List.of(),
+        return RestoreableFile.applyOnFiles(root, new LinkedList<>(),
                 e -> log.error("Error while listing available backups", e),
-                s -> s.collect(Collectors.toList()));
+                s -> s.sorted().collect(Collectors.toCollection(LinkedList::new)));
     }
 }

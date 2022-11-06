@@ -36,6 +36,7 @@ import net.szum123321.textile_backup.core.restore.RestoreHelper;
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 import java.util.Optional;
 
 public class RestoreBackupCommand {
@@ -65,6 +66,7 @@ public class RestoreBackupCommand {
                     log.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
                     log.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
                     log.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
+                    log.sendInfo(source, "You may also type '/backup restore latest' to restore the freshest backup");
 
                     return 1;
                 });
@@ -78,35 +80,40 @@ public class RestoreBackupCommand {
         }
 
         LocalDateTime dateTime;
+        Optional<RestoreableFile> backupFile;
 
-        try {
-            dateTime = LocalDateTime.from(Globals.defaultDateTimeFormatter.parse(file));
-        } catch (DateTimeParseException e) {
-            throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
+        if(Objects.equals(file, "latest")) {
+            backupFile = RestoreHelper.getLatestAndLockIfPresent(source.getServer());
+            dateTime = backupFile.map(RestoreableFile::getCreationTime).orElse(LocalDateTime.now());
+        } else {
+            try {
+                dateTime = LocalDateTime.from(Globals.defaultDateTimeFormatter.parse(file));
+            } catch (DateTimeParseException e) {
+                throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
+            }
+
+            backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
         }
 
-        Optional<RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
-
-        if(backupFile.isPresent()) {
-            log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
-        } else {
+        if(backupFile.isEmpty()) {
             log.sendInfo(source, "No file created on {} was found!", dateTime.format(Globals.defaultDateTimeFormatter));
             return -1;
+        } else {
+            log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
+
+            Globals.INSTANCE.setAwaitThread(
+                    RestoreHelper.create(
+                            RestoreContext.Builder.newRestoreContextBuilder()
+                                    .setCommandSource(source)
+                                    .setFile(backupFile.get())
+                                    .setComment(comment)
+                                    .build()
+                    )
+            );
+
+            Globals.INSTANCE.getAwaitThread().get().start();
+
+            return 1;
         }
-
-        Globals.INSTANCE.setAwaitThread(
-                RestoreHelper.create(
-                    RestoreContext.Builder.newRestoreContextBuilder()
-                            .setCommandSource(source)
-                            .setFile(backupFile.get())
-                            .setComment(comment)
-                            .build()
-                )
-        );
-
-        Globals.INSTANCE.getAwaitThread().get().start();
-
-        return 1;
     }
-
 }
