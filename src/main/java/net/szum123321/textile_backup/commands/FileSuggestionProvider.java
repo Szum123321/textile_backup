@@ -40,7 +40,9 @@ public final class FileSuggestionProvider implements SuggestionProvider<ServerCo
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
         String remaining = builder.getRemaining();
 
-        for (RestoreableFile file : RestoreHelper.getAvailableBackups(ctx.getSource().getServer())) {
+        var files = RestoreHelper.getAvailableBackups(ctx.getSource().getServer());
+
+        for (RestoreableFile file: files) {
             String formattedCreationTime = file.getCreationTime().format(Globals.defaultDateTimeFormatter);
 
             if (formattedCreationTime.startsWith(remaining)) {

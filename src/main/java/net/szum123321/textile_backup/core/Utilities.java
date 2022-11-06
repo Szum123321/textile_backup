@@ -44,9 +44,8 @@ public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-	public static boolean wasSentByPlayer(ServerCommandSource source) {
-		return source.isExecutedByPlayer();
-	}
+	//I'm keeping this wrapper function for easier backporting
+	public static boolean wasSentByPlayer(ServerCommandSource source) { return source.isExecutedByPlayer(); }
 
 	public static void notifyPlayers(@NotNull MinecraftServer server, String msg) {
 		MutableText message = log.getPrefixText();
@@ -104,10 +103,12 @@ public class Utilities {
 
 		if (config.get().perWorldBackup) path = path.resolve(worldName);
 
-		try {
-			Files.createDirectories(path);
-		} catch (IOException e) {
-			//I REALLY shouldn't be handling this here
+		if(Files.notExists(path)) {
+			try {
+				Files.createDirectories(path);
+			} catch (IOException e) {
+				//I REALLY shouldn't be handling this here
+			}
 		}
 
 		return path;

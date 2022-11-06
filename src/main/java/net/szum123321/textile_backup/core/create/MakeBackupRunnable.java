@@ -115,7 +115,7 @@ public class MakeBackupRunnable implements Runnable {
                 log.sendInfoAL(context, "Done!");
             }
         } catch (Throwable e) {
-            //ExecutorService swallows exception, so I need to catch everythin
+            //ExecutorService swallows exception, so I need to catch everything
             log.error("An exception occurred when trying to create new backup file!", e);
 
             if(context.initiator() == ActionInitiator.Player)

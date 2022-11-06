@@ -83,8 +83,8 @@ public class RestoreableFile implements Comparable<RestoreableFile> {
         String comment = null;
 
         if(filename.contains("#")) {
-            comment = filename.substring(filename.indexOf("#"), parsed_pos);
-            parsed_pos -= comment.length() - 1;
+            comment = filename.substring(filename.indexOf("#") + 1, parsed_pos);
+            parsed_pos -= comment.length() + 1;
         }
 
         var time_string = filename.substring(0, parsed_pos);
