@@ -18,16 +18,16 @@
 
 package net.szum123321.textile_backup.core.restore;
 
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.LivingServer;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.BackupHelper;
+import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
 import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecompressor;
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+//TODO: Verify backup's validity?
 public class RestoreBackupRunnable implements Runnable {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -47,7 +48,7 @@ public class RestoreBackupRunnable implements Runnable {
 
     @Override
     public void run() {
-        Statics.globalShutdownBackupFlag.set(false);
+        Globals.INSTANCE.globalShutdownBackupFlag.set(false);
 
         log.info("Shutting down server...");
 
@@ -55,9 +56,10 @@ public class RestoreBackupRunnable implements Runnable {
         awaitServerShutdown();
 
         if(config.get().backupOldWorlds) {
-            BackupHelper.create(
+            MakeBackupRunnableFactory.create(
                     BackupContext.Builder
                             .newBackupContextBuilder()
+                            .saveServer()
                             .setServer(ctx.server())
                             .setInitiator(ActionInitiator.Restore)
                             .setComment("Old_World" + (ctx.comment() != null ? "_" + ctx.comment() : ""))
@@ -82,7 +84,6 @@ public class RestoreBackupRunnable implements Runnable {
             log.info("Deleting old world...");
 
             Utilities.deleteDirectory(worldFile);
-
             Files.move(tmp, worldFile);
 
             if (config.get().deleteOldBackupAfterRestore) {
@@ -95,7 +96,7 @@ public class RestoreBackupRunnable implements Runnable {
         }
 
         //in case we're playing on client
-        Statics.globalShutdownBackupFlag.set(true);
+        Globals.INSTANCE.globalShutdownBackupFlag.set(true);
 
         log.info("Done!");
     }

@@ -18,10 +18,13 @@
 
 package net.szum123321.textile_backup.core;
 
+/**
+ * Enum representing possible sources of action
+ */
 public enum ActionInitiator {
     Player("Player", "by"),
-    ServerConsole("Server Console", "from"),
-    Timer("Timer", "by"),
+    ServerConsole("Server Console", "from"), //some/ting typed a command and it was not a player (command blocks and server console count)
+    Timer("Timer", "by"), //a.k.a scheduler
     Shutdown("Server Shutdown", "by"),
     Restore("Backup Restoration", "because of"),
     Null("Null (That shouldn't have happened)", "form");

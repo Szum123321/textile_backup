@@ -38,12 +38,9 @@ import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
-import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.BackupHelper;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
-
-import java.util.concurrent.Executors;
+import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_NAME = "Textile Backup";
@@ -58,20 +55,20 @@ public class TextileBackup implements ModInitializer {
 
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
 
-        ServerTickEvents.END_SERVER_TICK.register(new BackupScheduler()::tick);
+        ServerTickEvents.END_SERVER_TICK.register(BackupScheduler::tick);
 
         //Restart Executor Service in single-player
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            if(Statics.executorService.isShutdown()) Statics.executorService = Executors.newSingleThreadExecutor();
-
-            Utilities.updateTMPFSFlag(server);
+            Globals.INSTANCE.resetQueueExecutor();
+            Globals.INSTANCE.updateTMPFSFlag(server);
         });
 
+        //Wait 60s for already submited backups to finish. After that kill the bastards and run the one last if required
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-            Statics.executorService.shutdown();
+            Globals.INSTANCE.shutdownQueueExecutor(60000);
 
-            if (config.get().shutdownBackup && Statics.globalShutdownBackupFlag.get()) {
-                BackupHelper.create(
+            if (config.get().shutdownBackup && Globals.INSTANCE.globalShutdownBackupFlag.get()) {
+                MakeBackupRunnableFactory.create(
                         BackupContext.Builder
                                 .newBackupContextBuilder()
                                 .setServer(server)

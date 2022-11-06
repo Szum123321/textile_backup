@@ -28,34 +28,24 @@ import net.minecraft.world.World;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
-import net.szum123321.textile_backup.config.ConfigPOJO;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.file.SimplePathVisitor;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Optional;
-
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 public class Utilities {
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-	public static boolean wasSentByPlayer(ServerCommandSource source) {
-		return source.isExecutedByPlayer();
-	}
+	//I'm keeping this wrapper function for easier backporting
+	public static boolean wasSentByPlayer(ServerCommandSource source) { return source.isExecutedByPlayer(); }
 
 	public static void notifyPlayers(@NotNull MinecraftServer server, String msg) {
 		MutableText message = log.getPrefixText();
@@ -73,20 +63,6 @@ public class Utilities {
 				.getSession()
 				.getWorldDirectory(World.OVERWORLD);
 	}
-	
-	public static Path getBackupRootPath(String worldName) {
-		Path path = Path.of(config.get().path).toAbsolutePath();
-
-		if (config.get().perWorldBackup) path = path.resolve(worldName);
-
-		try {
-			Files.createDirectories(path);
-		} catch (IOException e) {
-			//I REALLY shouldn't be handling this here
-		}
-
-		return path;
-	}
 
 	public static void deleteDirectory(Path path) throws IOException {
 		Files.walkFileTree(path, new SimplePathVisitor() {
@@ -102,25 +78,6 @@ public class Utilities {
 				return FileVisitResult.CONTINUE;
 			}
 		});
-	}
-
-	public static void updateTMPFSFlag(MinecraftServer server) {
-		boolean flag = false;
-		Path tmp_dir = Path.of(System.getProperty("java.io.tmpdir"));
-		if(
-				FileUtils.sizeOfDirectory(Utilities.getWorldFolder(server).toFile()) >=
-				tmp_dir.toFile().getUsableSpace()
-		) {
-			log.error("Not enough space left in TMP directory! ({})", tmp_dir);
-			flag = true;
-		}
-		//!Files.isWritable(tmp_dir.resolve("test_txb_file_2137")) - Unsure why this was resolving to a file that isn't being created (at least not in Windows)
-		if(!Files.isWritable(tmp_dir)) {
-			log.error("TMP filesystem ({}) is read-only!", tmp_dir);
-			flag = true;
-		}
-
-		if((Statics.disableTMPFiles = flag)) log.error("Might cause: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
 	}
 
 	public static void disableWorldSaving(MinecraftServer server) {
@@ -141,6 +98,22 @@ public class Utilities {
 		return System.getProperty("os.name").toLowerCase().contains("win");
 	}
 
+	public static Path getBackupRootPath(String worldName) {
+		Path path = Path.of(config.get().backupDirectoryPath).toAbsolutePath();
+
+		if (config.get().perWorldBackup) path = path.resolve(worldName);
+
+		if(Files.notExists(path)) {
+			try {
+				Files.createDirectories(path);
+			} catch (IOException e) {
+				//I REALLY shouldn't be handling this here
+			}
+		}
+
+		return path;
+	}
+
 	public static boolean isBlacklisted(Path path) {
 		if(isWindows()) { //hotfix!
 			if (path.getFileName().toString().equals("session.lock")) return true;
@@ -149,64 +122,8 @@ public class Utilities {
 		return config.get().fileBlacklist.stream().anyMatch(path::startsWith);
 	}
 
-	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(String fileName) {
-		String[] parts = fileName.split("\\.");
-
-		return Arrays.stream(ConfigPOJO.ArchiveFormat.values())
-				.filter(format -> format.getLastPiece().equals(parts[parts.length - 1]))
-				.findAny();
-	}
-
-	public static Optional<ConfigPOJO.ArchiveFormat> getArchiveExtension(Path f) {
-		return getArchiveExtension(f.getFileName().toString());
-	}
-
-	public static Optional<LocalDateTime> getFileCreationTime(Path file) {
-		if(getArchiveExtension(file).isEmpty()) return Optional.empty();
-		try {
-			FileTime fileTime = Files.readAttributes(file, BasicFileAttributes.class, NOFOLLOW_LINKS).creationTime();
-			return Optional.of(LocalDateTime.ofInstant(fileTime.toInstant(), ZoneOffset.systemDefault()));
-		} catch (IOException ignored) {}
-
-		String fileExtension = getArchiveExtension(file).get().getCompleteString();
-
-		try {
-			return Optional.of(
-					LocalDateTime.from(
-							Utilities.getDateTimeFormatter().parse(
-									file.getFileName().toString().split(fileExtension)[0].split("#")[0]
-					)));
-		} catch (Exception ignored) {}
-
-		try {
-			return Optional.of(
-					LocalDateTime.from(
-							Utilities.getBackupDateTimeFormatter().parse(
-									file.getFileName().toString().split(fileExtension)[0].split("#")[0]
-							)));
-		} catch (Exception ignored) {}
-
-		return Optional.empty();
-	}
-
-	public static boolean isValidBackup(Path f) {
-		return getArchiveExtension(f).isPresent() && getFileCreationTime(f).isPresent() && isFileOk(f);
-	}
-
-	public static boolean isFileOk(File f) {
-		return f.exists() && f.isFile();
-	}
-
-	public static boolean isFileOk(Path f) {
-		return Files.exists(f) && Files.isRegularFile(f);
-	}
-
 	public static DateTimeFormatter getDateTimeFormatter() {
 		return DateTimeFormatter.ofPattern(config.get().dateTimeFormat);
-	}
-
-	public static DateTimeFormatter getBackupDateTimeFormatter() {
-		return Statics.defaultDateTimeFormatter;
 	}
 
 	public static String formatDuration(Duration duration) {

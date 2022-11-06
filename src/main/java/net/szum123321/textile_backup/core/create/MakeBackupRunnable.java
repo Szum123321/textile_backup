@@ -18,13 +18,15 @@
 
 package net.szum123321.textile_backup.core.create;
 
-import net.szum123321.textile_backup.Statics;
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
-import net.szum123321.textile_backup.core.create.compressors.*;
+import net.szum123321.textile_backup.core.Cleanup;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
+import net.szum123321.textile_backup.core.create.compressors.ZipCompressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
@@ -36,13 +38,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+/**
+ * The actual object responsible for creating the backup
+ */
 public class MakeBackupRunnable implements Runnable {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
     private final BackupContext context;
 
-    public MakeBackupRunnable(BackupContext context){
+    public MakeBackupRunnable(BackupContext context) {
         this.context = context;
     }
 
@@ -50,9 +55,9 @@ public class MakeBackupRunnable implements Runnable {
     public void run() {
         try {
             Utilities.disableWorldSaving(context.server());
-            Statics.disableWatchdog = true;
+            Globals.INSTANCE.disableWatchdog = true;
 
-            Utilities.updateTMPFSFlag(context.server());
+            Globals.INSTANCE.updateTMPFSFlag(context.server());
 
             log.sendInfoAL(context, "Starting backup");
 
@@ -66,17 +71,8 @@ public class MakeBackupRunnable implements Runnable {
 
             log.trace("Outfile is: {}", outFile);
 
-            try {
-                Files.createDirectories(outFile.getParent());
-                Files.createFile(outFile);
-            } catch (IOException e) {
-                log.error("An exception occurred when trying to create new backup file!", e);
-
-                if(context.initiator() == ActionInitiator.Player)
-                    log.sendError(context, "An exception occurred when trying to create new backup file!");
-
-                return;
-            }
+            Files.createDirectories(outFile.getParent());
+            Files.createFile(outFile);
 
             int coreCount;
 
@@ -90,12 +86,12 @@ public class MakeBackupRunnable implements Runnable {
 
             switch (config.get().format) {
                 case ZIP -> {
-                    if (coreCount > 1 && !Statics.disableTMPFiles) {
-                        ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
+                    if (coreCount > 1 && !Globals.INSTANCE.disableTMPFS()) {
                         log.trace("Using PARALLEL Zip Compressor. Threads: {}", coreCount);
+                        ParallelZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
                     } else {
+                        log.trace("Using REGULAR Zip Compressor.");
                         ZipCompressor.getInstance().createArchive(world, outFile, context, coreCount);
-                        log.trace("Using REGULAR Zip Compressor. Threads: {}");
                     }
                 }
                 case BZIP2 -> ParallelBZip2Compressor.getInstance().createArchive(world, outFile, context, coreCount);
@@ -108,7 +104,7 @@ public class MakeBackupRunnable implements Runnable {
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
             }
 
-            BackupHelper.executeFileLimit(context.commandSource(), Utilities.getLevelName(context.server()));
+            new Cleanup(context.commandSource(), Utilities.getLevelName(context.server())).call();
 
             if(config.get().broadcastBackupDone) {
                 Utilities.notifyPlayers(
@@ -118,9 +114,15 @@ public class MakeBackupRunnable implements Runnable {
             } else {
                 log.sendInfoAL(context, "Done!");
             }
+        } catch (Throwable e) {
+            //ExecutorService swallows exception, so I need to catch everything
+            log.error("An exception occurred when trying to create new backup file!", e);
+
+            if(context.initiator() == ActionInitiator.Player)
+                log.sendError(context, "An exception occurred when trying to create new backup file!");
         } finally {
             Utilities.enableWorldSaving(context.server());
-            Statics.disableWatchdog = false;
+            Globals.INSTANCE.disableWatchdog = false;
         }
     }
 

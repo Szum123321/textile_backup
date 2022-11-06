@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.12-SNAPSHOT'
+	id 'fabric-loom' version '1.0-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -10,16 +10,22 @@ archivesBaseName = project.archives_base_name
 version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
 group = project.maven_group
 
-repositories{
+repositories {
 	maven { url 'https://jitpack.io' }
 	maven { url "https://maven.shedaniel.me/" }
-	maven {
-		url "https://maven.terraformersmc.com/releases/"
-		content {
-			includeGroup "com.terraformersmc"
+	maven { url "https://maven.terraformersmc.com/releases/" }
+	mavenCentral()
+}
+
+loom {
+	runs {
+		testServer {
+			server()
+			ideConfigGenerated project.rootProject == project
+			name = "Testmod Server"
+			source sourceSets.test
 		}
 	}
-	mavenCentral()
 }
 
 dependencies {
@@ -40,15 +46,15 @@ dependencies {
 	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
 	//General compression library
-	modImplementation "org.apache.commons:commons-compress:1.21"
+	implementation "org.apache.commons:commons-compress:1.21"
 	include "org.apache.commons:commons-compress:1.21"
 
 	//LZMA support
-	modImplementation 'org.tukaani:xz:1.9'
+	implementation 'org.tukaani:xz:1.9'
 	include "org.tukaani:xz:1.9"
 
 	//Gzip compression, parallel, GITHUB
-	modImplementation "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
+	implementation "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
 	include "com.github.shevek:parallelgzip:${project.pgzip_commit_hash}"
 
 	// Lazy DFU makes the dev env start up much faster by loading DataFixerUpper lazily, which would otherwise take a long time. We rarely need it anyway.

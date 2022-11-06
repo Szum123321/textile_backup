@@ -18,6 +18,7 @@
 
 package net.szum123321.textile_backup.config;
 
+import blue.endless.jankson.annotation.SerializedName;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
@@ -63,8 +64,9 @@ public class ConfigPOJO implements ConfigData {
     public boolean backupOldWorlds = true;
 
     @Comment("\nA path to the backup folder\n")
+    @SerializedName("path")
     @ConfigEntry.Gui.NoTooltip()
-    public String path = "backup/";
+    public String backupDirectoryPath = "backup/";
 
     @Comment("""
             \nThis setting allows you to exclude files form being backed-up.

@@ -24,17 +24,19 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
+import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.restore.RestoreContext;
 import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 import java.util.Optional;
 
 public class RestoreBackupCommand {
@@ -64,47 +66,54 @@ public class RestoreBackupCommand {
                     log.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
                     log.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
                     log.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
+                    log.sendInfo(source, "You may also type '/backup restore latest' to restore the freshest backup");
 
                     return 1;
                 });
     }
 
     private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
-        if(Statics.restoreAwaitThread == null || (Statics.restoreAwaitThread != null && !Statics.restoreAwaitThread.isAlive())) {
-            LocalDateTime dateTime;
+        if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isPresent()) {
+            log.sendInfo(source, "Someone has already started another restoration.");
 
+            return -1;
+        }
+
+        LocalDateTime dateTime;
+        Optional<RestoreableFile> backupFile;
+
+        if(Objects.equals(file, "latest")) {
+            backupFile = RestoreHelper.getLatestAndLockIfPresent(source.getServer());
+            dateTime = backupFile.map(RestoreableFile::getCreationTime).orElse(LocalDateTime.now());
+        } else {
             try {
-                dateTime = LocalDateTime.from(Statics.defaultDateTimeFormatter.parse(file));
+                dateTime = LocalDateTime.from(Globals.defaultDateTimeFormatter.parse(file));
             } catch (DateTimeParseException e) {
                 throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
             }
 
-            Optional<RestoreHelper.RestoreableFile> backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
+            backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
+        }
 
-            if(backupFile.isPresent()) {
-                log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
-            } else {
-                log.sendInfo(source, "No file created on {} was found!", dateTime.format(Statics.defaultDateTimeFormatter));
+        if(backupFile.isEmpty()) {
+            log.sendInfo(source, "No file created on {} was found!", dateTime.format(Globals.defaultDateTimeFormatter));
+            return -1;
+        } else {
+            log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
 
-                return 0;
-            }
-
-            Statics.restoreAwaitThread = RestoreHelper.create(
-                    RestoreContext.Builder.newRestoreContextBuilder()
-                        .setCommandSource(source)
-                        .setFile(backupFile.get())
-                        .setComment(comment)
-                        .build()
+            Globals.INSTANCE.setAwaitThread(
+                    RestoreHelper.create(
+                            RestoreContext.Builder.newRestoreContextBuilder()
+                                    .setCommandSource(source)
+                                    .setFile(backupFile.get())
+                                    .setComment(comment)
+                                    .build()
+                    )
             );
 
-            Statics.restoreAwaitThread.start();
+            Globals.INSTANCE.getAwaitThread().get().start();
 
             return 1;
-        } else {
-            log.sendInfo(source, "Someone has already started another restoration.");
-
-            return 0;
         }
     }
-
 }

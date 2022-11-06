@@ -33,6 +33,9 @@ import java.time.Instant;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
+/**
+ * Basic abstract class representing directory compressor
+ */
 public abstract class AbstractCompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
@@ -73,7 +76,6 @@ public abstract class AbstractCompressor {
             }
         } catch (IOException | InterruptedException | ExecutionException e) {
             log.error("An exception occurred!", e);
-        } catch (Exception e) {
             if(ctx.initiator() == ActionInitiator.Player)
                 log.sendError(ctx, "Something went wrong while compressing files!");
         } finally {
@@ -89,7 +91,7 @@ public abstract class AbstractCompressor {
     protected abstract void addEntry(Path file, String entryName, OutputStream arc) throws IOException;
 
     protected void finish(OutputStream arc) throws InterruptedException, ExecutionException, IOException {
-        //Basically this function is only needed for the ParallelZipCompressor to write out ParallelScatterZipCreator
+        //This function is only needed for the ParallelZipCompressor to write out ParallelScatterZipCreator
     }
 
     protected void close() {

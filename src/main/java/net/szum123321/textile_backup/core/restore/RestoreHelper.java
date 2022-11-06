@@ -19,22 +19,18 @@
 package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
-import net.szum123321.textile_backup.config.ConfigPOJO;
-import net.szum123321.textile_backup.Statics;
 import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.Utilities;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RestoreHelper {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
@@ -43,20 +39,26 @@ public class RestoreHelper {
     public static Optional<RestoreableFile> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
-        Optional<RestoreableFile> optionalFile;
-        try (Stream<Path> stream = Files.list(root)) {
-            optionalFile =  stream
-                    .map(RestoreableFile::newInstance)
-                    .flatMap(Optional::stream)
-                    .filter(rf -> rf.getCreationTime().equals(backupTime))
-                    .findFirst();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Optional<RestoreableFile> optionalFile =
+                RestoreableFile.applyOnFiles(root, Optional.empty(),
+                        e -> log.error("An exception occurred while trying to lock the file!", e),
+                        s -> s.filter(rf -> rf.getCreationTime().equals(backupTime))
+                                .findFirst());
 
-        Statics.untouchableFile = optionalFile.map(RestoreableFile::getFile);
+        optionalFile.ifPresent(r -> Globals.INSTANCE.setLockedFile(r.getFile()));
 
         return optionalFile;
+    }
+
+    public static Optional<RestoreableFile> getLatestAndLockIfPresent( MinecraftServer server) {
+        var available = RestoreHelper.getAvailableBackups(server);
+
+        if(available.isEmpty()) return Optional.empty();
+        else {
+            var latest = available.getLast();
+            Globals.INSTANCE.setLockedFile(latest.getFile());
+            return Optional.of(latest);
+        }
     }
 
     public static AwaitThread create(RestoreContext ctx) {
@@ -76,69 +78,11 @@ public class RestoreHelper {
         );
     }
 
-    public static List<RestoreableFile> getAvailableBackups(MinecraftServer server) {
+    public static LinkedList<RestoreableFile> getAvailableBackups(MinecraftServer server) {
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
-        try (Stream<Path> stream = Files.list(root)) {
-            return stream.filter(Utilities::isValidBackup)
-                    .map(RestoreableFile::newInstance)
-                    .flatMap(Optional::stream)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            log.error("Error while listing available backups", e);
-            return new LinkedList<>();
-        }
-    }
-
-    public static class RestoreableFile implements Comparable<RestoreableFile> {
-        private final Path file;
-        private final ConfigPOJO.ArchiveFormat archiveFormat;
-        private final LocalDateTime creationTime;
-        private final String comment;
-
-        private RestoreableFile(Path file) throws NoSuchElementException {
-            this.file = file;
-            archiveFormat = Utilities.getArchiveExtension(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file extension!"));
-            String extension = archiveFormat.getCompleteString();
-            creationTime = Utilities.getFileCreationTime(file).orElseThrow(() -> new NoSuchElementException("Couldn't get file creation time!"));
-
-            final String filename = file.getFileName().toString();
-
-            if(filename.split("#").length > 1) this.comment = filename.split("#")[1].split(extension)[0];
-            else this.comment = null;
-        }
-
-        public static Optional<RestoreableFile> newInstance(Path file) {
-            try {
-                return Optional.of(new RestoreableFile(file));
-            } catch (NoSuchElementException ignored) {}
-
-            return Optional.empty();
-        }
-
-        public Path getFile() {
-            return file;
-        }
-
-        public ConfigPOJO.ArchiveFormat getArchiveFormat() {
-            return archiveFormat;
-        }
-
-        public LocalDateTime getCreationTime() {
-            return creationTime;
-        }
-
-        public String getComment() {
-            return comment;
-        }
-
-        @Override
-        public int compareTo(@NotNull RestoreHelper.RestoreableFile o) {
-            return creationTime.compareTo(o.creationTime);
-        }
-
-        public String toString() {
-            return this.getCreationTime().format(Statics.defaultDateTimeFormatter) + (comment != null ? "#" + comment : "");
-        }
+        return RestoreableFile.applyOnFiles(root, new LinkedList<>(),
+                e -> log.error("Error while listing available backups", e),
+                s -> s.sorted().collect(Collectors.toCollection(LinkedList::new)));
     }
 }

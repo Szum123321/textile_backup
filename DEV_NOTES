@@ -1,0 +1,3 @@
+NoClassDefFoundError in dev:
+    - Intellij appears to add Common Compress into the excluded path in dev environment.
+      To repair this go to Edit Configuration, select either server or client and remove common compress from Modify Classpath
