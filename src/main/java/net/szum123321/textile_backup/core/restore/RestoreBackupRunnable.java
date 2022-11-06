@@ -59,7 +59,6 @@ public class RestoreBackupRunnable implements Runnable {
             MakeBackupRunnableFactory.create(
                     BackupContext.Builder
                             .newBackupContextBuilder()
-                            .saveServer()
                             .setServer(ctx.server())
                             .setInitiator(ActionInitiator.Restore)
                             .setComment("Old_World" + (ctx.comment() != null ? "_" + ctx.comment() : ""))
