@@ -20,13 +20,12 @@ package net.szum123321.textile_backup.core.create.compressors.tar;
 
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.compressors.AbstractCompressor;
+import net.szum123321.textile_backup.core.create.InputSupplier;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class AbstractTarArchiver extends AbstractCompressor {
     protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
@@ -43,9 +42,9 @@ public class AbstractTarArchiver extends AbstractCompressor {
     }
 
     @Override
-    protected void addEntry(Path file, String entryName, OutputStream arc) throws IOException {
-        try (InputStream fileInputStream = Files.newInputStream(file)){
-            TarArchiveEntry entry = (TarArchiveEntry)((TarArchiveOutputStream) arc).createArchiveEntry(file, entryName);
+    protected void addEntry(InputSupplier in, OutputStream arc) throws IOException {
+        try (InputStream fileInputStream = in.getInputStream()) {
+            TarArchiveEntry entry = (TarArchiveEntry)((TarArchiveOutputStream) arc).createArchiveEntry(in.getPath(), in.getName());
             ((TarArchiveOutputStream)arc).putArchiveEntry(entry);
 
             IOUtils.copy(fileInputStream, arc);

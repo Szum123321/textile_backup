@@ -21,6 +21,7 @@ package net.szum123321.textile_backup.core.create.compressors;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.InputSupplier;
 import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -54,15 +55,15 @@ public class ZipCompressor extends AbstractCompressor {
     }
 
     @Override
-    protected void addEntry(Path file, String entryName, OutputStream arc) throws IOException {
-        try (InputStream fileInputStream = Files.newInputStream(file)){
-            ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
+    protected void addEntry(InputSupplier input, OutputStream arc) throws IOException {
+        try (InputStream fileInputStream = input.getInputStream()) {
+            ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(input.getPath(), input.getName());
 
-            if(isDotDat(file.getFileName().toString())) {
+            if(isDotDat(input.getPath().getFileName().toString())) {
                 entry.setMethod(ZipEntry.STORED);
-                entry.setSize(Files.size(file));
-                entry.setCompressedSize(Files.size(file));
-                entry.setCrc(getCRC(file));
+                entry.setSize(Files.size(input.getPath()));
+                entry.setCompressedSize(Files.size(input.getPath()));
+                entry.setCrc(getCRC(input.getPath()));
             }
 
             ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);

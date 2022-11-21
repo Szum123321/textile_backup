@@ -22,12 +22,11 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.NoSpaceLeftOnDeviceException;
 import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.InputSupplier;
 import org.apache.commons.compress.archivers.zip.*;
-import org.apache.commons.compress.parallel.InputStreamSupplier;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
@@ -67,19 +66,19 @@ public class ParallelZipCompressor extends ZipCompressor {
 	}
 
 	@Override
-	protected void addEntry(Path file, String entryName, OutputStream arc) throws IOException {
-		ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
+	protected void addEntry(InputSupplier input, OutputStream arc) throws IOException {
+		ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(input.getPath(), input.getName());
 
-		if(ZipCompressor.isDotDat(file.getFileName().toString())) {
+		if(ZipCompressor.isDotDat(input.getPath().getFileName().toString())) {
 			entry.setMethod(ZipEntry.STORED);
-			entry.setSize(Files.size(file));
-			entry.setCompressedSize(Files.size(file));
-			entry.setCrc(getCRC(file));
+			entry.setSize(Files.size(input.getPath()));
+			entry.setCompressedSize(Files.size(input.getPath()));
+			entry.setCrc(getCRC(input.getPath()));
 		} else entry.setMethod(ZipEntry.DEFLATED);
 
 		entry.setTime(System.currentTimeMillis());
 
-		scatterZipCreator.addArchiveEntry(entry, new FileInputStreamSupplier(file));
+		scatterZipCreator.addArchiveEntry(entry, input);
 	}
 
 	@Override
@@ -125,18 +124,6 @@ public class ParallelZipCompressor extends ZipCompressor {
 			if(getClass() != o.getClass()) return false;
 			SimpleStackTraceElement that = (SimpleStackTraceElement) o;
 			return isNative == that.isNative && Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName);
-		}
-	}
-
-	record FileInputStreamSupplier(Path sourceFile) implements InputStreamSupplier {
-		public InputStream get() {
-			try {
-				return Files.newInputStream(sourceFile);
-			} catch (IOException e) {
-				log.error("An exception occurred while trying to create an input stream from file: {}!", sourceFile.toString(), e);
-			}
-
-			return null;
 		}
 	}
 }
