@@ -5,7 +5,8 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 public record CompressionStatus(long[] treeHash, LocalDateTime date, long startTimestamp, long finishTimestamp, boolean ok, Path[] brokenFiles) implements Serializable {
-
+    public static final String DATA_FILENAME = "textile_status.data";
+    public boolean isValid(long decompressedHash) { return true; }
     public static class Builder {
         public synchronized void update(Path path, long hash, Exception error) { throw new RuntimeException("UNIMPLEMENTED!"); }
         public synchronized void update(Path path, Exception error) { throw new RuntimeException("UNIMPLEMENTED!"); }

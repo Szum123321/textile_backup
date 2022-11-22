@@ -110,16 +110,14 @@ public abstract class AbstractCompressor {
     }
 
     private record StatusFileInputSupplier(byte[] data, int len) implements InputSupplier {
-        private final static String NAME = "textile_status.data";
-
         @Override
         public InputStream getInputStream() { return new ByteArrayInputStream(data, 0, len); }
 
         @Override
-        public Path getPath() { return Path.of(NAME); }
+        public Path getPath() { return Path.of(CompressionStatus.DATA_FILENAME); }
 
         @Override
-        public String getName() { return NAME; }
+        public String getName() { return CompressionStatus.DATA_FILENAME; }
 
         @Override
         public InputStream get() { return new ByteArrayInputStream(data, 0, len); }

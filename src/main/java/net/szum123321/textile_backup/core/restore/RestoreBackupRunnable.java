@@ -24,6 +24,7 @@ import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.CompressionStatus;
 import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
@@ -32,6 +33,8 @@ import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecomp
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -66,13 +69,22 @@ public class RestoreBackupRunnable implements Runnable {
             ).run();
         }
 
-        Path worldFile = Utilities.getWorldFolder(ctx.server());
+        Path worldFile = Utilities.getWorldFolder(ctx.server()), tmp = null;
 
         try {
-            Path tmp = Files.createTempDirectory(
-                    worldFile.getParent(),
+            tmp = Files.createTempDirectory(
+                    ctx.server().getRunDirectory().toPath(),
                     ctx.restoreableFile().getFile().getFileName().toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
+        if(tmp == null) {
+            //TODO: log error!
+            return;
+        }
+
+        try {
             log.info("Starting decompression...");
 
             if (ctx.restoreableFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.ZIP)
@@ -80,18 +92,36 @@ public class RestoreBackupRunnable implements Runnable {
             else
                 GenericTarDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
 
-            log.info("Deleting old world...");
+            CompressionStatus status = null;
 
-            Utilities.deleteDirectory(worldFile);
-            Files.move(tmp, worldFile);
+            try (InputStream in = Files.newInputStream(tmp.resolve(CompressionStatus.DATA_FILENAME))) {
+                ObjectInputStream objectInputStream = new ObjectInputStream(in);
+                status = (CompressionStatus)objectInputStream.readObject();
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
 
-            if (config.get().deleteOldBackupAfterRestore) {
-                log.info("Deleting old backup");
+            if(status.isValid(0)) {
+                log.info("Deleting old world...");
 
-                Files.delete(ctx.restoreableFile().getFile());
+                Utilities.deleteDirectory(worldFile);
+                Files.move(tmp, worldFile);
+
+                if (config.get().deleteOldBackupAfterRestore) {
+                    log.info("Deleting old backup");
+                    Files.delete(ctx.restoreableFile().getFile());
+                }
             }
         } catch (IOException e) {
             log.error("An exception occurred while trying to restore a backup!", e);
+        } finally {
+            if(Files.exists(tmp)) {
+                try {
+                    Utilities.deleteDirectory(tmp);
+                } catch (IOException e) {
+                    //TODO: Log error!
+                }
+            }
         }
 
         //in case we're playing on client
