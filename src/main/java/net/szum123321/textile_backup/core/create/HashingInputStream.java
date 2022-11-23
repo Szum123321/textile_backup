@@ -1,41 +1,46 @@
 /*
-    A simple backup mod for Fabric
-    Copyright (C) 2022  Szum123321
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * A simple backup mod for Fabric
+ * Copyright (C) 2022  Szum123321
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 package net.szum123321.textile_backup.core.create;
 
-import net.szum123321.textile_backup.core.CompressionStatus;
+import net.szum123321.textile_backup.core.DataLeftException;
+import net.szum123321.textile_backup.core.FileTreeHashBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.zip.Checksum;
 
+//This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
+//In case the whole underlying stream hasn't been read, also puts it into BrokeFileHandler
 public class HashingInputStream extends FilterInputStream {
 
     private final Path path;
     private final Checksum hasher;
-    private final CompressionStatus.Builder statusBuilder;
+    private final FileTreeHashBuilder hashBuilder;
+    private final BrokenFileHandler brokenFileHandler;
 
-    public HashingInputStream(InputStream in, Path path, Checksum hasher, CompressionStatus.Builder statusBuilder) {
+    public HashingInputStream(InputStream in, Path path, Checksum hasher, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler) {
         super(in);
-        this.hasher = hasher;
-        this.statusBuilder = statusBuilder;
         this.path = path;
+        this.hasher = hasher;
+        this.hashBuilder = hashBuilder;
+        this.brokenFileHandler = brokenFileHandler;
     }
 
     @Override
@@ -54,8 +59,8 @@ public class HashingInputStream extends FilterInputStream {
 
     @Override
     public void close() throws IOException {
-        if(in.available() == 0) statusBuilder.update(path, hasher.getValue());
-        else statusBuilder.update(path, hasher.getValue(), new RuntimeException("AAAaa"));
+        if(in.available() == 0) hashBuilder.update(path, hasher.getValue());
+        else brokenFileHandler.handle(path, new DataLeftException(in.available()));
         super.close();
     }
 }

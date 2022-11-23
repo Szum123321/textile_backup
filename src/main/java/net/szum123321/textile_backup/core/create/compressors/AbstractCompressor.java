@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2020  Szum123321
+ * Copyright (C) 2022  Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@ package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
-import net.szum123321.textile_backup.core.ActionInitiator;
-import net.szum123321.textile_backup.core.CompressionStatus;
-import net.szum123321.textile_backup.core.NoSpaceLeftOnDeviceException;
-import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.config.ConfigPOJO;
+import net.szum123321.textile_backup.core.*;
 import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.BrokenFileHandler;
 import net.szum123321.textile_backup.core.create.FileInputStreamSupplier;
 import net.szum123321.textile_backup.core.create.InputSupplier;
 
@@ -45,32 +45,53 @@ public abstract class AbstractCompressor {
     public void createArchive(Path inputFile, Path outputFile, BackupContext ctx, int coreLimit) {
         Instant start = Instant.now();
 
+        FileTreeHashBuilder fileHashBuilder = new FileTreeHashBuilder(() -> null); //TODO: select hashing algorithm
+        BrokenFileHandler brokenFileHandler = new BrokenFileHandler();
+
+        boolean keep = true;
+
         try (OutputStream outStream = Files.newOutputStream(outputFile);
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
              OutputStream arc = createArchiveOutputStream(bufferedOutputStream, ctx, coreLimit);
              Stream<Path> fileStream = Files.walk(inputFile)) {
-
-            CompressionStatus.Builder statusBuilder = new CompressionStatus.Builder();
-
-            fileStream
+            var it = fileStream
                     .filter(path -> !Utilities.isBlacklisted(inputFile.relativize(path)))
-                    .filter(Files::isRegularFile).forEach(file -> {
-                        try {
-                            addEntry(new FileInputStreamSupplier(file, inputFile.relativize(file).toString(), statusBuilder), arc);
-                        } catch (IOException e) {
-                            log.error("An exception occurred while trying to compress: {}", inputFile.relativize(file).toString(), e);
+                    .filter(Files::isRegularFile).iterator();
 
-                            if (ctx.initiator() == ActionInitiator.Player)
-                                log.sendError(ctx, "Something went wrong while compressing files!");
-                        }
-                    });
+            while(it.hasNext()) {
+                Path file = it.next();
+
+                try {
+                    addEntry(new FileInputStreamSupplier(file, inputFile.relativize(file).toString(), fileHashBuilder, brokenFileHandler), arc);
+                } catch (Exception e) {
+                    if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode == ConfigPOJO.ErrorHandlingMode.STRICT) {
+                        keep = false;
+                        break;
+                    }
+                    brokenFileHandler.handle(file, e);
+                }
+            }
+
+            //If there are still files left in the stream, we should handle them
+            while(it.hasNext()) {
+                Path file = it.next();
+                brokenFileHandler.handle(file, new DataLeftException(Files.size(file)));
+            }
+
+            Instant now = Instant.now();
+
+            CompressionStatus status = new CompressionStatus (
+                    fileHashBuilder.getValue(),
+                    null, start.toEpochMilli(), now.toEpochMilli(),
+                    brokenFileHandler.get()
+            );
 
             //Serialize using gson?
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(bo);
-            o.writeObject(statusBuilder.build());
-
-            addEntry(new StatusFileInputSupplier(bo.toByteArray(), bo.size()), arc);
+            try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
+                 ObjectOutputStream o = new ObjectOutputStream(bo)) {
+                o.writeObject(status);
+                addEntry(new StatusFileInputSupplier(bo.toByteArray()), arc);
+            }
 
             finish(arc);
         } catch(NoSpaceLeftOnDeviceException e) {
@@ -85,15 +106,16 @@ public abstract class AbstractCompressor {
                 log.sendError(ctx, "Backup failed. The file is corrupt.");
                 log.error("For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
             }
+            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode == ConfigPOJO.ErrorHandlingMode.STRICT) keep = false;
         } catch (IOException | InterruptedException | ExecutionException e) {
             log.error("An exception occurred!", e);
             if(ctx.initiator() == ActionInitiator.Player)
                 log.sendError(ctx, "Something went wrong while compressing files!");
+            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode == ConfigPOJO.ErrorHandlingMode.STRICT) keep = false;
+
         } finally {
             close();
         }
-
-        //  close();
 
         log.sendInfoAL(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
@@ -109,17 +131,13 @@ public abstract class AbstractCompressor {
         //Same as above, just for ParallelGzipCompressor to shut down ExecutorService
     }
 
-    private record StatusFileInputSupplier(byte[] data, int len) implements InputSupplier {
-        @Override
-        public InputStream getInputStream() { return new ByteArrayInputStream(data, 0, len); }
+    private record StatusFileInputSupplier(byte[] data) implements InputSupplier {
+        public InputStream getInputStream() { return new ByteArrayInputStream(data); }
 
-        @Override
         public Path getPath() { return Path.of(CompressionStatus.DATA_FILENAME); }
 
-        @Override
         public String getName() { return CompressionStatus.DATA_FILENAME; }
 
-        @Override
-        public InputStream get() { return new ByteArrayInputStream(data, 0, len); }
+        public InputStream get() { return getInputStream(); }
     }
  }

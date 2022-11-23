@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2020  Szum123321
+ * Copyright (C) 2022  Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 						if(!STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE[i].equals(cause.getStackTrace()[i])) match = false;
 
 
-					//For clarity' sake let's not throw the ExecutionException itself rather only the cause, as the EE is just the wrapper
+					//For clarity's sake let's not throw the ExecutionException itself rather only the cause, as the EE is just the wrapper
 					if(match) throw new NoSpaceLeftOnDeviceException(cause);
 				}
 			}
