@@ -20,7 +20,9 @@ package net.szum123321.textile_backup.core.restore.decompressors;
 
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.core.FileTreeHashBuilder;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.restore.HashingOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
@@ -35,8 +37,10 @@ import java.util.Iterator;
 public class ZipDecompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static void decompress(Path inputFile, Path target) throws IOException {
+    public static long decompress(Path inputFile, Path target) throws IOException {
         Instant start = Instant.now();
+
+        FileTreeHashBuilder hashBuilder = new FileTreeHashBuilder(() -> null);
 
         try(ZipFile zipFile = new ZipFile(inputFile.toFile())) {
             for (Iterator<ZipArchiveEntry> it = zipFile.getEntries().asIterator(); it.hasNext(); ) {
@@ -48,7 +52,8 @@ public class ZipDecompressor {
                 } else {
                     Files.createDirectories(file.getParent());
                     try (OutputStream outputStream = Files.newOutputStream(file);
-                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                        HashingOutputStream hashingStream = new HashingOutputStream(outputStream, file, null, hashBuilder);
+                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(hashingStream)) {
                         IOUtils.copy(zipFile.getInputStream(entry), bufferedOutputStream);
                     }
                 }
@@ -56,5 +61,7 @@ public class ZipDecompressor {
         }
 
         log.info("Decompression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+
+        return hashBuilder.getValue();
     }
 }

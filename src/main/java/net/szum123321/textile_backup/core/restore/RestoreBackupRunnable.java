@@ -25,7 +25,6 @@ import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.CompressionStatus;
-import net.szum123321.textile_backup.core.LivingServer;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
@@ -33,12 +32,11 @@ import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecomp
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
-//TODO: Verify backup's validity?
 public class RestoreBackupRunnable implements Runnable {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -56,71 +54,73 @@ public class RestoreBackupRunnable implements Runnable {
         log.info("Shutting down server...");
 
         ctx.server().stop(false);
-        awaitServerShutdown();
 
-        if(config.get().backupOldWorlds) {
-            MakeBackupRunnableFactory.create(
-                    BackupContext.Builder
-                            .newBackupContextBuilder()
-                            .setServer(ctx.server())
-                            .setInitiator(ActionInitiator.Restore)
-                            .setComment("Old_World" + (ctx.comment() != null ? "_" + ctx.comment() : ""))
-                            .build()
-            ).run();
-        }
-
-        Path worldFile = Utilities.getWorldFolder(ctx.server()), tmp = null;
+        Path worldFile = Utilities.getWorldFolder(ctx.server()), tmp;
 
         try {
             tmp = Files.createTempDirectory(
                     ctx.server().getRunDirectory().toPath(),
                     ctx.restoreableFile().getFile().getFileName().toString());
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if(tmp == null) {
-            //TODO: log error!
+            log.error("An exception occurred while unpacking backup", e);
             return;
         }
+
+        FutureTask<Void> waitForShutdown = new FutureTask<>(() -> {
+            ctx.server().getThread().join(); //wait for server to die and save all its state
+            if(config.get().backupOldWorlds) {
+                return MakeBackupRunnableFactory.create(
+                        BackupContext.Builder
+                                .newBackupContextBuilder()
+                                .setServer(ctx.server())
+                                .setInitiator(ActionInitiator.Restore)
+                                .setComment("Old_World" + (ctx.comment() != null ? "_" + ctx.comment() : ""))
+                                .build()
+                ).call();
+            }
+            return null;
+        });
+
+        new Thread(waitForShutdown).start();
 
         try {
             log.info("Starting decompression...");
 
+            long hash;
+
             if (ctx.restoreableFile().getArchiveFormat() == ConfigPOJO.ArchiveFormat.ZIP)
-                ZipDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
+                hash = ZipDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
             else
-                GenericTarDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
+                hash = GenericTarDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
 
-            CompressionStatus status = null;
+            CompressionStatus status = CompressionStatus.readFromFile(tmp);
+            Files.delete(tmp.resolve(CompressionStatus.DATA_FILENAME));
 
-            try (InputStream in = Files.newInputStream(tmp.resolve(CompressionStatus.DATA_FILENAME))) {
-                ObjectInputStream objectInputStream = new ObjectInputStream(in);
-                status = (CompressionStatus)objectInputStream.readObject();
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            //locks until the backup is finished
+            waitForShutdown.get();
 
-            if(status.isValid(0)) {
-                log.info("Deleting old world...");
+            if(status.isValid(hash) || !config.get().errorErrorHandlingMode.verify()) {
+                if(status.isValid(hash)) log.info("Backup valid. Restoring");
+                else log.info("Backup is damaged, but verification is disabled. Restoring");
 
                 Utilities.deleteDirectory(worldFile);
                 Files.move(tmp, worldFile);
 
                 if (config.get().deleteOldBackupAfterRestore) {
-                    log.info("Deleting old backup");
+                    log.info("Deleting restored backup file");
                     Files.delete(ctx.restoreableFile().getFile());
                 }
+            } else {
+                log.error("File tree hash mismatch! Got: {}, Expected {}. Aborting", hash, status.treeHash());
             }
-        } catch (IOException e) {
+        } catch (ExecutionException | InterruptedException | ClassNotFoundException | IOException e) {
             log.error("An exception occurred while trying to restore a backup!", e);
         } finally {
+            //Regardless of what happended, we shiuld still clean up
             if(Files.exists(tmp)) {
                 try {
                     Utilities.deleteDirectory(tmp);
-                } catch (IOException e) {
-                    //TODO: Log error!
-                }
+                } catch (IOException ignored) {}
             }
         }
 
@@ -128,15 +128,5 @@ public class RestoreBackupRunnable implements Runnable {
         Globals.INSTANCE.globalShutdownBackupFlag.set(true);
 
         log.info("Done!");
-    }
-
-    private void awaitServerShutdown() {
-        while(((LivingServer)ctx.server()).isAlive()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                log.error("Exception occurred!", e);
-            }
-        }
     }
 }

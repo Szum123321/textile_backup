@@ -25,12 +25,13 @@ import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.Utilities;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.Callable;
 
 public class MakeBackupRunnableFactory {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
     
-    public static Runnable create(BackupContext ctx) {
+    public static Callable<Void> create(BackupContext ctx) {
         if(config.get().broadcastBackupStart) {
             Utilities.notifyPlayers(ctx.server(),
                     "Warning! Server backup will begin shortly. You may experience some lag."
@@ -58,13 +59,7 @@ public class MakeBackupRunnableFactory {
         if (ctx.shouldSave()) {
             log.sendInfoAL(ctx, "Saving server...");
 
-            ctx.server().getPlayerManager().saveAllPlayerData();
-
-            try {
-                ctx.server().save(false, true, true);
-            } catch (Exception e) {
-                log.sendErrorAL(ctx,"An exception occurred when trying to save the world!");
-            }
+            ctx.server().saveAll(true, true, false);
         }
 
         return new MakeBackupRunnable(ctx);

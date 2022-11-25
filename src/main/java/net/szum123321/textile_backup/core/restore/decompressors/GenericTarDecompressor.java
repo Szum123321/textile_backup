@@ -20,7 +20,9 @@ package net.szum123321.textile_backup.core.restore.decompressors;
 
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.core.FileTreeHashBuilder;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.restore.HashingOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.CompressorException;
@@ -36,8 +38,9 @@ import java.time.Instant;
 public class GenericTarDecompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static void decompress(Path input, Path target) throws IOException {
+    public static long decompress(Path input, Path target) throws IOException {
         Instant start = Instant.now();
+        FileTreeHashBuilder treeBuilder = new FileTreeHashBuilder(() -> null);
 
         try (InputStream fileInputStream = Files.newInputStream(input);
              InputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
@@ -46,10 +49,8 @@ public class GenericTarDecompressor {
             TarArchiveEntry entry;
 
             while ((entry = archiveInputStream.getNextTarEntry()) != null) {
-                if(!archiveInputStream.canReadEntryData(entry)) {
-                    log.error("Something when wrong while trying to decompress {}", entry.getName());
-                    continue;
-                }
+                if(!archiveInputStream.canReadEntryData(entry))
+                    throw new IOException("Couldn't read archive entry! " + entry.getName());
 
                 Path file = target.resolve(entry.getName());
 
@@ -58,7 +59,8 @@ public class GenericTarDecompressor {
                 } else {
                     Files.createDirectories(file.getParent());
                     try (OutputStream outputStream = Files.newOutputStream(file);
-                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+                         HashingOutputStream hashingStream = new HashingOutputStream(outputStream, file, null, treeBuilder);
+                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(hashingStream)) {
                         IOUtils.copy(archiveInputStream, bufferedOutputStream);
                     }
                 }
@@ -68,6 +70,8 @@ public class GenericTarDecompressor {
         }
 
         log.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+
+        return treeBuilder.getValue();
     }
 
     private static InputStream getCompressorInputStream(InputStream inputStream) throws CompressorException {

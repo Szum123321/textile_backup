@@ -41,22 +41,17 @@ public class StartBackupCommand {
     }
 
     private static int execute(ServerCommandSource source, @Nullable String comment) {
-        try {
-            Globals.INSTANCE.getQueueExecutor().submit(
-                    MakeBackupRunnableFactory.create(
-                            BackupContext.Builder
-                                    .newBackupContextBuilder()
-                                    .setCommandSource(source)
-                                    .setComment(comment)
-                                    .guessInitiator()
-                                    .saveServer()
-                                    .build()
-                    )
-            );
-        } catch (Exception e) {
-            log.error("Something went wrong while executing command!", e);
-            throw e;
-        }
+        Globals.INSTANCE.getQueueExecutor().submit(
+                MakeBackupRunnableFactory.create(
+                        BackupContext.Builder
+                                .newBackupContextBuilder()
+                                .setCommandSource(source)
+                                .setComment(comment)
+                                .guessInitiator()
+                                .saveServer()
+                                .build()
+                )
+        );
 
         return 1;
     }

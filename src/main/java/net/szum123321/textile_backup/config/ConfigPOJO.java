@@ -191,6 +191,8 @@ public class ConfigPOJO implements ConfigData {
         VERY_PERMISSIBLE;
 
         public boolean isStrict() { return this == STRICT; }
+
+        public boolean verify() { return this != VERY_PERMISSIBLE; }
     }
 
     public enum ArchiveFormat {

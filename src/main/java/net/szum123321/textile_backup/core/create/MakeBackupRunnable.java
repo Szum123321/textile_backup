@@ -36,11 +36,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * The actual object responsible for creating the backup
  */
-public class MakeBackupRunnable implements Runnable {
+public class MakeBackupRunnable implements Callable<Void> {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
@@ -49,9 +51,8 @@ public class MakeBackupRunnable implements Runnable {
     public MakeBackupRunnable(BackupContext context) {
         this.context = context;
     }
-
     @Override
-    public void run() {
+    public Void call() throws IOException, ExecutionException, InterruptedException {
         Path outFile = Utilities
                 .getBackupRootPath(Utilities.getLevelName(context.server()))
                 .resolve(getFileName());
@@ -114,7 +115,7 @@ public class MakeBackupRunnable implements Runnable {
             } else {
                 log.sendInfoAL(context, "Done!");
             }
-        } catch (Throwable e) {
+        } catch (InterruptedException | ExecutionException | IOException e) {
             //ExecutorService swallows exception, so I need to catch everything
             log.error("An exception occurred when trying to create new backup file!", e);
 
@@ -128,10 +129,14 @@ public class MakeBackupRunnable implements Runnable {
 
             if(context.initiator() == ActionInitiator.Player)
                 log.sendError(context, "An exception occurred when trying to create new backup file!");
+
+            throw e;
         } finally {
             Utilities.enableWorldSaving(context.server());
             Globals.INSTANCE.disableWatchdog = false;
         }
+
+        return null;
     }
 
     private String getFileName(){

@@ -28,8 +28,8 @@ public record CompressionStatus(long treeHash, LocalDateTime date, long startTim
     public static final String DATA_FILENAME = "textile_status.data";
     public boolean isValid(long decompressedHash) { return true; }
 
-    public static CompressionStatus readFromFile(Path f) throws IOException, ClassNotFoundException {
-        try(InputStream i = Files.newInputStream(f);
+    public static CompressionStatus readFromFile(Path folder) throws IOException, ClassNotFoundException {
+        try(InputStream i = Files.newInputStream(folder.resolve(DATA_FILENAME));
             ObjectInputStream obj = new ObjectInputStream(i)) {
             return (CompressionStatus) obj.readObject();
         }

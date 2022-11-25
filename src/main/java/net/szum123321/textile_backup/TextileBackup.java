@@ -68,14 +68,16 @@ public class TextileBackup implements ModInitializer {
             Globals.INSTANCE.shutdownQueueExecutor(60000);
 
             if (config.get().shutdownBackup && Globals.INSTANCE.globalShutdownBackupFlag.get()) {
-                MakeBackupRunnableFactory.create(
-                        BackupContext.Builder
-                                .newBackupContextBuilder()
-                                .setServer(server)
-                                .setInitiator(ActionInitiator.Shutdown)
-                                .setComment("shutdown")
-                                .build()
-                ).run();
+                try {
+                    MakeBackupRunnableFactory.create(
+                            BackupContext.Builder
+                                    .newBackupContextBuilder()
+                                    .setServer(server)
+                                    .setInitiator(ActionInitiator.Shutdown)
+                                    .setComment("shutdown")
+                                    .build()
+                    ).call();
+                } catch (Exception ignored) {}
             }
         });
 
