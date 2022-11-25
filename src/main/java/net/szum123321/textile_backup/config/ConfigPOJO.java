@@ -188,7 +188,9 @@ public class ConfigPOJO implements ConfigData {
     public enum ErrorHandlingMode {
         STRICT,
         PERMISSIBLE,
-        VERY_PERMISSIBLE
+        VERY_PERMISSIBLE;
+
+        public boolean isStrict() { return this == STRICT; }
     }
 
     public enum ArchiveFormat {

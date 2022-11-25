@@ -18,7 +18,8 @@
 
 package net.szum123321.textile_backup.core;
 
-import java.io.Serializable;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -26,5 +27,20 @@ import java.util.Map;
 public record CompressionStatus(long treeHash, LocalDateTime date, long startTimestamp, long finishTimestamp, Map<Path, Exception> brokenFiles) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
     public boolean isValid(long decompressedHash) { return true; }
+
+    public static CompressionStatus readFromFile(Path f) throws IOException, ClassNotFoundException {
+        try(InputStream i = Files.newInputStream(f);
+            ObjectInputStream obj = new ObjectInputStream(i)) {
+            return (CompressionStatus) obj.readObject();
+        }
+    }
+
+    public byte[] serialize() throws IOException {
+        try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
+             ObjectOutputStream o = new ObjectOutputStream(bo)) {
+            o.writeObject(this);
+            return bo.toByteArray();
+        }
+    }
 
 }

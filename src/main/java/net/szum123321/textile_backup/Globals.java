@@ -84,8 +84,8 @@ public class Globals {
     public Optional<Path> getLockedFile() { return Optional.ofNullable(lockedPath); }
     public void setLockedFile(Path p) { lockedPath = p; }
 
-    public boolean disableTMPFS() { return disableTMPFiles; }
-    public void updateTMPFSFlag(MinecraftServer server) {
+    public synchronized boolean disableTMPFS() { return disableTMPFiles; }
+    public synchronized void updateTMPFSFlag(MinecraftServer server) {
         disableTMPFiles = false;
         Path tmp_dir = Path.of(System.getProperty("java.io.tmpdir"));
         if(

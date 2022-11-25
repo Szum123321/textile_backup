@@ -96,8 +96,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 				boolean match = (cause.getStackTrace().length >= STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE.length);
 				if(match) {
 					for(int i = 0; i < STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE.length && match; i++)
-						if(!STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE[i].equals(cause.getStackTrace()[i])) match = false;
-
+						if(!STACKTRACE_NO_SPACE_ON_LEFT_ON_DEVICE[i].matches(cause.getStackTrace()[i])) match = false;
 
 					//For clarity's sake let's not throw the ExecutionException itself rather only the cause, as the EE is just the wrapper
 					if(match) throw new NoSpaceLeftOnDeviceException(cause);
@@ -113,17 +112,8 @@ public class ParallelZipCompressor extends ZipCompressor {
 			String methodName,
 			boolean isNative
 	) {
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null) return false;
-			if(o.getClass() == StackTraceElement.class) {
-				StackTraceElement that = (StackTraceElement) o;
-				return (isNative == that.isNativeMethod()) && Objects.equals(className, that.getClassName()) && Objects.equals(methodName, that.getMethodName());
-			}
-			if(getClass() != o.getClass()) return false;
-			SimpleStackTraceElement that = (SimpleStackTraceElement) o;
-			return isNative == that.isNative && Objects.equals(className, that.className) && Objects.equals(methodName, that.methodName);
+		public boolean matches(StackTraceElement o) {
+			return (isNative == o.isNativeMethod()) && Objects.equals(className, o.getClassName()) && Objects.equals(methodName, o.getMethodName());
 		}
 	}
 }

@@ -24,11 +24,14 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDateTime;
+
 public record BackupContext(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
                             ActionInitiator initiator,
                             boolean save,
-                            String comment) {
+                            String comment,
+                            LocalDateTime startDate) {
 
     public boolean startedByPlayer() {
         return initiator == ActionInitiator.Player;
@@ -103,7 +106,7 @@ public record BackupContext(@NotNull MinecraftServer server,
                 else throw new RuntimeException("Neither MinecraftServer or ServerCommandSource were provided!");
             }
 
-            return new BackupContext(server, commandSource, initiator, save, comment);
+            return new BackupContext(server, commandSource, initiator, save, comment, LocalDateTime.now());
         }
     }
 }

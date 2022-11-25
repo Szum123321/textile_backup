@@ -21,7 +21,6 @@ package net.szum123321.textile_backup.core.create.compressors;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
-import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.*;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BrokenFileHandler;
@@ -42,13 +41,11 @@ import java.util.stream.Stream;
 public abstract class AbstractCompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public void createArchive(Path inputFile, Path outputFile, BackupContext ctx, int coreLimit) {
+    public void createArchive(Path inputFile, Path outputFile, BackupContext ctx, int coreLimit) throws IOException, ExecutionException, InterruptedException {
         Instant start = Instant.now();
 
         FileTreeHashBuilder fileHashBuilder = new FileTreeHashBuilder(() -> null); //TODO: select hashing algorithm
         BrokenFileHandler brokenFileHandler = new BrokenFileHandler();
-
-        boolean keep = true;
 
         try (OutputStream outStream = Files.newOutputStream(outputFile);
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
@@ -62,39 +59,35 @@ public abstract class AbstractCompressor {
                 Path file = it.next();
 
                 try {
-                    addEntry(new FileInputStreamSupplier(file, inputFile.relativize(file).toString(), fileHashBuilder, brokenFileHandler), arc);
-                } catch (Exception e) {
-                    if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode == ConfigPOJO.ErrorHandlingMode.STRICT) {
-                        keep = false;
-                        break;
-                    }
+                    addEntry(
+                            new FileInputStreamSupplier(
+                                    file,
+                                    inputFile.relativize(file).toString(),
+                                    fileHashBuilder,
+                                    brokenFileHandler),
+                            arc
+                    );
+                } catch (IOException e) {
                     brokenFileHandler.handle(file, e);
+                    if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) throw e;
+                    else log.sendErrorAL(ctx, "An exception occurred while trying to compress: {}",
+                            inputFile.relativize(file).toString(), e
+                    );
                 }
-            }
-
-            //If there are still files left in the stream, we should handle them
-            while(it.hasNext()) {
-                Path file = it.next();
-                brokenFileHandler.handle(file, new DataLeftException(Files.size(file)));
             }
 
             Instant now = Instant.now();
 
             CompressionStatus status = new CompressionStatus (
                     fileHashBuilder.getValue(),
-                    null, start.toEpochMilli(), now.toEpochMilli(),
+                    ctx.startDate(), start.toEpochMilli(), now.toEpochMilli(),
                     brokenFileHandler.get()
             );
 
-            //Serialize using gson?
-            try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
-                 ObjectOutputStream o = new ObjectOutputStream(bo)) {
-                o.writeObject(status);
-                addEntry(new StatusFileInputSupplier(bo.toByteArray()), arc);
-            }
+            addEntry(new StatusFileInputSupplier(status.serialize()), arc);
 
             finish(arc);
-        } catch(NoSpaceLeftOnDeviceException e) {
+        } /*catch(NoSpaceLeftOnDeviceException e) {
             log.error("""
             CRITICAL ERROR OCCURRED!
             The backup is corrupt!
@@ -106,14 +99,14 @@ public abstract class AbstractCompressor {
                 log.sendError(ctx, "Backup failed. The file is corrupt.");
                 log.error("For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
             }
-            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode == ConfigPOJO.ErrorHandlingMode.STRICT) keep = false;
+            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) keep = false;
         } catch (IOException | InterruptedException | ExecutionException e) {
             log.error("An exception occurred!", e);
             if(ctx.initiator() == ActionInitiator.Player)
                 log.sendError(ctx, "Something went wrong while compressing files!");
-            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode == ConfigPOJO.ErrorHandlingMode.STRICT) keep = false;
+            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) keep = false;
 
-        } finally {
+        } */finally {
             close();
         }
 

@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 
 /**
  * The actual object responsible for creating the backup
@@ -53,7 +52,14 @@ public class MakeBackupRunnable implements Runnable {
 
     @Override
     public void run() {
+        Path outFile = Utilities
+                .getBackupRootPath(Utilities.getLevelName(context.server()))
+                .resolve(getFileName());
+
+        log.trace("Outfile is: {}", outFile);
+
         try {
+            //I think I should synchronise those two next calls...
             Utilities.disableWorldSaving(context.server());
             Globals.INSTANCE.disableWatchdog = true;
 
@@ -64,12 +70,6 @@ public class MakeBackupRunnable implements Runnable {
             Path world = Utilities.getWorldFolder(context.server());
 
             log.trace("Minecraft world is: {}", world);
-
-            Path outFile = Utilities
-                    .getBackupRootPath(Utilities.getLevelName(context.server()))
-                    .resolve(getFileName());
-
-            log.trace("Outfile is: {}", outFile);
 
             Files.createDirectories(outFile.getParent());
             Files.createFile(outFile);
@@ -118,6 +118,14 @@ public class MakeBackupRunnable implements Runnable {
             //ExecutorService swallows exception, so I need to catch everything
             log.error("An exception occurred when trying to create new backup file!", e);
 
+            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) {
+                try {
+                    Files.delete(outFile);
+                } catch (IOException ex) {
+                    log.error("An exception occurred while tryin go delete: {}", outFile, ex);
+                }
+            }
+
             if(context.initiator() == ActionInitiator.Player)
                 log.sendError(context, "An exception occurred when trying to create new backup file!");
         } finally {
@@ -127,9 +135,7 @@ public class MakeBackupRunnable implements Runnable {
     }
 
     private String getFileName(){
-        LocalDateTime now = LocalDateTime.now();
-
-        return Utilities.getDateTimeFormatter().format(now) +
+        return Utilities.getDateTimeFormatter().format(context.startDate()) +
                 (context.comment() != null ? "#" + context.comment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
                 config.get().format.getCompleteString();
     }
