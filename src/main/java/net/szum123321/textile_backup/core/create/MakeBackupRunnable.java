@@ -51,11 +51,10 @@ public class MakeBackupRunnable implements Callable<Void> {
     public MakeBackupRunnable(BackupContext context) {
         this.context = context;
     }
+
     @Override
     public Void call() throws IOException, ExecutionException, InterruptedException {
-        Path outFile = Utilities
-                .getBackupRootPath(Utilities.getLevelName(context.server()))
-                .resolve(getFileName());
+        Path outFile = Utilities.getBackupRootPath(Utilities.getLevelName(context.server())).resolve(getFileName());
 
         log.trace("Outfile is: {}", outFile);
 
@@ -77,11 +76,9 @@ public class MakeBackupRunnable implements Callable<Void> {
 
             int coreCount;
 
-            if(config.get().compressionCoreCountLimit <= 0) {
-                coreCount = Runtime.getRuntime().availableProcessors();
-            } else {
+            if (config.get().compressionCoreCountLimit <= 0) coreCount = Runtime.getRuntime().availableProcessors();
+            else
                 coreCount = Math.min(config.get().compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
-            }
 
             log.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
 
@@ -107,11 +104,8 @@ public class MakeBackupRunnable implements Callable<Void> {
 
             Globals.INSTANCE.getQueueExecutor().submit(new Cleanup(context.commandSource(), Utilities.getLevelName(context.server())));
 
-            if(config.get().broadcastBackupDone) {
-                Utilities.notifyPlayers(
-                        context.server(),
-                        "Done!"
-                );
+            if (config.get().broadcastBackupDone) {
+                Utilities.notifyPlayers(context.server(), "Done!");
             } else {
                 log.sendInfoAL(context, "Done!");
             }
@@ -119,7 +113,7 @@ public class MakeBackupRunnable implements Callable<Void> {
             //ExecutorService swallows exception, so I need to catch everything
             log.error("An exception occurred when trying to create new backup file!", e);
 
-            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) {
+            if (ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) {
                 try {
                     Files.delete(outFile);
                 } catch (IOException ex) {
@@ -127,7 +121,7 @@ public class MakeBackupRunnable implements Callable<Void> {
                 }
             }
 
-            if(context.initiator() == ActionInitiator.Player)
+            if (context.initiator() == ActionInitiator.Player)
                 log.sendError(context, "An exception occurred when trying to create new backup file!");
 
             throw e;
@@ -139,9 +133,7 @@ public class MakeBackupRunnable implements Callable<Void> {
         return null;
     }
 
-    private String getFileName(){
-        return Utilities.getDateTimeFormatter().format(context.startDate()) +
-                (context.comment() != null ? "#" + context.comment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
-                config.get().format.getCompleteString();
+    private String getFileName() {
+        return Utilities.getDateTimeFormatter().format(context.startDate()) + (context.comment() != null ? "#" + context.comment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") + config.get().format.getCompleteString();
     }
 }

@@ -22,11 +22,14 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 public record CompressionStatus(long treeHash, LocalDateTime date, long startTimestamp, long finishTimestamp, Map<Path, Exception> brokenFiles) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
-    public boolean isValid(long decompressedHash) { return true; }
+    public boolean isValid(long decompressedHash) {
+        return decompressedHash == treeHash;
+    }
 
     public static CompressionStatus readFromFile(Path folder) throws IOException, ClassNotFoundException {
         try(InputStream i = Files.newInputStream(folder.resolve(DATA_FILENAME));
@@ -43,4 +46,31 @@ public record CompressionStatus(long treeHash, LocalDateTime date, long startTim
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Hash: ")
+                .append(treeHash)
+                .append(", Date: ")
+                .append(date.format(DateTimeFormatter.ISO_DATE_TIME))
+                .append(", start time stamp: ").append(startTimestamp)
+                .append(", finish time stamp: ").append(finishTimestamp);
+
+        builder.append(", broken files: ");
+        if(brokenFiles.isEmpty()) builder.append("[]");
+        else {
+            builder.append("[\n");
+            for(Path i: brokenFiles.keySet()) {
+                builder.append(i.toString())
+                        .append(":");
+
+                ByteArrayOutputStream o = new ByteArrayOutputStream();
+                brokenFiles.get(i).printStackTrace(new PrintStream(o));
+                builder.append(o).append("\n");
+            }
+            builder.append("]");
+        }
+
+        return builder.toString();
+    }
 }

@@ -55,7 +55,8 @@ public class RestoreBackupRunnable implements Runnable {
 
         ctx.server().stop(false);
 
-        Path worldFile = Utilities.getWorldFolder(ctx.server()), tmp;
+        Path worldFile = Utilities.getWorldFolder(ctx.server()),
+                tmp;
 
         try {
             tmp = Files.createTempDirectory(
@@ -99,8 +100,11 @@ public class RestoreBackupRunnable implements Runnable {
             //locks until the backup is finished
             waitForShutdown.get();
 
-            if(status.isValid(hash) || !config.get().errorErrorHandlingMode.verify()) {
-                if(status.isValid(hash)) log.info("Backup valid. Restoring");
+            log.info("Status: {}", status);
+
+            boolean valid = status.isValid(hash);
+            if(valid || !config.get().errorErrorHandlingMode.verify()) {
+                if(valid) log.info("Backup valid. Restoring");
                 else log.info("Backup is damaged, but verification is disabled. Restoring");
 
                 Utilities.deleteDirectory(worldFile);
@@ -116,7 +120,7 @@ public class RestoreBackupRunnable implements Runnable {
         } catch (ExecutionException | InterruptedException | ClassNotFoundException | IOException e) {
             log.error("An exception occurred while trying to restore a backup!", e);
         } finally {
-            //Regardless of what happended, we shiuld still clean up
+            //Regardless of what happened, we should still clean up
             if(Files.exists(tmp)) {
                 try {
                     Utilities.deleteDirectory(tmp);

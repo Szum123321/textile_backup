@@ -63,7 +63,7 @@ public class TextileBackup implements ModInitializer {
             Globals.INSTANCE.updateTMPFSFlag(server);
         });
 
-        //Wait 60s for already submited backups to finish. After that kill the bastards and run the one last if required
+        //Wait 60s for already submitted backups to finish. After that kill the bastards and run the one last if required
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             Globals.INSTANCE.shutdownQueueExecutor(60000);
 
