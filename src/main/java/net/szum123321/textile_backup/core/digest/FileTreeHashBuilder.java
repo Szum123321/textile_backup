@@ -19,6 +19,7 @@
 package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
+import net.szum123321.textile_backup.core.CompressionStatus;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,11 +30,13 @@ public class FileTreeHashBuilder {
     private long hash = 0, filesProcessed = 0, filesTotalSize = 0;
 
     public void update(Path path, long newHash) throws IOException {
+        if(path.getFileName().toString().equals(CompressionStatus.DATA_FILENAME)) return;
+
         var hasher = Globals.CHECKSUM_SUPPLIER.get();
 
         long size = Files.size(path);
 
-        hasher.update(path.toString().getBytes(StandardCharsets.UTF_8));
+        hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
         hasher.update(newHash);
 
         synchronized (lock) {

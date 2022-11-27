@@ -19,8 +19,6 @@
 package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
-import net.szum123321.textile_backup.core.FileTreeHashBuilder;
-import net.szum123321.textile_backup.core.Hash;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FilterOutputStream;
@@ -41,14 +39,14 @@ public class HashingOutputStream extends FilterOutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        super.write(b);
         hasher.update(b);
+        super.write(b);
     }
 
     @Override
     public void write(byte @NotNull [] b, int off, int len) throws IOException {
-        super.write(b, off, len);
         hasher.update(b, off, len);
+        super.write(b, off, len);
     }
 
     @Override

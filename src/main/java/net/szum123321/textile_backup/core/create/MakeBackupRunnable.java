@@ -102,14 +102,13 @@ public class MakeBackupRunnable implements Callable<Void> {
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
             }
 
-            Globals.INSTANCE.getQueueExecutor().submit(new Cleanup(context.commandSource(), Utilities.getLevelName(context.server())));
+            if(!Globals.INSTANCE.getQueueExecutor().isShutdown())
+                Globals.INSTANCE.getQueueExecutor().submit(new Cleanup(context.commandSource(), Utilities.getLevelName(context.server())));
 
-            if (config.get().broadcastBackupDone) {
-                Utilities.notifyPlayers(context.server(), "Done!");
-            } else {
-                log.sendInfoAL(context, "Done!");
-            }
-        } catch (InterruptedException | ExecutionException | IOException e) {
+            if (config.get().broadcastBackupDone) Utilities.notifyPlayers(context.server(), "Done!");
+            else log.sendInfoAL(context, "Done!");
+
+        } catch (Throwable e) {
             //ExecutorService swallows exception, so I need to catch everything
             log.error("An exception occurred when trying to create new backup file!", e);
 
