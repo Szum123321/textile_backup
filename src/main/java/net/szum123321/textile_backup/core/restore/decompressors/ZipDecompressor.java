@@ -52,9 +52,8 @@ public class ZipDecompressor {
                 } else {
                     Files.createDirectories(file.getParent());
                     try (OutputStream outputStream = Files.newOutputStream(file);
-                        HashingOutputStream hashingStream = new HashingOutputStream(outputStream, file, null, hashBuilder);
-                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(hashingStream)) {
-                        IOUtils.copy(zipFile.getInputStream(entry), bufferedOutputStream);
+                         HashingOutputStream out = new HashingOutputStream(outputStream, file, hashBuilder)) {
+                        IOUtils.copy(zipFile.getInputStream(entry), out);
                     }
                 }
             }

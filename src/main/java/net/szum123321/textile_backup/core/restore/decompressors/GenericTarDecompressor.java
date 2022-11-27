@@ -59,9 +59,8 @@ public class GenericTarDecompressor {
                 } else {
                     Files.createDirectories(file.getParent());
                     try (OutputStream outputStream = Files.newOutputStream(file);
-                         HashingOutputStream hashingStream = new HashingOutputStream(outputStream, file, null, treeBuilder);
-                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(hashingStream)) {
-                        IOUtils.copy(archiveInputStream, bufferedOutputStream);
+                         HashingOutputStream out = new HashingOutputStream(outputStream, file, treeBuilder)) {
+                        IOUtils.copy(archiveInputStream, out);
                     }
                 }
             }
