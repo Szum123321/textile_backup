@@ -18,27 +18,26 @@
 
 package net.szum123321.textile_backup.core.create;
 
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.core.DataLeftException;
 import net.szum123321.textile_backup.core.FileTreeHashBuilder;
+import net.szum123321.textile_backup.core.Hash;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.zip.Checksum;
 
 //This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
 //In case the whole underlying stream hasn't been read, also puts it into BrokeFileHandler
 public class HashingInputStream extends FilterInputStream {
-
     private final Path path;
-    private final Checksum hasher;
+    private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
     private final BrokenFileHandler brokenFileHandler;
 
-    public HashingInputStream(InputStream in, Path path, Checksum hasher, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler) {
+    public HashingInputStream(InputStream in, Path path, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler) {
         super(in);
         this.path = path;
-        this.hasher = hasher;
         this.hashBuilder = hashBuilder;
         this.brokenFileHandler = brokenFileHandler;
     }

@@ -44,7 +44,7 @@ public abstract class AbstractCompressor {
     public void createArchive(Path inputFile, Path outputFile, BackupContext ctx, int coreLimit) throws IOException, ExecutionException, InterruptedException {
         Instant start = Instant.now();
 
-        FileTreeHashBuilder fileHashBuilder = new FileTreeHashBuilder(() -> null); //TODO: select hashing algorithm
+        FileTreeHashBuilder fileHashBuilder = new FileTreeHashBuilder();
         BrokenFileHandler brokenFileHandler = new BrokenFileHandler();
 
         try (OutputStream outStream = Files.newOutputStream(outputFile);

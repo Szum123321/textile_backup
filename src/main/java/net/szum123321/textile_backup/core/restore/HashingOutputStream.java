@@ -18,28 +18,26 @@
 
 package net.szum123321.textile_backup.core.restore;
 
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.core.FileTreeHashBuilder;
+import net.szum123321.textile_backup.core.Hash;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.zip.Checksum;
 
 public class HashingOutputStream extends FilterOutputStream {
     private final Path path;
-    private final Checksum hasher;
-
+    private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
 
-    public HashingOutputStream(OutputStream out, Path path, Checksum hasher, FileTreeHashBuilder hashBuilder) {
+    public HashingOutputStream(OutputStream out, Path path, FileTreeHashBuilder hashBuilder) {
         super(out);
         this.path = path;
-        this.hasher = hasher;
         this.hashBuilder = hashBuilder;
     }
-
 
     @Override
     public void write(int b) throws IOException {
@@ -48,7 +46,7 @@ public class HashingOutputStream extends FilterOutputStream {
     }
 
     @Override
-    public void write(byte[] @NotNull b, int off, int len) throws IOException {
+    public void write(byte @NotNull [] b, int off, int len) throws IOException {
         super.write(b, off, len);
         hasher.update(b, off, len);
     }

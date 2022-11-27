@@ -34,8 +34,7 @@ public record FileInputStreamSupplier(Path path, String name, FileTreeHashBuilde
     @Override
     public InputStream getInputStream() throws IOException {
         try {
-            //TODO: select hashing algorithm!
-            return new HashingInputStream(Files.newInputStream(path), path, null, hashTreeBuilder, brokenFileHandler);
+            return new HashingInputStream(Files.newInputStream(path), path, hashTreeBuilder, brokenFileHandler);
         } catch (IOException e) {
             brokenFileHandler.handle(path, e);
             throw e;

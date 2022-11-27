@@ -20,7 +20,9 @@
 package net.szum123321.textile_backup;
 
 import net.minecraft.server.MinecraftServer;
+import net.szum123321.textile_backup.core.Hash;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.XorSeaHash;
 import net.szum123321.textile_backup.core.create.MakeBackupRunnable;
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 import org.apache.commons.io.FileUtils;
@@ -34,11 +36,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 public class Globals {
     public static final Globals INSTANCE = new Globals();
-    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
-    public final static DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
+    private static final TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+    public static final DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
+    public static final Supplier<Hash> CHECKSUM_SUPPLIER = XorSeaHash::new;
 
     private ExecutorService executorService = null;// = Executors.newSingleThreadExecutor();
     public final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);

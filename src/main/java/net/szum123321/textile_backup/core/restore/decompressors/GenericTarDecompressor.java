@@ -40,7 +40,7 @@ public class GenericTarDecompressor {
 
     public static long decompress(Path input, Path target) throws IOException {
         Instant start = Instant.now();
-        FileTreeHashBuilder treeBuilder = new FileTreeHashBuilder(() -> null);
+        FileTreeHashBuilder treeBuilder = new FileTreeHashBuilder();
 
         try (InputStream fileInputStream = Files.newInputStream(input);
              InputStream bufferedInputStream = new BufferedInputStream(fileInputStream);

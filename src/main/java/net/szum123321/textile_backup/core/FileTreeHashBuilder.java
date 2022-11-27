@@ -18,35 +18,26 @@
 
 package net.szum123321.textile_backup.core;
 
+import net.szum123321.textile_backup.Globals;
+
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.Supplier;
-import java.util.zip.Checksum;
-
 public class FileTreeHashBuilder {
-    private final static ThreadLocal<byte[]> buff =
-            ThreadLocal.withInitial(() -> new byte[Long.BYTES]);
     private final Object lock = new Object();
-    private final Supplier<Checksum> hasherProvider;
     private long hash = 0, filesProcessed = 0, filesTotalSize = 0;
 
-    public FileTreeHashBuilder(Supplier<Checksum> provider) { hasherProvider = provider; }
-
     public void update(Path path, long newHash) throws IOException {
-        byte[] raw = buff.get();
-        var hasher = hasherProvider.get();
+        var hasher = Globals.CHECKSUM_SUPPLIER.get();
 
         long size = Files.size(path);
 
-        hasher.update(ByteBuffer.wrap(raw).putLong(size).array());
         hasher.update(path.toString().getBytes(StandardCharsets.UTF_8));
-        hasher.update(ByteBuffer.wrap(raw).putLong(hash).array());
+        hasher.update(newHash);
 
         synchronized (lock) {
-            //This way exact order of files processed doesn't matter.
+            //This way, the exact order of files processed doesn't matter.
             this.hash ^= hasher.getValue();
             filesProcessed++;
             filesTotalSize += size;
@@ -54,12 +45,11 @@ public class FileTreeHashBuilder {
     }
 
     public long getValue() {
-        var hasher = hasherProvider.get();
-        byte[] raw = buff.get();
+        var hasher = Globals.CHECKSUM_SUPPLIER.get();
 
-        hasher.update(ByteBuffer.wrap(raw).putLong(hash).array());
-        hasher.update(ByteBuffer.wrap(raw).putLong(filesProcessed).array());
-        hasher.update(ByteBuffer.wrap(raw).putLong(filesTotalSize).array());
+        hasher.update(hash);
+        hasher.update(filesProcessed);
+        hasher.update(filesTotalSize);
 
         return hasher.getValue();
     }
