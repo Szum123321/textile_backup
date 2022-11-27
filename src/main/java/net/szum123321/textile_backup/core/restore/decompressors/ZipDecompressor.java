@@ -20,9 +20,9 @@ package net.szum123321.textile_backup.core.restore.decompressors;
 
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
-import net.szum123321.textile_backup.core.FileTreeHashBuilder;
+import net.szum123321.textile_backup.core.digest.FileTreeHashBuilder;
 import net.szum123321.textile_backup.core.Utilities;
-import net.szum123321.textile_backup.core.restore.HashingOutputStream;
+import net.szum123321.textile_backup.core.digest.HashingOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;

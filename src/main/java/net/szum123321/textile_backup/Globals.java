@@ -19,7 +19,7 @@
 package net.szum123321.textile_backup;
 
 import net.minecraft.server.MinecraftServer;
-import net.szum123321.textile_backup.core.Hash;
+import net.szum123321.textile_backup.core.digest.Hash;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.XorSeaHash;
 import net.szum123321.textile_backup.core.create.MakeBackupRunnable;

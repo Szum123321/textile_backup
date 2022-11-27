@@ -16,19 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.create;
+package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.core.DataLeftException;
-import net.szum123321.textile_backup.core.FileTreeHashBuilder;
-import net.szum123321.textile_backup.core.Hash;
+import net.szum123321.textile_backup.core.create.BrokenFileHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Path;
 
 //This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
-//In case the whole underlying stream hasn't been read, also puts it into BrokeFileHandler
+//In case the underlying stream hasn't been read completely in, puts it into BrokeFileHandler
 public class HashingInputStream extends FilterInputStream {
     private final Path path;
     private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();

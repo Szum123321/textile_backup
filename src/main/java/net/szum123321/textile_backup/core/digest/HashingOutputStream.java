@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.restore;
+package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.core.FileTreeHashBuilder;

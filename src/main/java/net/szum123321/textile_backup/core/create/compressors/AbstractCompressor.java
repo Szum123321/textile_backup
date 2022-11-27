@@ -26,6 +26,7 @@ import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BrokenFileHandler;
 import net.szum123321.textile_backup.core.create.FileInputStreamSupplier;
 import net.szum123321.textile_backup.core.create.InputSupplier;
+import net.szum123321.textile_backup.core.digest.FileTreeHashBuilder;
 
 import java.io.*;
 import java.nio.file.Files;

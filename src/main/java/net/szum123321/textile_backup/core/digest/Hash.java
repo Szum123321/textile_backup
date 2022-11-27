@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core;
+package net.szum123321.textile_backup.core.digest;
 
 public interface Hash {
     void update(byte b);
