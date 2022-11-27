@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2022  Szum123321
+ * Copyright (C)  2022   Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,50 +16,44 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.create;
+package net.szum123321.textile_backup.core.restore;
 
 import net.szum123321.textile_backup.Globals;
-import net.szum123321.textile_backup.core.DataLeftException;
 import net.szum123321.textile_backup.core.FileTreeHashBuilder;
 import net.szum123321.textile_backup.core.Hash;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 
-//This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
-//In case the whole underlying stream hasn't been read, also puts it into BrokeFileHandler
-public class HashingInputStream extends FilterInputStream {
+public class HashingOutputStream extends FilterOutputStream {
     private final Path path;
     private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
-    private final BrokenFileHandler brokenFileHandler;
 
-    public HashingInputStream(InputStream in, Path path, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler) {
-        super(in);
+    public HashingOutputStream(OutputStream out, Path path, FileTreeHashBuilder hashBuilder) {
+        super(out);
         this.path = path;
         this.hashBuilder = hashBuilder;
-        this.brokenFileHandler = brokenFileHandler;
     }
 
     @Override
-    public int read(byte @NotNull [] b, int off, int len) throws IOException {
-        int i = in.read(b, off, len);
-        if(i > -1) hasher.update(b, off, i);
-        return i;
+    public void write(int b) throws IOException {
+        super.write(b);
+        hasher.update(b);
     }
 
     @Override
-    public int read() throws IOException {
-        int i = in.read();
-        if(i > -1) hasher.update(i);
-        return i;
+    public void write(byte @NotNull [] b, int off, int len) throws IOException {
+        super.write(b, off, len);
+        hasher.update(b, off, len);
     }
 
     @Override
     public void close() throws IOException {
-        if(in.available() == 0) hashBuilder.update(path, hasher.getValue());
-        else brokenFileHandler.handle(path, new DataLeftException(in.available()));
         super.close();
+        hashBuilder.update(path, hasher.getValue());
     }
 }
