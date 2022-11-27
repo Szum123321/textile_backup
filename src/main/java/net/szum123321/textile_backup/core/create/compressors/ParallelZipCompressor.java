@@ -27,6 +27,7 @@ import org.apache.commons.compress.archivers.zip.*;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.zip.ZipEntry;
@@ -67,14 +68,21 @@ public class ParallelZipCompressor extends ZipCompressor {
 
 	@Override
 	protected void addEntry(InputSupplier input, OutputStream arc) throws IOException {
-		ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(input.getPath(), input.getName());
-
-		if(ZipCompressor.isDotDat(input.getPath().getFileName().toString())) {
+		ZipArchiveEntry entry;
+		if(input.getPath().isEmpty()) {
+			entry = new ZipArchiveEntry(input.getName());
 			entry.setMethod(ZipEntry.STORED);
-			entry.setSize(Files.size(input.getPath()));
-			entry.setCompressedSize(Files.size(input.getPath()));
-			entry.setCrc(getCRC(input.getPath()));
-		} else entry.setMethod(ZipEntry.DEFLATED);
+			entry.setSize(input.size());
+		} else {
+			Path file = input.getPath().get();
+			entry = (ZipArchiveEntry) ((ZipArchiveOutputStream) arc).createArchiveEntry(file, input.getName());
+			if (ZipCompressor.isDotDat(file.toString())) {
+				entry.setMethod(ZipEntry.STORED);
+				entry.setSize(Files.size(file));
+				entry.setCompressedSize(Files.size(file));
+				entry.setCrc(getCRC(file));
+			} else entry.setMethod(ZipEntry.DEFLATED);
+		}
 
 		entry.setTime(System.currentTimeMillis());
 

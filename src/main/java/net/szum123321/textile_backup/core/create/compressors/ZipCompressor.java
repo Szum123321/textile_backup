@@ -57,13 +57,21 @@ public class ZipCompressor extends AbstractCompressor {
     @Override
     protected void addEntry(InputSupplier input, OutputStream arc) throws IOException {
         try (InputStream fileInputStream = input.getInputStream()) {
-            ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(input.getPath(), input.getName());
+            ZipArchiveEntry entry;
 
-            if(isDotDat(input.getPath().getFileName().toString())) {
+            if(input.getPath().isEmpty()) {
+                entry = new ZipArchiveEntry(input.getName());
                 entry.setMethod(ZipEntry.STORED);
-                entry.setSize(Files.size(input.getPath()));
-                entry.setCompressedSize(Files.size(input.getPath()));
-                entry.setCrc(getCRC(input.getPath()));
+                entry.setSize(input.size());
+            } else {
+                Path file = input.getPath().get();
+                entry = (ZipArchiveEntry) ((ZipArchiveOutputStream) arc).createArchiveEntry(file, input.getName());
+                if (isDotDat(file.toString())) {
+                    entry.setMethod(ZipEntry.STORED);
+                    entry.setSize(Files.size(file));
+                    entry.setCompressedSize(Files.size(file));
+                    entry.setCrc(getCRC(file));
+                } else entry.setMethod(ZipEntry.DEFLATED);
             }
 
             ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);

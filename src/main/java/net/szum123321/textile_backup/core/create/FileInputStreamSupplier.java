@@ -28,6 +28,7 @@ import java.io.InputStream;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public record FileInputStreamSupplier(Path path, String name, FileTreeHashBuilder hashTreeBuilder, BrokenFileHandler brokenFileHandler) implements InputSupplier {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
@@ -43,8 +44,11 @@ public record FileInputStreamSupplier(Path path, String name, FileTreeHashBuilde
     }
 
     @Override
-    public Path getPath() {
-        return path;
+    public Optional<Path> getPath() { return Optional.of(path); }
+
+    @Override
+    public long size() throws IOException {
+        return Files.size(path);
     }
 
     @Override

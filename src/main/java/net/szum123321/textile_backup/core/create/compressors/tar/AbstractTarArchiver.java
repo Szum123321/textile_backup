@@ -42,9 +42,15 @@ public class AbstractTarArchiver extends AbstractCompressor {
     }
 
     @Override
-    protected void addEntry(InputSupplier in, OutputStream arc) throws IOException {
-        try (InputStream fileInputStream = in.getInputStream()) {
-            TarArchiveEntry entry = (TarArchiveEntry)((TarArchiveOutputStream) arc).createArchiveEntry(in.getPath(), in.getName());
+    protected void addEntry(InputSupplier input, OutputStream arc) throws IOException {
+        try (InputStream fileInputStream = input.getInputStream()) {
+            TarArchiveEntry entry;
+            if(input.getPath().isEmpty()) {//Virtual entry
+                entry = new TarArchiveEntry(input.getName());
+                entry.setSize(input.size());
+            } else
+                entry = (TarArchiveEntry)((TarArchiveOutputStream) arc).createArchiveEntry(input.getPath().get(), input.getName());
+
             ((TarArchiveOutputStream)arc).putArchiveEntry(entry);
 
             IOUtils.copy(fileInputStream, arc);

@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -128,9 +129,11 @@ public abstract class AbstractCompressor {
     private record StatusFileInputSupplier(byte[] data) implements InputSupplier {
         public InputStream getInputStream() { return new ByteArrayInputStream(data); }
 
-        public Path getPath() { return Path.of(CompressionStatus.DATA_FILENAME); }
+        public Optional<Path> getPath() { return Optional.empty(); }
 
         public String getName() { return CompressionStatus.DATA_FILENAME; }
+
+        public long size() { return data.length; }
 
         public InputStream get() { return getInputStream(); }
     }
