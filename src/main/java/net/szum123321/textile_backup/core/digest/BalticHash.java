@@ -20,6 +20,7 @@ package net.szum123321.textile_backup.core.digest;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 /*
     This algorithm copies construction of SeaHash (https://ticki.github.io/blog/seahash-explained/) including its IV
@@ -27,32 +28,29 @@ import java.nio.ByteOrder;
     I don't think it matters that much, honestly. One advantage the xoroshift has is that it should be
     easier to implement with AVX. Java should soon ship its vector api by default.
  */
-public class XorSeaHash implements Hash {
+public class BalticHash implements Hash {
+    protected final static long[] IV = { 0x16f11fe89b0d677cL, 0xb480a793d8e6c86cL, 0x6fe2e5aaf078ebc9L, 0x14f994a4c5259381L};
+
     //SeaHash IV
-    private final long[] state = { 0x16f11fe89b0d677cL, 0xb480a793d8e6c86cL, 0x6fe2e5aaf078ebc9L, 0x14f994a4c5259381L};
-    private final int buffer_size = (state.length + 1) * Long.BYTES;
-    private final int buffer_limit = state.length * Long.BYTES;
-    private final byte[] _byte_buffer = new byte[buffer_size];
+    private final long[] state = Arrays.copyOf(IV, IV.length);
+    protected final int buffer_limit = state.length * Long.BYTES;
+    protected final byte[] _byte_buffer = new byte[(state.length + 1) * Long.BYTES];
     //Enforce endianness
-    private final ByteBuffer buffer = ByteBuffer.wrap(_byte_buffer).order(ByteOrder.LITTLE_ENDIAN);
+    protected final ByteBuffer buffer = ByteBuffer.wrap(_byte_buffer).order(ByteOrder.LITTLE_ENDIAN);
 
-    private long hashed_data_length = 0;
+    protected long hashed_data_length = 0;
 
-    @Override
     public void update(byte b) {
         buffer.put(b);
         hashed_data_length += 1;
         if (buffer.position() >= buffer_limit) round();
     }
 
-    @Override
     public void update(long b) {
         buffer.putLong(b);
         hashed_data_length += Long.BYTES;
         if(buffer.position() >= buffer_limit) round();
     }
-
-    public void update(byte [] data) { update(data, 0, data.length); }
 
     public void update(byte[] data, int off, int len) {
         int pos = off;
@@ -67,9 +65,11 @@ public class XorSeaHash implements Hash {
         hashed_data_length += len;
     }
 
-    @Override
     public long getValue() {
-        if(buffer.position() != 0) round();
+        if(buffer.position() != 0) {
+            while(buffer.position() < buffer_limit) buffer.put((byte)0);
+            round();
+        }
 
         long result = state[0];
         result ^= state[1];
@@ -80,8 +80,7 @@ public class XorSeaHash implements Hash {
         return xorshift64star(result);
     }
 
-    private void round() {
-        while(buffer.position() < buffer_limit) buffer.put((byte)0);
+    protected void round() {
         int p = buffer.position();
         buffer.rewind();
 
@@ -91,7 +90,7 @@ public class XorSeaHash implements Hash {
         if(p > buffer_limit) {
             System.arraycopy(_byte_buffer, buffer_limit, _byte_buffer, 0, buffer.limit() - p);
             buffer.position(buffer.limit() - p);
-        }
+        } else buffer.rewind();
     }
 
     long xorshift64star(long s) {
