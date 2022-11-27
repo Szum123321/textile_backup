@@ -59,7 +59,7 @@ public class MakeBackupRunnable implements Callable<Void> {
         log.trace("Outfile is: {}", outFile);
 
         try {
-            //I think I should synchronise those two next calls...
+            //I think I should synchronise these two next calls...
             Utilities.disableWorldSaving(context.server());
             Globals.INSTANCE.disableWatchdog = true;
 
@@ -116,7 +116,7 @@ public class MakeBackupRunnable implements Callable<Void> {
                 try {
                     Files.delete(outFile);
                 } catch (IOException ex) {
-                    log.error("An exception occurred while tryin go delete: {}", outFile, ex);
+                    log.error("An exception occurred while trying go delete: {}", outFile, ex);
                 }
             }
 

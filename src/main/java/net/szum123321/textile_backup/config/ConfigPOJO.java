@@ -124,7 +124,7 @@ public class ConfigPOJO implements ConfigData {
     public ArchiveFormat format = ArchiveFormat.ZIP;
 
     @Comment("""
-            The Strict mode (default) aborts backup creation in case of any problem and deletes the created files
+            \nThe Strict mode (default) aborts backup creation in case of any problem and deletes created files
             Permissible mode keeps partial/damaged backup but won't allow to restore it
             Very Permissible mode will skip the verification process. THIS MOST CERTAINLY WILL LEAD TO DATA LOSS OR CORRUPTION
             """)

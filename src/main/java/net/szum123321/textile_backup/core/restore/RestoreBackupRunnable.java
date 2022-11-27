@@ -70,7 +70,7 @@ public class RestoreBackupRunnable implements Runnable {
         FutureTask<Void> waitForShutdown = new FutureTask<>(() -> {
             ctx.server().getThread().join(); //wait for server to die and save all its state
             if(config.get().backupOldWorlds) {
-                return MakeBackupRunnableFactory.create(
+                return MakeBackupRunnableFactory.create (
                         BackupContext.Builder
                                 .newBackupContextBuilder()
                                 .setServer(ctx.server())
