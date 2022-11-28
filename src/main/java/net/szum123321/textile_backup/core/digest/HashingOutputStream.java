@@ -19,8 +19,6 @@
 package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
-import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.TextileLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FilterOutputStream;
@@ -29,13 +27,9 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 
 public class HashingOutputStream extends FilterOutputStream {
-    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
-
     private final Path path;
     private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
-
-    private long cnt = 0;
 
     public HashingOutputStream(OutputStream out, Path path, FileTreeHashBuilder hashBuilder) {
         super(out);
@@ -44,30 +38,20 @@ public class HashingOutputStream extends FilterOutputStream {
     }
 
     @Override
-    public void flush() throws IOException {
-        //log.info("Called flush! {}", path);
-        super.flush();
-    }
-
-    @Override
     public void write(int b) throws IOException {
         hasher.update(b);
-        cnt++;
-        super.write(b);
+        out.write(b);
     }
 
     @Override
     public void write(byte @NotNull [] b, int off, int len) throws IOException {
-        cnt += len;
-        log.info("Called: {} with {}", path, len);
         hasher.update(b, off, len);
-        super.write(b, off, len);
+        out.write(b, off, len);
     }
 
     @Override
     public void close() throws IOException {
         long h = hasher.getValue();
-        log.info("Read in: {}, of {}, with hash {}", path, cnt, h);
         hashBuilder.update(path, h);
         super.close();
 
