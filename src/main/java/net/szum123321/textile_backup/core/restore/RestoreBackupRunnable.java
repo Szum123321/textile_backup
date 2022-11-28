@@ -121,11 +121,12 @@ public class RestoreBackupRunnable implements Runnable {
             log.error("An exception occurred while trying to restore a backup!", e);
         } finally {
             //Regardless of what happened, we should still clean up
-            if(Files.exists(tmp)) {
+           /* if(Files.exists(tmp)) {
                 try {
                     Utilities.deleteDirectory(tmp);
                 } catch (IOException ignored) {}
-            }
+            }*/
+            //TODO: uncomment
         }
 
         //in case we're playing on client

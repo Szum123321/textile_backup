@@ -47,13 +47,27 @@ public class ZipDecompressor {
                 ZipArchiveEntry entry = it.next();
                 Path file = target.resolve(entry.getName());
 
+                byte[] buff = new byte[4096];
+
+                log.info("Unpacking {} uncompressed {} compressed {}", entry.getName(), entry.getSize(), entry.getCompressedSize());
+
                 if(entry.isDirectory()) {
                     Files.createDirectories(file);
                 } else {
                     Files.createDirectories(file.getParent());
                     try (OutputStream outputStream = Files.newOutputStream(file);
-                         HashingOutputStream out = new HashingOutputStream(outputStream, file, hashBuilder)) {
-                        IOUtils.copy(zipFile.getInputStream(entry), out);
+                         HashingOutputStream out = new HashingOutputStream(outputStream, file, hashBuilder);
+                         InputStream in = zipFile.getInputStream(entry)) {
+
+                        int n;
+                        long count = 0;
+                        while((n = in.read(buff, 0, buff.length)) >= 1) {
+                            out.write(buff, 0, n);
+                            count += n;
+                        }
+
+                        log.info("File {}, in size {}, copied {}", entry.getName(), in.available(), count);
+
                     }
                 }
             }

@@ -19,6 +19,8 @@
 package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.CompressionStatus;
 
 import java.io.IOException;
@@ -26,11 +28,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 public class FileTreeHashBuilder {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final Object lock = new Object();
     private long hash = 0, filesProcessed = 0, filesTotalSize = 0;
 
     public void update(Path path, long newHash) throws IOException {
         if(path.getFileName().toString().equals(CompressionStatus.DATA_FILENAME)) return;
+        //log.info("Putting: {}, {}", path, newHash);
 
         var hasher = Globals.CHECKSUM_SUPPLIER.get();
 

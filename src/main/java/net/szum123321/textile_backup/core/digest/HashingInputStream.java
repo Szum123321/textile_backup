@@ -19,6 +19,8 @@
 package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.DataLeftException;
 import net.szum123321.textile_backup.core.create.BrokenFileHandler;
 import org.jetbrains.annotations.NotNull;
@@ -29,10 +31,23 @@ import java.nio.file.Path;
 //This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
 //In case the underlying stream hasn't been read completely in, puts it into BrokeFileHandler
 public class HashingInputStream extends FilterInputStream {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final Path path;
     private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
     private final BrokenFileHandler brokenFileHandler;
+
+    private int cnt = 0;
+
+    @Override
+    public synchronized void reset() throws IOException {
+        log.info("Called reset! {}", path);
+    }
+
+    @Override
+    public boolean markSupported() {
+        return false;
+    }
 
     public HashingInputStream(InputStream in, Path path, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler) {
         super(in);
@@ -44,21 +59,34 @@ public class HashingInputStream extends FilterInputStream {
     @Override
     public int read(byte @NotNull [] b, int off, int len) throws IOException {
         int i = in.read(b, off, len);
-        if(i > -1) hasher.update(b, off, i);
+        if(i > -1) {
+            hasher.update(b, off, i);
+            cnt += i;
+        }
         return i;
     }
 
     @Override
     public int read() throws IOException {
         int i = in.read();
-        if(i > -1) hasher.update(i);
+        if(i > -1) {
+            hasher.update(i);
+            cnt++;
+        }
         return i;
     }
 
     @Override
     public void close() throws IOException {
-        if(in.available() == 0) hashBuilder.update(path, hasher.getValue());
-        else brokenFileHandler.handle(path, new DataLeftException(in.available()));
+        if(in.available() == 0) {
+            long val = hasher.getValue();
+            hashBuilder.update(path, val);
+            log.info("Read in {}, of {}, with hash {}", path, cnt, val);
+        }
+        else {
+            brokenFileHandler.handle(path, new DataLeftException(in.available()));
+            //log.info("bad file {} {}",path, cnt);
+        }
         super.close();
     }
 }
