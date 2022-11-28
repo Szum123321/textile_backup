@@ -18,6 +18,8 @@
 
 package net.szum123321.textile_backup.core;
 
+import net.fabricmc.loader.api.Version;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-public record CompressionStatus(long treeHash, LocalDateTime date, long startTimestamp, long finishTimestamp, Map<Path, Exception> brokenFiles) implements Serializable {
+public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, Version modVersion) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
     public boolean isValid(long decompressedHash) {
         return decompressedHash == treeHash;
@@ -54,7 +56,8 @@ public record CompressionStatus(long treeHash, LocalDateTime date, long startTim
                 .append(", Date: ")
                 .append(date.format(DateTimeFormatter.ISO_DATE_TIME))
                 .append(", start time stamp: ").append(startTimestamp)
-                .append(", finish time stamp: ").append(finishTimestamp);
+                .append(", finish time stamp: ").append(finishTimestamp)
+                .append(", Mod Version:").append(modVersion.getFriendlyString());
 
         builder.append(", broken files: ");
         if(brokenFiles.isEmpty()) builder.append("[]");
