@@ -19,16 +19,14 @@
 package net.szum123321.textile_backup;
 
 import net.minecraft.server.MinecraftServer;
+import net.szum123321.textile_backup.core.digest.BalticHash;
 import net.szum123321.textile_backup.core.digest.Hash;
 import net.szum123321.textile_backup.core.Utilities;
 
 import net.szum123321.textile_backup.core.create.MakeBackupRunnable;
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 import org.apache.commons.io.FileUtils;
-import org.tukaani.xz.check.CRC64;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
@@ -44,33 +42,9 @@ public class Globals {
     public static final Globals INSTANCE = new Globals();
     private static final TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     public static final DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
-    public static final Supplier<Hash> CHECKSUM_SUPPLIER = () -> new Hash() {
-        private final CRC64 crc = new CRC64();
-        @Override
-        public void update(byte b) {
-            crc.update(new byte[]{b});
-        }
+    public static final Supplier<Hash> CHECKSUM_SUPPLIER = BalticHash::new;
 
-        @Override
-        public void update(long b) {
-            ByteBuffer v = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
-            v.putLong(b);
-            crc.update(v.array());
-        }
-
-        @Override
-        public void update(byte[] b, int off, int len) {
-            crc.update(b, off, len);
-        }
-
-        @Override
-        public long getValue() {
-            ByteBuffer b = ByteBuffer.wrap(crc.finish());
-            return b.getLong();
-        }
-    };
-
-    private ExecutorService executorService = null;// = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService = null;//TODO: AAAAAAAAAAAAAAA MEMORY LEAK!!!!!!!!!
     public final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
     public boolean disableWatchdog = false;
     private boolean disableTMPFiles = false;

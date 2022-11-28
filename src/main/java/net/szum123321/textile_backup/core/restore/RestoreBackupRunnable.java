@@ -67,6 +67,8 @@ public class RestoreBackupRunnable implements Runnable {
             return;
         }
 
+        //By making a separate thread we can start unpacking an old backup instantly
+        //Let the server shut down gracefully, and wait for the old world backup to complete
         FutureTask<Void> waitForShutdown = new FutureTask<>(() -> {
             ctx.server().getThread().join(); //wait for server to die and save all its state
             if(config.get().backupOldWorlds) {
@@ -75,6 +77,7 @@ public class RestoreBackupRunnable implements Runnable {
                                 .newBackupContextBuilder()
                                 .setServer(ctx.server())
                                 .setInitiator(ActionInitiator.Restore)
+                                .dontCleanup()
                                 .setComment("Old_World" + (ctx.comment() != null ? "_" + ctx.comment() : ""))
                                 .build()
                 ).call();
@@ -82,7 +85,7 @@ public class RestoreBackupRunnable implements Runnable {
             return null;
         });
 
-        new Thread(waitForShutdown).start();
+        new Thread(waitForShutdown, "Server shutdown wait thread").start();
 
         try {
             log.info("Starting decompression...");
@@ -97,11 +100,14 @@ public class RestoreBackupRunnable implements Runnable {
             CompressionStatus status = CompressionStatus.readFromFile(tmp);
             Files.delete(tmp.resolve(CompressionStatus.DATA_FILENAME));
 
+            log.info("Waiting for server to fully terminate...");
+
             //locks until the backup is finished
             waitForShutdown.get();
 
             log.info("Status: {}", status);
 
+            //TODO: check broken file array
             boolean valid = status.isValid(hash);
             if(valid || !config.get().errorErrorHandlingMode.verify()) {
                 if(valid) log.info("Backup valid. Restoring");
@@ -121,12 +127,11 @@ public class RestoreBackupRunnable implements Runnable {
             log.error("An exception occurred while trying to restore a backup!", e);
         } finally {
             //Regardless of what happened, we should still clean up
-           /* if(Files.exists(tmp)) {
+            if(Files.exists(tmp)) {
                 try {
                     Utilities.deleteDirectory(tmp);
                 } catch (IOException ignored) {}
-            }*/
-            //TODO: uncomment
+            }
         }
 
         //in case we're playing on client

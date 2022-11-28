@@ -34,7 +34,9 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
@@ -53,9 +55,18 @@ public abstract class AbstractCompressor {
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
              OutputStream arc = createArchiveOutputStream(bufferedOutputStream, ctx, coreLimit);
              Stream<Path> fileStream = Files.walk(inputFile)) {
+
+            AtomicInteger fileCounter = new AtomicInteger(0);
+
             var it = fileStream
                     .filter(path -> !Utilities.isBlacklisted(inputFile.relativize(path)))
-                    .filter(Files::isRegularFile).iterator();
+                    .filter(Files::isRegularFile)
+                    .peek(x -> fileCounter.incrementAndGet()).toList()
+                    .iterator();
+
+            log.info("File count: {}", fileCounter.get());
+
+            CountDownLatch latch = new CountDownLatch(fileCounter.get());
 
             while(it.hasNext()) {
                 Path file = it.next();
@@ -66,7 +77,8 @@ public abstract class AbstractCompressor {
                                     file,
                                     inputFile.relativize(file).toString(),
                                     fileHashBuilder,
-                                    brokenFileHandler),
+                                    brokenFileHandler,
+                                    latch),
                             arc
                     );
                 } catch (IOException e) {
@@ -78,37 +90,21 @@ public abstract class AbstractCompressor {
                 }
             }
 
+            latch.await();
+
             Instant now = Instant.now();
 
             CompressionStatus status = new CompressionStatus (
                     fileHashBuilder.getValue(),
+                    brokenFileHandler.get(),
                     ctx.startDate(), start.toEpochMilli(), now.toEpochMilli(),
-                    brokenFileHandler.get()
+                    TextileBackup.VERSION
             );
 
             addEntry(new StatusFileInputSupplier(status.serialize()), arc);
 
             finish(arc);
-        } /*catch(NoSpaceLeftOnDeviceException e) {
-            log.error("""
-            CRITICAL ERROR OCCURRED!
-            The backup is corrupt!
-            Don't panic! This is a known issue!
-            For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems
-            In case this isn't it here's also the exception itself""", e);
-
-            if(ctx.initiator() == ActionInitiator.Player) {
-                log.sendError(ctx, "Backup failed. The file is corrupt.");
-                log.error("For help see: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
-            }
-            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) keep = false;
-        } catch (IOException | InterruptedException | ExecutionException e) {
-            log.error("An exception occurred!", e);
-            if(ctx.initiator() == ActionInitiator.Player)
-                log.sendError(ctx, "Something went wrong while compressing files!");
-            if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) keep = false;
-
-        } */finally {
+        } finally {
             close();
         }
 

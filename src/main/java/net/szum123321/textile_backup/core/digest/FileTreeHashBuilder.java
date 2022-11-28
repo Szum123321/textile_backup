@@ -27,18 +27,22 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class FileTreeHashBuilder {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final Object lock = new Object();
     private long hash = 0, filesProcessed = 0, filesTotalSize = 0;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public void update(Path path, long newHash) throws IOException {
-        if(path.getFileName().toString().equals(CompressionStatus.DATA_FILENAME)) return;
-        //log.info("Putting: {}, {}", path, newHash);
+        if(closed.get()) throw new RuntimeException("Hash Builder already closed!");
 
-        var hasher = Globals.CHECKSUM_SUPPLIER.get();
+        if(path.getFileName().toString().equals(CompressionStatus.DATA_FILENAME)) return;
 
         long size = Files.size(path);
+
+        var hasher = Globals.CHECKSUM_SUPPLIER.get();
 
         hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
         hasher.update(newHash);
@@ -53,11 +57,15 @@ public class FileTreeHashBuilder {
 
     public long getValue() {
         var hasher = Globals.CHECKSUM_SUPPLIER.get();
+        closed.set(true);
 
-        hasher.update(hash);
-        hasher.update(filesProcessed);
-        hasher.update(filesTotalSize);
+        synchronized (lock) {
+            log.debug("Closing: files: {}, bytes {}, raw hash {}", filesProcessed, filesTotalSize, hash);
+            hasher.update(hash);
+            hasher.update(filesProcessed);
+            hasher.update(filesTotalSize);
 
-        return hasher.getValue();
+            return hasher.getValue();
+        }
     }
 }

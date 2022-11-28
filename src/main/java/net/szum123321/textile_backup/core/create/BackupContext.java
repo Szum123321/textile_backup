@@ -30,6 +30,7 @@ public record BackupContext(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
                             ActionInitiator initiator,
                             boolean save,
+                            boolean cleanup,
                             String comment,
                             LocalDateTime startDate) {
 
@@ -46,6 +47,7 @@ public record BackupContext(@NotNull MinecraftServer server,
         private ServerCommandSource commandSource;
         private ActionInitiator initiator;
         private boolean save;
+        private boolean cleanup;
         private String comment;
 
         private boolean guessInitiator;
@@ -55,6 +57,7 @@ public record BackupContext(@NotNull MinecraftServer server,
             this.commandSource = null;
             this.initiator = null;
             this.save = false;
+            cleanup = true; //defaults
             this.comment = null;
 
             guessInitiator = false;
@@ -94,6 +97,11 @@ public record BackupContext(@NotNull MinecraftServer server,
             return this;
         }
 
+        public Builder dontCleanup() {
+            this.cleanup = false;
+            return this;
+        }
+
         public BackupContext build() {
             if (guessInitiator) {
                 initiator = commandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
@@ -106,7 +114,7 @@ public record BackupContext(@NotNull MinecraftServer server,
                 else throw new RuntimeException("Neither MinecraftServer or ServerCommandSource were provided!");
             }
 
-            return new BackupContext(server, commandSource, initiator, save, comment, LocalDateTime.now());
+            return new BackupContext(server, commandSource, initiator, save, cleanup, comment, LocalDateTime.now());
         }
     }
 }

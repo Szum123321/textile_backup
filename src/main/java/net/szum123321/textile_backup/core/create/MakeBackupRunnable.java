@@ -102,8 +102,8 @@ public class MakeBackupRunnable implements Callable<Void> {
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, context, coreCount);
             }
 
-            if(!Globals.INSTANCE.getQueueExecutor().isShutdown())
-                Globals.INSTANCE.getQueueExecutor().submit(new Cleanup(context.commandSource(), Utilities.getLevelName(context.server())));
+            if(context.cleanup())
+                new Cleanup(context.commandSource(), Utilities.getLevelName(context.server())).call();
 
             if (config.get().broadcastBackupDone) Utilities.notifyPlayers(context.server(), "Done!");
             else log.sendInfoAL(context, "Done!");
