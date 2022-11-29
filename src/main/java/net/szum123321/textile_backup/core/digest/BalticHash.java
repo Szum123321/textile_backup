@@ -37,7 +37,6 @@ public class BalticHash implements Hash {
     protected final byte[] _byte_buffer = new byte[(state.length + 1) * Long.BYTES];
     //Enforce endianness
     protected final ByteBuffer buffer = ByteBuffer.wrap(_byte_buffer).order(ByteOrder.LITTLE_ENDIAN);
-
     protected long hashed_data_length = 0;
 
     public void update(byte b) {

@@ -97,8 +97,8 @@ public abstract class AbstractCompressor {
             CompressionStatus status = new CompressionStatus (
                     fileHashBuilder.getValue(),
                     brokenFileHandler.get(),
-                    ctx.startDate(), start.toEpochMilli(), now.toEpochMilli(),
-                    TextileBackup.VERSION
+                    ctx.startDate(), start.toEpochMilli(), now.toEpochMilli()//,
+                    //TextileBackup.VERSION
             );
 
             addEntry(new StatusFileInputSupplier(status.serialize()), arc);

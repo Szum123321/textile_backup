@@ -33,63 +33,63 @@ It's still probably far from being the slowest part of code, so I don't expect a
 
 I will keep this code here for future work perhaps
  */
-public class BalticHashSIMD extends BalticHash {
+public class BalticHashSIMD extends BalticHash {/*
     public BalticHashSIMD() { throw new UnsupportedOperationException(); } //For safety
 
-    /*    private LongVector state = LongVector.fromArray(LongVector.SPECIES_256, IV, 0);
+    private LongVector state = LongVector.fromArray(LongVector.SPECIES_256, IV, 0);
 
-        @Override
-        public long getValue() {
-            if(buffer.position() != 0) {
-                while(buffer.position() < buffer_limit) buffer.put((byte)0);
-                round();
+    @Override
+    public long getValue() {
+        if (buffer.position() != 0) {
+            while (buffer.position() < buffer_limit) buffer.put((byte) 0);
+            round();
+        }
+
+        long result = state.reduceLanesToLong(VectorOperators.XOR);
+        result ^= hashed_data_length;
+
+        return xorshift64star(result);
+    }
+
+    @Override
+    public void update(byte[] data, int off, int len) {
+        int pos = off;
+        while (pos < len) {
+            int n = Math.min(len - pos, buffer_limit - buffer.position());
+            if (n == 32) {
+                var v = ByteVector.fromArray(ByteVector.SPECIES_256, data, pos).reinterpretAsLongs();
+                state = state.lanewise(VectorOperators.XOR, v);
+                state = xorshift64star(state);
+            } else {
+                System.arraycopy(data, pos, _byte_buffer, buffer.position(), n);
+                buffer.position(buffer.position() + n);
+                if (buffer.position() == buffer_limit) round();
             }
-
-            long result = state.reduceLanesToLong(VectorOperators.XOR);
-            result ^= hashed_data_length;
-
-            return xorshift64star(result);
+            pos += n;
         }
 
-        @Override
-        public void update(byte[] data, int off, int len) {
-            int pos = off;
-            while(pos < len) {
-                int n = Math.min(len - pos, buffer_limit - buffer.position());
-                if(n == 32) {
-                    var v = ByteVector.fromArray(ByteVector.SPECIES_256, data, pos).reinterpretAsLongs();
-                    state = state.lanewise(VectorOperators.XOR, v);
-                    state = xorshift64star(state);
-                } else {
-                    System.arraycopy(data, pos, _byte_buffer, buffer.position(), n);
-                    buffer.position(buffer.position() + n);
-                    if(buffer.position() == buffer_limit) round();
-                }
-                pos += n;
-            }
+        hashed_data_length += len;
+    }
 
-            hashed_data_length += len;
-        }
+    @Override
+    protected void round() {
+        var s = ByteVector.fromArray(ByteVector.SPECIES_256, _byte_buffer, 0).reinterpretAsLongs();
+        state = state.lanewise(VectorOperators.XOR, s);
+        state = xorshift64star(state);
 
-        @Override
-        protected void round() {
-            var s = ByteVector.fromArray(ByteVector.SPECIES_256, _byte_buffer, 0).reinterpretAsLongs();
-            state = state.lanewise(VectorOperators.XOR, s);
-            state = xorshift64star(state);
+        int p = buffer.position();
 
-            int p = buffer.position();
+        if (p > buffer_limit) {
+            System.arraycopy(_byte_buffer, buffer_limit, _byte_buffer, 0, buffer.limit() - p);
+            buffer.position(buffer.limit() - p);
+        } else buffer.rewind();
+    }
 
-            if(p > buffer_limit) {
-                System.arraycopy(_byte_buffer, buffer_limit, _byte_buffer, 0, buffer.limit() - p);
-                buffer.position(buffer.limit() - p);
-            } else buffer.rewind();
-        }
-
-        LongVector xorshift64star(LongVector v) {
-            v = v.lanewise(VectorOperators.XOR, v.lanewise(VectorOperators.ASHR, 12));
-            v = v.lanewise(VectorOperators.XOR, v.lanewise(VectorOperators.LSHL, 25));
-            v = v.lanewise(VectorOperators.XOR, v.lanewise(VectorOperators.ASHR, 27));
-            v = v.lanewise(VectorOperators.MUL, 0x2545F4914F6CDD1DL);
-            return v;
-        }*/
+    LongVector xorshift64star(LongVector v) {
+        v = v.lanewise(VectorOperators.XOR, v.lanewise(VectorOperators.ASHR, 12));
+        v = v.lanewise(VectorOperators.XOR, v.lanewise(VectorOperators.LSHL, 25));
+        v = v.lanewise(VectorOperators.XOR, v.lanewise(VectorOperators.ASHR, 27));
+        v = v.lanewise(VectorOperators.MUL, 0x2545F4914F6CDD1DL);
+        return v;
+    }*/
 }
