@@ -54,7 +54,13 @@ public class TextileBackup implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        log.info("Starting Textile Backup by Szum123321");
+        Globals.INSTANCE.setCombinedVersionString(
+                FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion().getFriendlyString() +
+                        ":" +
+                        FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().getMetadata().getVersion().getFriendlyString()
+        );
+
+        log.info("Starting Textile Backup {} by Szum123321", Globals.INSTANCE.getCombinedVersionString());
 
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
 

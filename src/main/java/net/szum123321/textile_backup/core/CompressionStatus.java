@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp) implements Serializable {
+public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, String version) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
     public boolean isValid(long decompressedHash) {
         return decompressedHash == treeHash && brokenFiles.isEmpty();
@@ -55,7 +55,7 @@ public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles,
                 .append(date.format(DateTimeFormatter.ISO_DATE_TIME))
                 .append(", start time stamp: ").append(startTimestamp)
                 .append(", finish time stamp: ").append(finishTimestamp)
-                ;//.append(", Mod Version: ").append(modVersion.getFriendlyString());
+                .append(", Mod Version: ").append(version);
 
         builder.append(", broken files: ");
         if(brokenFiles.isEmpty()) builder.append("[]");

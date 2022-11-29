@@ -18,6 +18,7 @@
 
 package net.szum123321.textile_backup.core.create.compressors;
 
+import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
@@ -100,8 +101,8 @@ public abstract class AbstractCompressor {
             CompressionStatus status = new CompressionStatus (
                     fileHashBuilder.getValue(),
                     brokenFileHandler.get(),
-                    ctx.startDate(), start.toEpochMilli(), now.toEpochMilli()//,
-                    //TextileBackup.VERSION
+                    ctx.startDate(), start.toEpochMilli(), now.toEpochMilli(),
+                    Globals.INSTANCE.getCombinedVersionString()
             );
 
             addEntry(new StatusFileInputSupplier(status.serialize()), arc);
