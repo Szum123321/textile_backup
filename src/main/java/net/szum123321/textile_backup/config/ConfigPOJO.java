@@ -123,14 +123,6 @@ public class ConfigPOJO implements ConfigData {
     @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
     public ArchiveFormat format = ArchiveFormat.ZIP;
 
-    @Comment("""
-            \nThe Strict mode (default) aborts backup creation in case of any problem and deletes created files
-            Permissible mode keeps partial/damaged backup but won't allow to restore it
-            Very Permissible mode will skip the verification process. THIS MOST CERTAINLY WILL LEAD TO DATA LOSS OR CORRUPTION
-            """)
-    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
-    public ErrorHandlingMode errorErrorHandlingMode = ErrorHandlingMode.STRICT;
-
     @Comment("\nMinimal permission level required to run commands\n")
     @ConfigEntry.Category("Manage")
     @ConfigEntry.Gui.NoTooltip()
@@ -169,6 +161,14 @@ public class ConfigPOJO implements ConfigData {
             """)
     @ConfigEntry.Gui.Tooltip()
     public String dateTimeFormat = "yyyy.MM.dd_HH-mm-ss";
+
+    @Comment("""
+            \nThe Strict mode (default) aborts backup creation in case of any problem and deletes created files
+            Permissible mode keeps partial/damaged backup but won't allow to restore it
+            Very Permissible mode will skip the verification process. THIS MOST CERTAINLY WILL LEAD TO DATA LOSS OR CORRUPTION
+            """)
+    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+    public ErrorHandlingMode errorErrorHandlingMode = ErrorHandlingMode.STRICT;
 
     @Override
     public void validatePostLoad() throws ValidationException {
