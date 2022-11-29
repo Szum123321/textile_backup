@@ -25,10 +25,9 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 
-
 public interface InputSupplier extends InputStreamSupplier {
     InputStream getInputStream() throws IOException;
-    //If an entry is virtual (a.k.a there is no actual file to open, only input stream)
+    //If an entry is virtual (a.k.a. there is no actual file to open, only input stream)
     Optional<Path> getPath();
     String getName();
 

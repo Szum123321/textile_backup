@@ -27,15 +27,20 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 
-//This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
-//In case the underlying stream hasn't been read completely in, puts it into BrokeFileHandler
+/**
+ * This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
+ * In case the underlying stream hasn't been read completely in, puts it into BrokeFileHandler
+
+ * Futhermore, ParallelZip works by putting al the file requests into a queue and then compressing them
+ * with multiple threads. Thus, we have to make sure that all the files have been read before requesting the final value
+ * That is what CountDownLatch does
+ */
 public class HashingInputStream extends FilterInputStream {
     private final Path path;
     private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
     private final BrokenFileHandler brokenFileHandler;
     private final CountDownLatch latch;
-
 
     public HashingInputStream(InputStream in, Path path, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler, CountDownLatch latch) {
         super(in);

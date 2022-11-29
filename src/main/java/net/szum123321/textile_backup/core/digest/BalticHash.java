@@ -22,16 +22,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-/*
-    This algorithm copies construction of SeaHash (https://ticki.github.io/blog/seahash-explained/) including its IV
-    What it differs in is that it uses Xoroshift64* instead of PCG. Although it might lower the output quality,
-    I don't think it matters that much, honestly. One advantage the xoroshift has is that it should be
-    easier to implement with AVX. Java should soon ship its vector api by default.
+/**
+ * This algorithm copies construction of <a href="https://ticki.github.io/blog/seahash-explained/">SeaHash</a> including its IV.
+ * What it differs in is that it uses Xoroshift64* instead of PCG as its pseudo-random function. Although it might lower
+ * the output quality, I don't think it matters that much, honestly. One advantage of xoroshift is that it should be
+ * easier to implement with AVX. Java should soon ship its vector api by default.
  */
 public class BalticHash implements Hash {
-    protected final static long[] IV = { 0x16f11fe89b0d677cL, 0xb480a793d8e6c86cL, 0x6fe2e5aaf078ebc9L, 0x14f994a4c5259381L};
-
     //SeaHash IV
+    protected final static long[] IV = { 0x16f11fe89b0d677cL, 0xb480a793d8e6c86cL, 0x6fe2e5aaf078ebc9L, 0x14f994a4c5259381L };
     private final long[] state = Arrays.copyOf(IV, IV.length);
     protected final int buffer_limit = state.length * Long.BYTES;
     protected final byte[] _byte_buffer = new byte[(state.length + 1) * Long.BYTES];

@@ -45,7 +45,7 @@ public class AbstractTarArchiver extends AbstractCompressor {
     protected void addEntry(InputSupplier input, OutputStream arc) throws IOException {
         try (InputStream fileInputStream = input.getInputStream()) {
             TarArchiveEntry entry;
-            if(input.getPath().isEmpty()) {//Virtual entry
+            if(input.getPath().isEmpty()) { //Virtual entry
                 entry = new TarArchiveEntry(input.getName());
                 entry.setSize(input.size());
             } else

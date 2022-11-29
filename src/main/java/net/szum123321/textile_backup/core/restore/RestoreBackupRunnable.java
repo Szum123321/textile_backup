@@ -37,6 +37,9 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
+/**
+ * This class restores a file provided by RestoreContext.
+ */
 public class RestoreBackupRunnable implements Runnable {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;

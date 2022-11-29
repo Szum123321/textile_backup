@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
- * Basic abstract class representing directory compressor
+ * Basic abstract class representing directory compressor with all the bells and whistles
  */
 public abstract class AbstractCompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
@@ -49,14 +49,14 @@ public abstract class AbstractCompressor {
         Instant start = Instant.now();
 
         FileTreeHashBuilder fileHashBuilder = new FileTreeHashBuilder();
-        BrokenFileHandler brokenFileHandler = new BrokenFileHandler();
+        BrokenFileHandler brokenFileHandler = new BrokenFileHandler(); //Basically a hashmap storing files and their respective exceptions
 
         try (OutputStream outStream = Files.newOutputStream(outputFile);
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outStream);
              OutputStream arc = createArchiveOutputStream(bufferedOutputStream, ctx, coreLimit);
              Stream<Path> fileStream = Files.walk(inputFile)) {
 
-            AtomicInteger fileCounter = new AtomicInteger(0);
+            AtomicInteger fileCounter = new AtomicInteger(0); //number of files to compress
 
             var it = fileStream
                     .filter(path -> !Utilities.isBlacklisted(inputFile.relativize(path)))
@@ -66,6 +66,7 @@ public abstract class AbstractCompressor {
 
             log.info("File count: {}", fileCounter.get());
 
+            //will be used in conjunction with ParallelZip to avoid race condition
             CountDownLatch latch = new CountDownLatch(fileCounter.get());
 
             while(it.hasNext()) {
@@ -83,6 +84,7 @@ public abstract class AbstractCompressor {
                     );
                 } catch (IOException e) {
                     brokenFileHandler.handle(file, e);
+                    //In Permissive mode we allow partial backups
                     if(ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) throw e;
                     else log.sendErrorAL(ctx, "An exception occurred while trying to compress: {}",
                             inputFile.relativize(file).toString(), e
@@ -90,6 +92,7 @@ public abstract class AbstractCompressor {
                 }
             }
 
+            //wait for all the InputStreams to close/fail with InputSupplier
             latch.await();
 
             Instant now = Instant.now();

@@ -22,16 +22,16 @@ package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.core.digest.BalticHash;
 
-/*Mostly working XorSeaHash impl using SIMD. Should speed up calculation on most systems currently in use
+/**
+ * Mostly working XorSeaHash impl using SIMD. Should speed up calculation on most systems currently in use
 
-It's actually slower. I tested it by comparing runtimes while hashing a directly opened FileInputStream.
-My cpu is AMD Ryzen 5 3500U
+ <br>...<br>
 
-There are two reasons I can think of: either vector construction simply takes so much time or jvm auto-vectorizes better than me
-
-It's still probably far from being the slowest part of code, so I don't expect any major slowdowns
-
-I will keep this code here for future work perhaps
+ * It's actually slower. I tested it by comparing runtimes while hashing a directly opened FileInputStream.
+ * My cpu is AMD Ryzen 5 3500U
+ * There are two reasons I can think of: either vector construction simply takes so much time or jvm auto-vectorizes better than I.
+ * It's still probably far from being the slowest part of code, so I don't expect any major slowdowns
+ * I will keep this code here for future work perhaps
  */
 public class BalticHashSIMD extends BalticHash {/*
     public BalticHashSIMD() { throw new UnsupportedOperationException(); } //For safety

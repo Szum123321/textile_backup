@@ -51,6 +51,8 @@ public class Globals {
     private AwaitThread restoreAwaitThread = null;
     private Path lockedPath = null;
 
+    private String combinedVersionString;
+
     private Globals() {}
 
     public ExecutorService getQueueExecutor() { return executorService; }
@@ -106,5 +108,13 @@ public class Globals {
         }
 
         if(disableTMPFiles) log.error("Might cause: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems");
+    }
+
+    public String getCombinedVersionString() {
+        return combinedVersionString;
+    }
+
+    public void setCombinedVersionString(String combinedVersionString) {
+        this.combinedVersionString = combinedVersionString;
     }
 }

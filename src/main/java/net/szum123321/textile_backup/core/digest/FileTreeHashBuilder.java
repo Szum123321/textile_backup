@@ -29,6 +29,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * What this class does is it collects the hashed files and combines them into a single number,
+ * thus we can verify file tree integrity
+ */
 public class FileTreeHashBuilder {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final Object lock = new Object();
