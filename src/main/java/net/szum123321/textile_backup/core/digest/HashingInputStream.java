@@ -71,10 +71,10 @@ public class HashingInputStream extends FilterInputStream {
 
     @Override
     public void close() throws IOException {
+        latch.countDown();
+
         if(in.available() == 0) hashBuilder.update(path, hasher.getValue());
         else brokenFileHandler.handle(path, new DataLeftException(in.available()));
-
-        latch.countDown();
 
         super.close();
     }
