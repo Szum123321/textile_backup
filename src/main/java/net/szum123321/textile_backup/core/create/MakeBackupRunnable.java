@@ -133,6 +133,8 @@ public class MakeBackupRunnable implements Callable<Void> {
     }
 
     private String getFileName() {
-        return Utilities.getDateTimeFormatter().format(context.startDate()) + (context.comment() != null ? "#" + context.comment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") + config.get().format.getCompleteString();
+        return Utilities.getDateTimeFormatter().format(context.startDate()) +
+                (context.comment() != null ? "#" + context.comment().replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
+                config.get().format.getCompleteString();
     }
 }
