@@ -18,13 +18,14 @@
 
 package net.szum123321.textile_backup.core.create;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.core.ActionInitiator;
+import net.szum123321.textile_backup.core.Utilities;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 public record BackupContext(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
@@ -104,10 +105,8 @@ public record BackupContext(@NotNull MinecraftServer server,
 
         public BackupContext build() {
             if (guessInitiator) {
-                initiator = commandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
-            } else if (initiator == null) {
-                initiator = ActionInitiator.Null;
-            }
+                initiator = Utilities.wasSentByPlayer(commandSource) ? ActionInitiator.Player : ActionInitiator.ServerConsole;
+            } else if (initiator == null) throw new NoSuchElementException("No initiator provided!");
 
             if (server == null) {
                 if (commandSource != null) setServer(commandSource.getServer());

@@ -90,7 +90,7 @@ public class ConfigPOJO implements ConfigData {
     public long maxAge = 0;
 
     @Comment("""
-            \nMaximum size of backup folder in kilo bytes (1024).
+            \nMaximum size of backup folder in kibi bytes (1024).
             If set to 0 then backups will not be deleted
             """)
     @ConfigEntry.Gui.Tooltip()

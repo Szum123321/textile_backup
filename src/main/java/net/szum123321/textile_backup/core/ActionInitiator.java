@@ -26,9 +26,7 @@ public enum ActionInitiator {
     ServerConsole("Server Console", "from"), //some/ting typed a command and it was not a player (command blocks and server console count)
     Timer("Timer", "by"), //a.k.a scheduler
     Shutdown("Server Shutdown", "by"),
-    Restore("Backup Restoration", "because of"),
-    Null("Null (That shouldn't have happened)", "form");
-
+    Restore("Backup Restoration", "because of");
     private final String name;
     private final String prefix;
 
