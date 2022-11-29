@@ -34,7 +34,6 @@ import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -110,11 +109,11 @@ public class RestoreBackupRunnable implements Runnable {
 
             log.info("Status: {}", status);
 
-            //TODO: check broken file array
-            boolean valid = status.isValid(hash);
-            if(valid || !config.get().errorErrorHandlingMode.verify()) {
-                if(valid) log.info("Backup valid. Restoring");
-                else log.info("Backup is damaged, but verification is disabled. Restoring");
+            var state = status.isValid(hash, ctx);
+
+            if(state.isEmpty() || !config.get().errorErrorHandlingMode.verify()) {
+                if (state.isEmpty()) log.info("Backup valid. Restoring");
+                else log.info("Backup is damaged, but verification is disabled [{}]. Restoring", state.get());
 
                 Utilities.deleteDirectory(worldFile);
                 Files.move(tmp, worldFile);
@@ -124,9 +123,9 @@ public class RestoreBackupRunnable implements Runnable {
                     Files.delete(ctx.restoreableFile().getFile());
                 }
             } else {
-                log.error("File tree hash mismatch! Got: {}, Expected {}. Aborting", hash, status.treeHash());
+                log.error(state.get());
             }
-        } catch (ExecutionException | InterruptedException | ClassNotFoundException | IOException e) {
+        } catch (Exception e) {
             log.error("An exception occurred while trying to restore a backup!", e);
         } finally {
             //Regardless of what happened, we should still clean up

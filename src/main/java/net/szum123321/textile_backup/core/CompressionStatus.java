@@ -18,17 +18,33 @@
 
 package net.szum123321.textile_backup.core;
 
+import net.szum123321.textile_backup.core.restore.RestoreContext;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Optional;
 
 public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, String version) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
-    public boolean isValid(long decompressedHash) {
-        return decompressedHash == treeHash && brokenFiles.isEmpty();
+    public Optional<String> isValid(long hash, RestoreContext ctx) throws RuntimeException {
+        if(hash != treeHash)
+            return Optional.of("Tree Hash mismatch!\n  Expected: " + treeHash + ", got: " + hash);
+
+        if(!brokenFiles.isEmpty())
+            return Optional.of("Damaged files present! ^");
+
+        if(ctx.restoreableFile().getCreationTime() != date)
+            return Optional.of(
+                    "Creation date mismatch!\n   Expected: " +
+                            date.format(DateTimeFormatter.ISO_DATE_TIME) + ", got: " +
+                            ctx.restoreableFile().getCreationTime().format(DateTimeFormatter.ISO_DATE_TIME)
+            );
+
+        return Optional.empty();
     }
 
     public static CompressionStatus readFromFile(Path folder) throws IOException, ClassNotFoundException {
