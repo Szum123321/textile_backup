@@ -119,6 +119,8 @@ public class Utilities {
 			if (path.getFileName().toString().equals("session.lock")) return true;
 		}
 
+		if(path.getFileName().endsWith(CompressionStatus.DATA_FILENAME)) return true;
+
 		return config.get().fileBlacklist.stream().anyMatch(path::startsWith);
 	}
 
