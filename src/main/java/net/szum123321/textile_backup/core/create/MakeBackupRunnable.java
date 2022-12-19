@@ -112,7 +112,7 @@ public class MakeBackupRunnable implements Callable<Void> {
             //ExecutorService swallows exception, so I need to catch everything
             log.error("An exception occurred when trying to create new backup file!", e);
 
-            if (ConfigHelper.INSTANCE.get().errorErrorHandlingMode.isStrict()) {
+            if (ConfigHelper.INSTANCE.get().integrityVerificationMode.isStrict()) {
                 try {
                     Files.delete(outFile);
                 } catch (IOException ex) {

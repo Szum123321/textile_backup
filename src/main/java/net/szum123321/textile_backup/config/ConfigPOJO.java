@@ -168,7 +168,7 @@ public class ConfigPOJO implements ConfigData {
             Very Permissible mode will skip the verification process. THIS MOST CERTAINLY WILL LEAD TO DATA LOSS OR CORRUPTION
             """)
     @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
-    public ErrorHandlingMode errorErrorHandlingMode = ErrorHandlingMode.STRICT;
+    public IntegrityVerificationMode integrityVerificationMode = IntegrityVerificationMode.STRICT;
 
     @Override
     public void validatePostLoad() throws ValidationException {
@@ -185,7 +185,7 @@ public class ConfigPOJO implements ConfigData {
         }
     }
 
-    public enum ErrorHandlingMode {
+    public enum IntegrityVerificationMode {
         STRICT,
         PERMISSIBLE,
         VERY_PERMISSIBLE;

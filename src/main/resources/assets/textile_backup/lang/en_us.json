@@ -47,8 +47,8 @@
   "text.autoconfig.textile_backup.option.format": "Archive and compression format",
   "text.autoconfig.textile_backup.option.format.@Tooltip": "See: https://github.com/Szum123321/textile_backup/wiki/Configuration#format",
 
-  "text.autoconfig.textile_backup.option.errorErrorHandlingMode": "Compression error handling mode",
-  "text.autoconfig.textile_backup.option.errorErrorHandlingMode.@Tooltip": "DO NOT ALTER unless fully certain",
+  "text.autoconfig.textile_backup.option.integrityVerificationMode": "Verify the backup file has not been damaged",
+  "text.autoconfig.textile_backup.option.integrityVerificationMode.@Tooltip": "DO NOT ALTER unless fully certain",
 
   "text.autoconfig.textile_backup.option.permissionLevel": "Min permission level",
 

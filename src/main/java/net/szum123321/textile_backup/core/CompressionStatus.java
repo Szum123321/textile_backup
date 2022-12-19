@@ -30,7 +30,7 @@ import java.util.Optional;
 
 public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, String version) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
-    public Optional<String> isValid(long hash, RestoreContext ctx) throws RuntimeException {
+    public Optional<String> validate(long hash, RestoreContext ctx) throws RuntimeException {
         if(hash != treeHash)
             return Optional.of("Tree Hash mismatch!\n  Expected: " + treeHash + ", got: " + hash);
 
@@ -47,8 +47,10 @@ public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles,
         return Optional.empty();
     }
 
-    public static CompressionStatus readFromFile(Path folder) throws IOException, ClassNotFoundException {
-        try(InputStream i = Files.newInputStream(folder.resolve(DATA_FILENAME));
+    public static Path resolveStatusFilename(Path directory) { return directory.resolve(DATA_FILENAME); }
+
+    public static CompressionStatus readFromFile(Path directory) throws IOException, ClassNotFoundException {
+        try(InputStream i = Files.newInputStream(directory.resolve(DATA_FILENAME));
             ObjectInputStream obj = new ObjectInputStream(i)) {
             return (CompressionStatus) obj.readObject();
         }
