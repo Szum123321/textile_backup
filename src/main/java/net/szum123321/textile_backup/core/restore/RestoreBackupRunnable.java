@@ -34,6 +34,7 @@ import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -63,7 +64,8 @@ public class RestoreBackupRunnable implements Runnable {
         try {
             tmp = Files.createTempDirectory(
                     ctx.server().getRunDirectory().toPath(),
-                    ctx.restoreableFile().getFile().getFileName().toString());
+                    ctx.restoreableFile().getFile().getFileName().toString()
+            );
         } catch (IOException e) {
             log.error("An exception occurred while unpacking backup", e);
             return;
@@ -72,7 +74,8 @@ public class RestoreBackupRunnable implements Runnable {
         //By making a separate thread we can start unpacking an old backup instantly
         //Let the server shut down gracefully, and wait for the old world backup to complete
         FutureTask<Void> waitForShutdown = new FutureTask<>(() -> {
-            ctx.server().getThread().join(); //wait for server to die and save all its state
+            ctx.server().getThread().join(); //wait for server thread to die and save all its state
+
             if(config.get().backupOldWorlds) {
                 return MakeBackupRunnableFactory.create (
                         BackupContext.Builder
@@ -84,6 +87,7 @@ public class RestoreBackupRunnable implements Runnable {
                                 .build()
                 ).call();
             }
+
             return null;
         });
 
@@ -99,21 +103,28 @@ public class RestoreBackupRunnable implements Runnable {
             else
                 hash = GenericTarDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
 
-            CompressionStatus status = CompressionStatus.readFromFile(tmp);
-            Files.delete(tmp.resolve(CompressionStatus.DATA_FILENAME));
-
             log.info("Waiting for server to fully terminate...");
 
             //locks until the backup is finished
             waitForShutdown.get();
 
-            log.info("Status: {}", status);
+            Optional<String> errorMsg;
 
-            var state = status.isValid(hash, ctx);
+            if(Files.notExists(CompressionStatus.resolveStatusFilename(tmp))) {
+                errorMsg = Optional.of("Status file not found!");
+            } else {
+                CompressionStatus status = CompressionStatus.readFromFile(tmp);
 
-            if(state.isEmpty() || !config.get().errorErrorHandlingMode.verify()) {
-                if (state.isEmpty()) log.info("Backup valid. Restoring");
-                else log.info("Backup is damaged, but verification is disabled [{}]. Restoring", state.get());
+                log.info("Status: {}", status);
+
+                Files.delete(tmp.resolve(CompressionStatus.DATA_FILENAME));
+
+                errorMsg = status.validate(hash, ctx);
+            }
+
+            if(errorMsg.isEmpty() || !config.get().integrityVerificationMode.verify()) {
+                if (errorMsg.isEmpty()) log.info("Backup valid. Restoring");
+                else log.info("Backup is damaged, but verification is disabled [{}]. Restoring", errorMsg.get());
 
                 Utilities.deleteDirectory(worldFile);
                 Files.move(tmp, worldFile);
@@ -123,7 +134,7 @@ public class RestoreBackupRunnable implements Runnable {
                     Files.delete(ctx.restoreableFile().getFile());
                 }
             } else {
-                log.error(state.get());
+                log.error(errorMsg.get());
             }
         } catch (Exception e) {
             log.error("An exception occurred while trying to restore a backup!", e);

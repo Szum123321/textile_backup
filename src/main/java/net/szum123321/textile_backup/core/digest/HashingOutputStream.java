@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class HashingOutputStream extends FilterOutputStream {
@@ -39,21 +40,21 @@ public class HashingOutputStream extends FilterOutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        hasher.update(b);
         out.write(b);
+        hasher.update((byte)b);
     }
 
     @Override
     public void write(byte @NotNull [] b, int off, int len) throws IOException {
-        hasher.update(b, off, len);
         out.write(b, off, len);
+        hasher.update(b, off, len);
     }
 
     @Override
     public void close() throws IOException {
+        hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
         long h = hasher.getValue();
         hashBuilder.update(path, h);
         super.close();
-
     }
 }

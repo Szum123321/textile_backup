@@ -24,6 +24,7 @@ import net.szum123321.textile_backup.core.create.BrokenFileHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 
@@ -31,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
  * This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
  * In case the underlying stream hasn't been read completely in, puts it into BrokeFileHandler
 
- * Futhermore, ParallelZip works by putting al the file requests into a queue and then compressing them
+ * Furthermore, ParallelZip works by putting all the file requests into a queue and then compressing them
  * with multiple threads. Thus, we have to make sure that all the files have been read before requesting the final value
  * That is what CountDownLatch does
  */
@@ -60,7 +61,7 @@ public class HashingInputStream extends FilterInputStream {
     @Override
     public int read() throws IOException {
         int i = in.read();
-        if(i != -1) hasher.update(i);
+        if(i != -1) hasher.update((byte)i);
         return i;
     }
 
@@ -71,6 +72,8 @@ public class HashingInputStream extends FilterInputStream {
 
     @Override
     public void close() throws IOException {
+        hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
+
         latch.countDown();
 
         if(in.available() == 0) hashBuilder.update(path, hasher.getValue());

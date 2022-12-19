@@ -24,7 +24,6 @@ import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.CompressionStatus;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,14 +45,9 @@ public class FileTreeHashBuilder {
 
         long size = Files.size(path);
 
-        var hasher = Globals.CHECKSUM_SUPPLIER.get();
-
-        hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
-        hasher.update(newHash);
-
         synchronized (lock) {
             //This way, the exact order of files processed doesn't matter.
-            this.hash ^= hasher.getValue();
+            this.hash ^= newHash;
             filesProcessed++;
             filesTotalSize += size;
         }
