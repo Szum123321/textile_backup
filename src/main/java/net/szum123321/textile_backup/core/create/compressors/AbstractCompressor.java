@@ -37,7 +37,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
@@ -57,22 +56,15 @@ public abstract class AbstractCompressor {
              OutputStream arc = createArchiveOutputStream(bufferedOutputStream, ctx, coreLimit);
              Stream<Path> fileStream = Files.walk(inputFile)) {
 
-            AtomicInteger fileCounter = new AtomicInteger(0); //number of files to compress
-
-            var it = fileStream
+            var fileList = fileStream
                     .filter(path -> !Utilities.isBlacklisted(inputFile.relativize(path)))
                     .filter(Files::isRegularFile)
-                    .peek(x -> fileCounter.incrementAndGet()).toList()
-                    .iterator();
-
-            log.info("File count: {}", fileCounter.get());
+                    .toList();
 
             //will be used in conjunction with ParallelZip to avoid race condition
-            CountDownLatch latch = new CountDownLatch(fileCounter.get());
+            CountDownLatch latch = new CountDownLatch(fileList.size());
 
-            while(it.hasNext()) {
-                Path file = it.next();
-
+            for (Path file : fileList) {
                 try {
                     addEntry(
                             new FileInputStreamSupplier(
