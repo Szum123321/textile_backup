@@ -28,6 +28,7 @@ import net.szum123321.textile_backup.TextileBackup;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+//TODO: Remove BZIP2 and LZMA compressors. As for the popular vote
 @Config(name = TextileBackup.MOD_ID)
 public class ConfigPOJO implements ConfigData {
     @Comment("\nShould every world have its own backup folder?\n")

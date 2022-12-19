@@ -71,8 +71,8 @@ public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles,
                 .append(treeHash)
                 .append(", Date: ")
                 .append(date.format(DateTimeFormatter.ISO_DATE_TIME))
-                .append(", start time stamp: ").append(startTimestamp)
-                .append(", finish time stamp: ").append(finishTimestamp)
+                .append(", start timestamp: ").append(startTimestamp)
+                .append(", finish timestamp: ").append(finishTimestamp)
                 .append(", Mod Version: ").append(version);
 
         builder.append(", broken files: ");
