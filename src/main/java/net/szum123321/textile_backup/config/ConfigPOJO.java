@@ -24,6 +24,7 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.core.create.compressors.AbstractCompressor;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -199,8 +200,8 @@ public class ConfigPOJO implements ConfigData {
     public enum ArchiveFormat {
         ZIP("zip"),
         GZIP("tar", "gz"),
-        BZIP2("tar", "bz2"),
-        LZMA("tar", "xz"),
+        //BZIP2("tar", "bz2"),
+        //LZMA("tar", "xz"),
         TAR("tar");
 
         private final List<String> extensionPieces;

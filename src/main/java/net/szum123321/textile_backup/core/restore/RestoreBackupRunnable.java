@@ -30,6 +30,7 @@ import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
 import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecompressor;
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
+import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -126,6 +127,9 @@ public class RestoreBackupRunnable implements Runnable {
                 if (errorMsg.isEmpty()) log.info("Backup valid. Restoring");
                 else log.info("Backup is damaged, but verification is disabled [{}]. Restoring", errorMsg.get());
 
+                ((MinecraftServerSessionAccessor) ctx.server())
+                        .getSession().close();
+
                 Utilities.deleteDirectory(worldFile);
                 Files.move(tmp, worldFile);
 
@@ -136,6 +140,7 @@ public class RestoreBackupRunnable implements Runnable {
             } else {
                 log.error(errorMsg.get());
             }
+
         } catch (Exception e) {
             log.error("An exception occurred while trying to restore a backup!", e);
         } finally {

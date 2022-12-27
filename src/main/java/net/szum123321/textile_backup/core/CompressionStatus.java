@@ -37,7 +37,7 @@ public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles,
         if(!brokenFiles.isEmpty())
             return Optional.of("Damaged files present! ^");
 
-        if(ctx.restoreableFile().getCreationTime() != date)
+        if(ctx.restoreableFile().getCreationTime().equals(date))
             return Optional.of(
                     "Creation date mismatch!\n   Expected: " +
                             date.format(DateTimeFormatter.ISO_DATE_TIME) + ", got: " +
