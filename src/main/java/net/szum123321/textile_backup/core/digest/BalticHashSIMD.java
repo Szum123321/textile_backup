@@ -51,9 +51,10 @@ public class BalticHashSIMD extends BalticHash {/*
         return xorshift64star(result);
     }
 
+//This is wrong. will have to correct (
     @Override
     public void update(byte[] data, int off, int len) {
-        int pos = off;
+        int pos = off; //should be = 0
         while (pos < len) {
             int n = Math.min(len - pos, buffer_limit - buffer.position());
             if (n == 32) {

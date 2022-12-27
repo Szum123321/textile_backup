@@ -51,10 +51,10 @@ public class BalticHash implements Hash {
     }
 
     public void update(byte[] data, int off, int len) {
-        int pos = off;
+        int pos = 0;
         while(pos < len) {
             int n = Math.min(len - pos, buffer_limit - buffer.position());
-            System.arraycopy(data, pos, _byte_buffer, buffer.position(), n);
+            System.arraycopy(data, off + pos, _byte_buffer, buffer.position(), n);
             pos += n;
             buffer.position(buffer.position() + n);
             if(buffer.position() >= buffer_limit) round();

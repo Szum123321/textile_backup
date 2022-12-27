@@ -27,7 +27,6 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.Version;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
@@ -43,11 +42,11 @@ import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
 import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
+import net.szum123321.textile_backup.test.BalticHashTest;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_NAME = "Textile Backup";
     public static final String MOD_ID = "textile_backup";
-    public static final Version VERSION;
 
     private final static TextileLogger log = new TextileLogger(MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -61,6 +60,11 @@ public class TextileBackup implements ModInitializer {
         );
 
         log.info("Starting Textile Backup {} by Szum123321", Globals.INSTANCE.getCombinedVersionString());
+
+        if(FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            //Run the tests
+            BalticHashTest.run();
+        }
 
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
 
@@ -113,10 +117,5 @@ public class TextileBackup implements ModInitializer {
                         .then(DeleteCommand.register())
                         .then(KillRestoreCommand.register())
         ));
-    }
-
-    static {
-        VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion();
-        FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().getMetadata().getVersion();
     }
 }

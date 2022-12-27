@@ -17,17 +17,6 @@ repositories {
 	mavenCentral()
 }
 
-loom {
-	runs {
-		testServer {
-			server()
-			ideConfigGenerated project.rootProject == project
-			name = "Testmod Server"
-			source sourceSets.test
-		}
-	}
-}
-
 dependencies {
 	//to change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
