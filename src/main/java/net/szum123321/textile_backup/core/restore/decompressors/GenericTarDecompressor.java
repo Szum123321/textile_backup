@@ -40,7 +40,7 @@ public class GenericTarDecompressor {
 
     public static long decompress(Path input, Path target) throws IOException {
         Instant start = Instant.now();
-        FileTreeHashBuilder treeBuilder = new FileTreeHashBuilder();
+        FileTreeHashBuilder treeBuilder = new FileTreeHashBuilder(0);
 
         try (InputStream fileInputStream = Files.newInputStream(input);
              InputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
@@ -70,7 +70,11 @@ public class GenericTarDecompressor {
 
         log.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
 
-        return treeBuilder.getValue();
+        try {
+            return treeBuilder.getValue(false);
+        } catch (InterruptedException ignored) {
+            return 0;
+        }
     }
 
     private static InputStream getCompressorInputStream(InputStream inputStream) throws CompressorException {

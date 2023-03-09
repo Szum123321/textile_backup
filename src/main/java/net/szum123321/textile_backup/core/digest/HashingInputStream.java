@@ -19,6 +19,8 @@
 package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
+import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.DataLeftException;
 import net.szum123321.textile_backup.core.create.BrokenFileHandler;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * This class calculates a hash of the file on the input stream, submits it to FileTreeHashBuilder.
@@ -37,16 +38,16 @@ import java.util.concurrent.CountDownLatch;
  * That is what CountDownLatch does
  */
 public class HashingInputStream extends FilterInputStream {
+    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+
     private final Path path;
     private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
     private final BrokenFileHandler brokenFileHandler;
-    private final CountDownLatch latch;
 
-    public HashingInputStream(InputStream in, Path path, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler, CountDownLatch latch) {
+    public HashingInputStream(InputStream in, Path path, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler) {
         super(in);
         this.path = path;
-        this.latch = latch;
         this.hashBuilder = hashBuilder;
         this.brokenFileHandler = brokenFileHandler;
     }
@@ -74,10 +75,9 @@ public class HashingInputStream extends FilterInputStream {
     public void close() throws IOException {
         hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
 
-        latch.countDown();
+        hashBuilder.update(path, hasher.getValue());
 
-        if(in.available() == 0) hashBuilder.update(path, hasher.getValue());
-        else brokenFileHandler.handle(path, new DataLeftException(in.available()));
+        if(in.available() != 0) brokenFileHandler.handle(path, new DataLeftException(in.available()));
 
         super.close();
     }

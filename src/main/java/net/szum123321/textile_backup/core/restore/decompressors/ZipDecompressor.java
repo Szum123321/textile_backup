@@ -40,7 +40,7 @@ public class ZipDecompressor {
     public static long decompress(Path inputFile, Path target) throws IOException {
         Instant start = Instant.now();
 
-        FileTreeHashBuilder hashBuilder = new FileTreeHashBuilder();
+        FileTreeHashBuilder hashBuilder = new FileTreeHashBuilder(0);
 
         try(ZipFile zipFile = new ZipFile(inputFile.toFile())) {
             for (Iterator<ZipArchiveEntry> it = zipFile.getEntries().asIterator(); it.hasNext(); ) {
@@ -63,6 +63,10 @@ public class ZipDecompressor {
 
         log.info("Decompression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
 
-        return hashBuilder.getValue();
+        try {
+            return hashBuilder.getValue(false);
+        } catch (InterruptedException ignored) {
+            return 0;
+        }
     }
 }

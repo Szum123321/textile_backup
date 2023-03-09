@@ -35,7 +35,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -48,7 +47,6 @@ public abstract class AbstractCompressor {
     public void createArchive(Path inputFile, Path outputFile, BackupContext ctx, int coreLimit) throws IOException, ExecutionException, InterruptedException {
         Instant start = Instant.now();
 
-        FileTreeHashBuilder fileHashBuilder = new FileTreeHashBuilder();
         BrokenFileHandler brokenFileHandler = new BrokenFileHandler(); //Basically a hashmap storing files and their respective exceptions
 
         try (OutputStream outStream = Files.newOutputStream(outputFile);
@@ -61,8 +59,7 @@ public abstract class AbstractCompressor {
                     .filter(Files::isRegularFile)
                     .toList();
 
-            //will be used in conjunction with ParallelZip to avoid race condition
-            CountDownLatch latch = new CountDownLatch(fileList.size());
+            FileTreeHashBuilder fileHashBuilder = new FileTreeHashBuilder(fileList.size());
 
             for (Path file : fileList) {
                 try {
@@ -71,12 +68,12 @@ public abstract class AbstractCompressor {
                                     file,
                                     inputFile.relativize(file).toString(),
                                     fileHashBuilder,
-                                    brokenFileHandler,
-                                    latch),
+                                    brokenFileHandler),
                             arc
                     );
                 } catch (IOException e) {
                     brokenFileHandler.handle(file, e);
+                    fileHashBuilder.update(file, 0);
                     //In Permissive mode we allow partial backups
                     if (ConfigHelper.INSTANCE.get().integrityVerificationMode.isStrict()) throw e;
                     else log.sendErrorAL(ctx, "An exception occurred while trying to compress: {}",
@@ -85,13 +82,15 @@ public abstract class AbstractCompressor {
                 }
             }
 
+            arc.flush();
+
             //wait for all the InputStreams to close/fail with InputSupplier
-            latch.await();
 
             Instant now = Instant.now();
 
+            long treeHash = fileHashBuilder.getValue(true);
             CompressionStatus status = new CompressionStatus (
-                    fileHashBuilder.getValue(),
+                    treeHash,
                     brokenFileHandler.get(),
                     ctx.startDate(), start.toEpochMilli(), now.toEpochMilli(),
                     Globals.INSTANCE.getCombinedVersionString()

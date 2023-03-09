@@ -29,19 +29,18 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 
-public record FileInputStreamSupplier(Path path, String name, FileTreeHashBuilder hashTreeBuilder, BrokenFileHandler brokenFileHandler, CountDownLatch latch) implements InputSupplier {
+public record FileInputStreamSupplier(Path path, String name, FileTreeHashBuilder hashTreeBuilder, BrokenFileHandler brokenFileHandler) implements InputSupplier {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
     @Override
     public InputStream getInputStream() throws IOException {
         try {
-            return new HashingInputStream(Files.newInputStream(path), path, hashTreeBuilder, brokenFileHandler, latch);
+            return new HashingInputStream(Files.newInputStream(path), path, hashTreeBuilder, brokenFileHandler);
         } catch (IOException e) {
             //Probably good idea to just put it here. In the case an exception is thrown here, it could be possble
             //The latch would have never been lifted
-            latch.countDown();
+            hashTreeBuilder.update(path, 0);
             brokenFileHandler.handle(path, e);
             throw e;
         }
