@@ -30,12 +30,12 @@ import java.util.Optional;
 
 public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, String version) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
+
     public Optional<String> validate(long hash, RestoreContext ctx) throws RuntimeException {
         if(hash != treeHash)
-            return Optional.of("Tree Hash mismatch!\n  Expected: " + treeHash + ", got: " + hash);
+            return Optional.of("Tree Hash mismatch!\n  Expected: " + hex(treeHash) + ", got: " + hex(hash));
 
-        if(!brokenFiles.isEmpty())
-            return Optional.of("Damaged files present! ^");
+        if(!brokenFiles.isEmpty()) return Optional.of("Damaged files present! ^");
 
         if(ctx.restoreableFile().getCreationTime().equals(date))
             return Optional.of(
@@ -67,15 +67,16 @@ public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles,
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        builder.append("{ ");
         builder.append("Hash: ")
-                .append(treeHash)
+                .append(hex(treeHash))
                 .append(", Date: ")
                 .append(date.format(DateTimeFormatter.ISO_DATE_TIME))
-                .append(", start timestamp: ").append(startTimestamp)
-                .append(", finish timestamp: ").append(finishTimestamp)
+                .append(", Start timestamp: ").append(startTimestamp)
+                .append(", Finish timestamp: ").append(finishTimestamp)
                 .append(", Mod Version: ").append(version);
 
-        builder.append(", broken files: ");
+        builder.append(", Broken files: ");
         if(brokenFiles.isEmpty()) builder.append("[]");
         else {
             builder.append("[\n");
@@ -90,6 +91,10 @@ public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles,
             builder.append("]");
         }
 
+        builder.append(" }");
+
         return builder.toString();
     }
+
+    private static String hex(long val) { return "0x" + Long.toHexString(val).toUpperCase(); }
 }
