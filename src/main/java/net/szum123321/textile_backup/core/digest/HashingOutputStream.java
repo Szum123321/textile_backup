@@ -41,7 +41,7 @@ public class HashingOutputStream extends FilterOutputStream {
     @Override
     public void write(int b) throws IOException {
         out.write(b);
-        hasher.update((byte)b);
+        hasher.update(b);
     }
 
     @Override

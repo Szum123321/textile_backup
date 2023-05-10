@@ -36,13 +36,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FileTreeHashBuilder {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final Object lock = new Object();
-    private long hash = 0, filesToProcess, filesTotalSize = 0;
-    private final AtomicBoolean closed = new AtomicBoolean(false);
+    private long hash = 0, filesProcessed = 0, filesTotalSize = 0;
 
     private final CountDownLatch latch;
 
     public FileTreeHashBuilder(int filesToProcess) {
-        this.filesToProcess = filesToProcess;
         latch = new CountDownLatch(filesToProcess);
     }
 
@@ -55,23 +53,23 @@ public class FileTreeHashBuilder {
 
         synchronized (lock) {
             this.hash ^= newHash;
-            filesToProcess--;
             filesTotalSize += size;
+            filesProcessed++;
         }
     }
 
     public int getRemaining() { return (int) latch.getCount(); }
 
-    synchronized public long getValue(boolean lock) throws InterruptedException {
+    public long getValue(boolean lock) throws InterruptedException {
         long leftover = latch.getCount();
         if(lock) latch.await();
         else if(leftover != 0) log.warn("Finishing with {} files unprocessed!", leftover);
 
         var hasher = Globals.CHECKSUM_SUPPLIER.get();
 
-        log.debug("Closing: files: {}, bytes {}, raw hash {}", filesToProcess, filesTotalSize, hash);
+        log.debug("Closing: files: {}, bytes {}, raw hash {}", filesProcessed, filesTotalSize, hash);
         hasher.update(hash);
-        hasher.update(filesToProcess);
+        hasher.update(filesProcessed);
         hasher.update(filesTotalSize);
 
         return hasher.getValue();

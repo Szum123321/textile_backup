@@ -115,9 +115,7 @@ public class Utilities {
 	}
 
 	public static boolean isBlacklisted(Path path) {
-		if(isWindows()) { //hotfix!
-			if (path.getFileName().toString().equals("session.lock")) return true;
-		}
+		if (path.getFileName().equals("session.lock")) return true;
 
 		if(path.getFileName().endsWith(CompressionStatus.DATA_FILENAME)) return true;
 

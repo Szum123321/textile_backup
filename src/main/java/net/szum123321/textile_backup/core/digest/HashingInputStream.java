@@ -38,8 +38,6 @@ import java.nio.file.Path;
  * That is what CountDownLatch does
  */
 public class HashingInputStream extends FilterInputStream {
-    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
-
     private final Path path;
     private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;

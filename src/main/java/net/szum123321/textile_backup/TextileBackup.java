@@ -60,11 +60,6 @@ public class TextileBackup implements ModInitializer {
 
         log.info("Starting Textile Backup {} by Szum123321", Globals.INSTANCE.getCombinedVersionString());
 
-        if(FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            //Run the tests
-            BalticHashTest.run();
-        }
-
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
 
         ServerTickEvents.END_SERVER_TICK.register(BackupScheduler::tick);

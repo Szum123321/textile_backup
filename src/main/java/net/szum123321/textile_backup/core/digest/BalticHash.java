@@ -38,8 +38,8 @@ public class BalticHash implements Hash {
     protected final ByteBuffer buffer = ByteBuffer.wrap(_byte_buffer).order(ByteOrder.LITTLE_ENDIAN);
     protected long hashed_data_length = 0;
 
-    public void update(byte b) {
-        buffer.put(b);
+    public void update(int b) {
+        buffer.put((byte)b);
         hashed_data_length += 1;
         if (buffer.position() >= buffer_limit) round();
     }
