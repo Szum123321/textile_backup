@@ -53,14 +53,13 @@ public class BackupScheduler {
                 if(nextBackup <= now) {
                     //It's time to run
                     Globals.INSTANCE.getQueueExecutor().submit(
-                            MakeBackupRunnableFactory.create(
-                                    BackupContext.Builder
-                                            .newBackupContextBuilder()
-                                            .setServer(server)
-                                            .setInitiator(ActionInitiator.Timer)
-                                            .saveServer()
-                                            .build()
-                            )
+                            ExecutableBackup.Builder
+                                    .newBackupContextBuilder()
+                                    .setServer(server)
+                                    .setInitiator(ActionInitiator.Timer)
+                                    .saveServer()
+                                    .announce()
+                                    .build()
                     );
 
                     nextBackup = now + config.get().backupInterval;
@@ -76,14 +75,13 @@ public class BackupScheduler {
             if(scheduled && nextBackup <= now) {
                 //Verify we hadn't done the final one, and it's time to do so
                 Globals.INSTANCE.getQueueExecutor().submit(
-                        MakeBackupRunnableFactory.create(
-                                BackupContext.Builder
-                                        .newBackupContextBuilder()
-                                        .setServer(server)
-                                        .setInitiator(ActionInitiator.Timer)
-                                        .saveServer()
-                                        .build()
-                        )
+                        ExecutableBackup.Builder
+                                .newBackupContextBuilder()
+                                .setServer(server)
+                                .setInitiator(ActionInitiator.Timer)
+                                .saveServer()
+                                .announce()
+                                .build()
                 );
 
                 scheduled = false;

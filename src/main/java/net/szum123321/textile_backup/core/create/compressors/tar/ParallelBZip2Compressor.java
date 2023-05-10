@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core.create.compressors.tar;
 
-import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import org.at4j.comp.bzip2.BZip2OutputStream;
 import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
 
@@ -30,7 +30,7 @@ public class ParallelBZip2Compressor extends AbstractTarArchiver {
 	}
 
 	@Override
-	protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+	protected OutputStream getCompressorOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException {
 		return new BZip2OutputStream(stream, new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit));
 	}
 }

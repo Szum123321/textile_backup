@@ -20,7 +20,7 @@ package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.Utilities;
-import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import net.szum123321.textile_backup.core.create.InputSupplier;
 import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -43,7 +43,7 @@ public class ZipCompressor extends AbstractCompressor {
     }
 
     @Override
-    protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
+    protected OutputStream createArchiveOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) {
         ZipArchiveOutputStream arc =  new ZipArchiveOutputStream(stream);
 
         arc.setMethod(ZipArchiveOutputStream.DEFLATED);

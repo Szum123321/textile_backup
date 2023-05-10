@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core.create.compressors.tar;
 
-import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import net.szum123321.textile_backup.core.create.compressors.AbstractCompressor;
 import net.szum123321.textile_backup.core.create.InputSupplier;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -28,12 +28,12 @@ import org.apache.commons.compress.utils.IOUtils;
 import java.io.*;
 
 public class AbstractTarArchiver extends AbstractCompressor {
-    protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+    protected OutputStream getCompressorOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException {
         return stream;
     }
 
     @Override
-    protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+    protected OutputStream createArchiveOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException {
         TarArchiveOutputStream tar = new TarArchiveOutputStream(getCompressorOutputStream(stream, ctx, coreLimit));
         tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
         tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);

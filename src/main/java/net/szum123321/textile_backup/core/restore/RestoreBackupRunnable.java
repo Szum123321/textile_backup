@@ -26,8 +26,7 @@ import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.CompressionStatus;
 import net.szum123321.textile_backup.core.Utilities;
-import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import net.szum123321.textile_backup.core.restore.decompressors.GenericTarDecompressor;
 import net.szum123321.textile_backup.core.restore.decompressors.ZipDecompressor;
 import net.szum123321.textile_backup.mixin.MinecraftServerSessionAccessor;
@@ -78,20 +77,19 @@ public class RestoreBackupRunnable implements Runnable {
             ctx.server().getThread().join(); //wait for server thread to die and save all its state
 
             if(config.get().backupOldWorlds) {
-                return MakeBackupRunnableFactory.create (
-                        BackupContext.Builder
+                return ExecutableBackup.Builder
                                 .newBackupContextBuilder()
                                 .setServer(ctx.server())
                                 .setInitiator(ActionInitiator.Restore)
-                                .dontCleanup()
+                                .noCleanup()
                                 .setComment("Old_World" + (ctx.comment() != null ? "_" + ctx.comment() : ""))
-                                .build()
-                ).call();
+                                .announce()
+                                .build().call();
             }
-
             return null;
         });
 
+        //run the thread.
         new Thread(waitForShutdown, "Server shutdown wait thread").start();
 
         try {
@@ -106,7 +104,7 @@ public class RestoreBackupRunnable implements Runnable {
 
             log.info("Waiting for server to fully terminate...");
 
-            //locks until the backup is finished
+            //locks until the backup is finished and the server is dead
             waitForShutdown.get();
 
             Optional<String> errorMsg;
@@ -127,8 +125,8 @@ public class RestoreBackupRunnable implements Runnable {
                 if (errorMsg.isEmpty()) log.info("Backup valid. Restoring");
                 else log.info("Backup is damaged, but verification is disabled [{}]. Restoring", errorMsg.get());
 
-                ((MinecraftServerSessionAccessor) ctx.server())
-                        .getSession().close();
+                //Disables write lock to override world file
+                ((MinecraftServerSessionAccessor) ctx.server()).getSession().close();
 
                 Utilities.deleteDirectory(worldFile);
                 Files.move(tmp, worldFile);

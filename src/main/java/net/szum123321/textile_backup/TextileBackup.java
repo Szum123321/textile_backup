@@ -39,9 +39,8 @@ import net.szum123321.textile_backup.commands.restore.RestoreBackupCommand;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
-import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
-import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import net.szum123321.textile_backup.test.BalticHashTest;
 
 public class TextileBackup implements ModInitializer {
@@ -82,14 +81,14 @@ public class TextileBackup implements ModInitializer {
 
             if (config.get().shutdownBackup && Globals.INSTANCE.globalShutdownBackupFlag.get()) {
                 try {
-                    MakeBackupRunnableFactory.create(
-                            BackupContext.Builder
+                            ExecutableBackup.Builder
                                     .newBackupContextBuilder()
                                     .setServer(server)
                                     .setInitiator(ActionInitiator.Shutdown)
                                     .setComment("shutdown")
+                                    .announce()
                                     .build()
-                    ).call();
+                    .call();
                 } catch (Exception ignored) {}
             }
         });

@@ -23,7 +23,6 @@ import net.szum123321.textile_backup.core.digest.BalticHash;
 import net.szum123321.textile_backup.core.digest.Hash;
 import net.szum123321.textile_backup.core.Utilities;
 
-import net.szum123321.textile_backup.core.create.MakeBackupRunnable;
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 import org.apache.commons.io.FileUtils;
 
@@ -70,8 +69,8 @@ public class Globals {
             if(!executorService.awaitTermination(timeout, TimeUnit.MICROSECONDS)) {
                 log.error("Timeout occurred while waiting for currently running backups to finish!");
                 executorService.shutdownNow().stream()
-                        .filter(r -> r instanceof MakeBackupRunnable)
-                        .map(r -> (MakeBackupRunnable)r)
+                       // .filter(r -> r instanceof ExecutableBackup)
+                       // .map(r -> (ExecutableBackup)r)
                         .forEach(r -> log.error("Dropping: {}", r.toString()));
                 if(!executorService.awaitTermination(1000, TimeUnit.MICROSECONDS))
                     log.error("Couldn't shut down the executor!");

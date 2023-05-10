@@ -21,7 +21,7 @@ package net.szum123321.textile_backup.core.create.compressors;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.NoSpaceLeftOnDeviceException;
-import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import net.szum123321.textile_backup.core.create.InputSupplier;
 import org.apache.commons.compress.archivers.zip.*;
 
@@ -61,7 +61,7 @@ public class ParallelZipCompressor extends ZipCompressor {
 	}
 
 	@Override
-	protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
+	protected OutputStream createArchiveOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) {
 		scatterZipCreator = new ParallelScatterZipCreator(Executors.newFixedThreadPool(coreLimit));
 		return super.createArchiveOutputStream(stream, ctx, coreLimit);
 	}

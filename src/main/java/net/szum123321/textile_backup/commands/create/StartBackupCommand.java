@@ -25,8 +25,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
-import net.szum123321.textile_backup.core.create.BackupContext;
-import net.szum123321.textile_backup.core.create.MakeBackupRunnableFactory;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 
 import javax.annotation.Nullable;
 
@@ -42,15 +41,13 @@ public class StartBackupCommand {
 
     private static int execute(ServerCommandSource source, @Nullable String comment) {
         Globals.INSTANCE.getQueueExecutor().submit(
-                MakeBackupRunnableFactory.create(
-                        BackupContext.Builder
-                                .newBackupContextBuilder()
-                                .setCommandSource(source)
-                                .setComment(comment)
-                                .guessInitiator()
-                                .saveServer()
-                                .build()
-                )
+                ExecutableBackup.Builder
+                        .newBackupContextBuilder()
+                        .setCommandSource(source)
+                        .setComment(comment)
+                        .guessInitiator()
+                        .saveServer()
+                        .build()
         );
 
         return 1;

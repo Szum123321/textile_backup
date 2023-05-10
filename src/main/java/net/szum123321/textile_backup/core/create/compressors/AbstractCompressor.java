@@ -23,8 +23,8 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.*;
-import net.szum123321.textile_backup.core.create.BackupContext;
 import net.szum123321.textile_backup.core.create.BrokenFileHandler;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import net.szum123321.textile_backup.core.create.FileInputStreamSupplier;
 import net.szum123321.textile_backup.core.create.InputSupplier;
 import net.szum123321.textile_backup.core.digest.FileTreeHashBuilder;
@@ -44,7 +44,7 @@ import java.util.stream.Stream;
 public abstract class AbstractCompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public void createArchive(Path inputFile, Path outputFile, BackupContext ctx, int coreLimit) throws IOException, ExecutionException, InterruptedException {
+    public void createArchive(Path inputFile, Path outputFile, ExecutableBackup ctx, int coreLimit) throws IOException, ExecutionException, InterruptedException {
         Instant start = Instant.now();
 
         BrokenFileHandler brokenFileHandler = new BrokenFileHandler(); //Basically a hashmap storing files and their respective exceptions
@@ -106,7 +106,7 @@ public abstract class AbstractCompressor {
         log.sendInfoAL(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 
-    protected abstract OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException;
+    protected abstract OutputStream createArchiveOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException;
     protected abstract void addEntry(InputSupplier inputSupplier, OutputStream arc) throws IOException;
 
     protected void finish(OutputStream arc) throws InterruptedException, ExecutionException, IOException {
