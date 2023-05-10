@@ -18,13 +18,12 @@
 
 package net.szum123321.textile_backup.config;
 
-import blue.endless.jankson.annotation.SerializedName;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.annotation.SerializedName;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
-import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.core.create.compressors.AbstractCompressor;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
