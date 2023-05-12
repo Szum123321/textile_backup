@@ -199,8 +199,8 @@ public class ConfigPOJO implements ConfigData {
     public enum ArchiveFormat {
         ZIP("zip"),
         GZIP("tar", "gz"),
-        //BZIP2("tar", "bz2"),
-        //LZMA("tar", "xz"),
+        BZIP2("tar", "bz2"),
+        LZMA("tar", "xz"),
         TAR("tar");
 
         private final List<String> extensionPieces;
