@@ -23,7 +23,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 /**
- * This algorithm copies construction of <a href="https://ticki.github.io/blog/seahash-explained/">SeaHash</a> including its IV.
+ * This algorithm copies the construction of <a href="https://ticki.github.io/blog/seahash-explained/">SeaHash</a> including its IV.
  * What it differs in is that it uses Xoroshift64* instead of PCG as its pseudo-random function. Although it might lower
  * the output quality, I don't think it matters that much, honestly. One advantage of xoroshift is that it should be
  * easier to implement with AVX. Java should soon ship its vector api by default.

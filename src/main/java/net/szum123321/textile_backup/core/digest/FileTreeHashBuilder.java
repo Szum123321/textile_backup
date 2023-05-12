@@ -44,16 +44,14 @@ public class FileTreeHashBuilder {
         latch = new CountDownLatch(filesToProcess);
     }
 
-    public void update(Path path, long newHash) throws IOException {
+    public void update(Path path, long newHash, long bytes) throws IOException {
         if(path.getFileName().toString().equals(CompressionStatus.DATA_FILENAME)) return;
 
         latch.countDown();
 
-        long size = Files.size(path);
-
         synchronized (lock) {
             this.hash ^= newHash;
-            filesTotalSize += size;
+            filesTotalSize += bytes;
             filesProcessed++;
         }
     }

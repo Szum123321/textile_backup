@@ -19,8 +19,6 @@
 package net.szum123321.textile_backup.core.digest;
 
 import net.szum123321.textile_backup.Globals;
-import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.DataLeftException;
 import net.szum123321.textile_backup.core.create.BrokenFileHandler;
 import org.jetbrains.annotations.NotNull;
@@ -39,9 +37,11 @@ import java.nio.file.Path;
  */
 public class HashingInputStream extends FilterInputStream {
     private final Path path;
-    private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
+    private final Hash hash = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
     private final BrokenFileHandler brokenFileHandler;
+
+    private long bytesWritten = 0;
 
     public HashingInputStream(InputStream in, Path path, FileTreeHashBuilder hashBuilder, BrokenFileHandler brokenFileHandler) {
         super(in);
@@ -53,14 +53,20 @@ public class HashingInputStream extends FilterInputStream {
     @Override
     public int read(byte @NotNull [] b, int off, int len) throws IOException {
         int i = in.read(b, off, len);
-        if(i != -1) hasher.update(b, off, i);
+        if(i != -1) {
+            hash.update(b, off, i);
+            bytesWritten += i;
+        }
         return i;
     }
 
     @Override
     public int read() throws IOException {
         int i = in.read();
-        if(i != -1) hasher.update((byte)i);
+        if(i != -1) {
+            hash.update(i);
+            bytesWritten++;
+        }
         return i;
     }
 
@@ -71,9 +77,9 @@ public class HashingInputStream extends FilterInputStream {
 
     @Override
     public void close() throws IOException {
-        hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
+        hash.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
 
-        hashBuilder.update(path, hasher.getValue());
+        hashBuilder.update(path, hash.getValue(), bytesWritten);
 
         if(in.available() != 0) brokenFileHandler.handle(path, new DataLeftException(in.available()));
 

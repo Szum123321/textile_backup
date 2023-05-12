@@ -73,7 +73,7 @@ public abstract class AbstractCompressor {
                     );
                 } catch (IOException e) {
                     brokenFileHandler.handle(file, e);
-                    fileHashBuilder.update(file, 0);
+                    fileHashBuilder.update(file, 0, 0);
                     //In Permissive mode we allow partial backups
                     if (ConfigHelper.INSTANCE.get().integrityVerificationMode.isStrict()) throw e;
                     else log.sendErrorAL(ctx, "An exception occurred while trying to compress: {}",

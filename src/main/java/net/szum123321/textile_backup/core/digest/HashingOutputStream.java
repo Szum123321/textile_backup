@@ -29,8 +29,10 @@ import java.nio.file.Path;
 
 public class HashingOutputStream extends FilterOutputStream {
     private final Path path;
-    private final Hash hasher = Globals.CHECKSUM_SUPPLIER.get();
+    private final Hash hash = Globals.CHECKSUM_SUPPLIER.get();
     private final FileTreeHashBuilder hashBuilder;
+
+    private long bytesWritten = 0;
 
     public HashingOutputStream(OutputStream out, Path path, FileTreeHashBuilder hashBuilder) {
         super(out);
@@ -41,20 +43,21 @@ public class HashingOutputStream extends FilterOutputStream {
     @Override
     public void write(int b) throws IOException {
         out.write(b);
-        hasher.update(b);
+        hash.update(b);
+        bytesWritten++;
     }
 
     @Override
     public void write(byte @NotNull [] b, int off, int len) throws IOException {
         out.write(b, off, len);
-        hasher.update(b, off, len);
+        hash.update(b, off, len);
+        bytesWritten += len;
     }
 
     @Override
     public void close() throws IOException {
-        hasher.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
-        long h = hasher.getValue();
-        hashBuilder.update(path, h);
+        hash.update(path.getFileName().toString().getBytes(StandardCharsets.UTF_8));
+        hashBuilder.update(path, hash.getValue(), bytesWritten);
         super.close();
     }
 }

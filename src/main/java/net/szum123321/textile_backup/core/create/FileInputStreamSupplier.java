@@ -38,9 +38,9 @@ public record FileInputStreamSupplier(Path path, String name, FileTreeHashBuilde
         try {
             return new HashingInputStream(Files.newInputStream(path), path, hashTreeBuilder, brokenFileHandler);
         } catch (IOException e) {
-            //Probably good idea to just put it here. In the case an exception is thrown here, it could be possble
+            //Probably good idea to just put it here. In the case an exception is thrown here, it could be possible
             //The latch would have never been lifted
-            hashTreeBuilder.update(path, 0);
+            hashTreeBuilder.update(path, 0, 0);
             brokenFileHandler.handle(path, e);
             throw e;
         }
