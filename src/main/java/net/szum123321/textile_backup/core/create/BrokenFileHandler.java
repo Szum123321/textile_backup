@@ -18,14 +18,12 @@
 
 package net.szum123321.textile_backup.core.create;
 
-import org.spongepowered.include.com.google.common.collect.Maps;
-
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BrokenFileHandler {
-    private final HashMap<Path, Exception> store = Maps.newHashMap();
+    private final Map<Path, Exception> store = new HashMap<>();
     public void handle(Path file, Exception e) { store.put(file, e); }
 
     public boolean valid() { return store.isEmpty(); }

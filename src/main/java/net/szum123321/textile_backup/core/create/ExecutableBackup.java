@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 public record ExecutableBackup(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
@@ -64,7 +63,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
         log.info(builder.toString());
     }
     @Override
-    public Void call() throws IOException, ExecutionException, InterruptedException {
+    public Void call() throws Exception {
         if (save) { //save the world
             log.sendInfoAL(this, "Saving server...");
             server.saveAll(true, true, false);
@@ -119,7 +118,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
         } catch (Throwable e) {
             //ExecutorService swallows exception, so I need to catch everything
-            log.error("An exception occurred when trying to create new backup file!", e);
+            log.error("An exception occurred when trying to create a new backup file!", e);
 
             if (ConfigHelper.INSTANCE.get().integrityVerificationMode.isStrict()) {
                 try {

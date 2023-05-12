@@ -20,7 +20,7 @@ package net.szum123321.textile_backup.core.digest;
 
 public interface Hash {
 
-    void update(int b) ;
+    void update(int b);
 
     void update(long b);
 

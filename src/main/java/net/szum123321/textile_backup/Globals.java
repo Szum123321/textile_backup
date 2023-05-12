@@ -26,6 +26,8 @@ import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 import org.apache.commons.io.FileUtils;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
@@ -36,12 +38,37 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.zip.CRC32;
 
 public class Globals {
     public static final Globals INSTANCE = new Globals();
     private static final TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     public static final DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
-    public static final Supplier<Hash> CHECKSUM_SUPPLIER = BalticHash::new;
+    public static final Supplier<Hash> CHECKSUM_SUPPLIER = BalticHash::new;/*() -> new Hash() {
+        private final CRC32 crc = new CRC32();
+
+        @Override
+        public void update ( int b){
+            crc.update(b);
+        }
+
+        @Override
+        public void update ( long b) {
+            ByteBuffer v = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
+            v.putLong(b);
+            crc.update(v.array());
+        }
+
+        @Override
+        public void update ( byte[] b, int off, int len){
+            crc.update(b, off, len);
+        }
+
+        @Override
+        public long getValue () {
+            return crc.getValue();
+        }
+    };*/
 
     private ExecutorService executorService = null;//TODO: AAAAAAAAAAAAAAA MEMORY LEAK!!!!!!!!!
     public final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
