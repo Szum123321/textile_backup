@@ -24,10 +24,8 @@ import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.CompressionStatus;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * What this class does is it collects the hashed files and combines them into a single number,
