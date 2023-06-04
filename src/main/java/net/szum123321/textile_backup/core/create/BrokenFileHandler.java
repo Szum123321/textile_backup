@@ -16,30 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core;
+package net.szum123321.textile_backup.core.create;
 
-/**
- * Enum representing possible sources of action
- */
-public enum ActionInitiator {
-    Player("Player", "by"),
-    ServerConsole("Server Console", "from"), //some/ting typed a command and it was not a player (command blocks and server console count)
-    Timer("Timer", "by"), //a.k.a scheduler
-    Shutdown("Server Shutdown", "by"),
-    Restore("Backup Restoration", "because of");
-    private final String name;
-    private final String prefix;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
-    ActionInitiator(String name, String prefix) {
-        this.name = name;
-        this.prefix = prefix;
-    }
+public class BrokenFileHandler {
+    private final Map<Path, Exception> store = new HashMap<>();
+    public void handle(Path file, Exception e) { store.put(file, e); }
 
-    public String getName() {
-        return name;
-    }
+    public boolean valid() { return store.isEmpty(); }
 
-    public String getPrefix() {
-        return prefix + ": ";
+    public Map<Path, Exception> get() {
+        return store;
     }
 }

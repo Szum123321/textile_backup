@@ -1,20 +1,19 @@
 /*
- *  A simple backup mod for Fabric
- *  Copyright (C) 2022  Szum123321
+ * A simple backup mod for Fabric
+ * Copyright (C)  2022   Szum123321
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package net.szum123321.textile_backup.core;
@@ -57,7 +56,7 @@ public class RestoreableFile implements Comparable<RestoreableFile> {
     }
 
     //removes repetition of the files stream thingy with awfully large lambdas
-    public static <T> T applyOnFiles(Path root, T def,  Consumer<IOException> errorConsumer, Function<Stream<RestoreableFile>, T> streamConsumer) {
+    public static <T> T applyOnFiles(Path root, T def, Consumer<IOException> errorConsumer, Function<Stream<RestoreableFile>, T> streamConsumer) {
         try (Stream<Path> stream = Files.list(root)) {
             return streamConsumer.apply(stream.flatMap(f -> RestoreableFile.build(f).stream()));
         } catch (IOException e) {

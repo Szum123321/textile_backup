@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
+	id 'fabric-loom' version '1.2-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -15,17 +15,6 @@ repositories {
 	maven { url "https://maven.shedaniel.me/" }
 	maven { url "https://maven.terraformersmc.com/releases/" }
 	mavenCentral()
-}
-
-loom {
-	runs {
-		testServer {
-			server()
-			ideConfigGenerated project.rootProject == project
-			name = "Testmod Server"
-			source sourceSets.test
-		}
-	}
 }
 
 dependencies {
@@ -46,8 +35,8 @@ dependencies {
 	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
 	//General compression library
-	implementation "org.apache.commons:commons-compress:1.21"
-	include "org.apache.commons:commons-compress:1.21"
+	implementation "org.apache.commons:commons-compress:1.22"
+	include "org.apache.commons:commons-compress:1.22"
 
 	//LZMA support
 	implementation 'org.tukaani:xz:1.9'
@@ -116,7 +105,7 @@ publishing {
 }
 
 static def getMcMinor(ver) {
-	String[] arr = ((String)ver).split("\\.")
+	String[] arr = ((String)ver).split("[.-]")
 
 	if(arr.length < 2) return ver
 

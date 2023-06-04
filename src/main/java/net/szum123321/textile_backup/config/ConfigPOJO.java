@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2021 Szum123321
+ * Copyright (C)  2022   Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,17 @@
 
 package net.szum123321.textile_backup.config;
 
-import blue.endless.jankson.annotation.SerializedName;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.annotation.SerializedName;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
-import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.szum123321.textile_backup.TextileBackup;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+//TODO: Remove BZIP2 and LZMA compressors. As for the popular vote
 @Config(name = TextileBackup.MOD_ID)
 public class ConfigPOJO implements ConfigData {
     @Comment("\nShould every world have its own backup folder?\n")
@@ -90,7 +91,7 @@ public class ConfigPOJO implements ConfigData {
     public long maxAge = 0;
 
     @Comment("""
-            \nMaximum size of backup folder in kilo bytes (1024).
+            \nMaximum size of backup folder in kibi bytes (1024).
             If set to 0 then backups will not be deleted
             """)
     @ConfigEntry.Gui.Tooltip()
@@ -114,8 +115,6 @@ public class ConfigPOJO implements ConfigData {
             \nAvailable formats are:
             ZIP - normal zip archive using standard deflate compression
             GZIP - tar.gz using gzip compression
-            BZIP2 - tar.bz2 archive using bzip2 compression
-            LZMA - tar.xz using lzma compression
             TAR - .tar with no compression
             """)
     @ConfigEntry.Gui.Tooltip()
@@ -162,6 +161,14 @@ public class ConfigPOJO implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     public String dateTimeFormat = "yyyy.MM.dd_HH-mm-ss";
 
+    @Comment("""
+            \nThe Strict mode (default) aborts backup creation in case of any problem and deletes created files
+            Permissible mode keeps partial/damaged backup but won't allow to restore it
+            Very Permissible mode will skip the verification process. THIS MOST CERTAINLY WILL LEAD TO DATA LOSS OR CORRUPTION
+            """)
+    @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+    public IntegrityVerificationMode integrityVerificationMode = IntegrityVerificationMode.STRICT;
+
     @Override
     public void validatePostLoad() throws ValidationException {
         if(compressionCoreCountLimit > Runtime.getRuntime().availableProcessors())
@@ -175,6 +182,16 @@ public class ConfigPOJO implements ConfigData {
                     e
                     );
         }
+    }
+
+    public enum IntegrityVerificationMode {
+        STRICT,
+        PERMISSIBLE,
+        VERY_PERMISSIBLE;
+
+        public boolean isStrict() { return this == STRICT; }
+
+        public boolean verify() { return this != VERY_PERMISSIBLE; }
     }
 
     public enum ArchiveFormat {

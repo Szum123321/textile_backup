@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2021  Szum123321
+ * Copyright (C)  2022   Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,6 @@ import java.io.IOException;
  */
 public class NoSpaceLeftOnDeviceException extends IOException {
     public NoSpaceLeftOnDeviceException(Throwable cause) {
-        super(cause);
+        super("The underlying filesystem has ran out of available space.\nSee: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems", cause);
     }
 }

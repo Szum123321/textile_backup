@@ -1,26 +1,28 @@
 /*
-    A simple backup mod for Fabric
-    Copyright (C) 2020  Szum123321
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * A simple backup mod for Fabric
+ * Copyright (C)  2022   Szum123321
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 package net.szum123321.textile_backup.core.restore.decompressors;
 
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
+import net.szum123321.textile_backup.core.digest.FileTreeHashBuilder;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.digest.HashingOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.CompressorException;
@@ -36,8 +38,9 @@ import java.time.Instant;
 public class GenericTarDecompressor {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static void decompress(Path input, Path target) throws IOException {
+    public static long decompress(Path input, Path target) throws IOException {
         Instant start = Instant.now();
+        FileTreeHashBuilder treeBuilder = new FileTreeHashBuilder(0);
 
         try (InputStream fileInputStream = Files.newInputStream(input);
              InputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
@@ -46,10 +49,8 @@ public class GenericTarDecompressor {
             TarArchiveEntry entry;
 
             while ((entry = archiveInputStream.getNextTarEntry()) != null) {
-                if(!archiveInputStream.canReadEntryData(entry)) {
-                    log.error("Something when wrong while trying to decompress {}", entry.getName());
-                    continue;
-                }
+                if(!archiveInputStream.canReadEntryData(entry))
+                    throw new IOException("Couldn't read archive entry! " + entry.getName());
 
                 Path file = target.resolve(entry.getName());
 
@@ -58,8 +59,8 @@ public class GenericTarDecompressor {
                 } else {
                     Files.createDirectories(file.getParent());
                     try (OutputStream outputStream = Files.newOutputStream(file);
-                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
-                        IOUtils.copy(archiveInputStream, bufferedOutputStream);
+                         HashingOutputStream out = new HashingOutputStream(outputStream, file, treeBuilder)) {
+                        IOUtils.copy(archiveInputStream, out);
                     }
                 }
             }
@@ -68,6 +69,12 @@ public class GenericTarDecompressor {
         }
 
         log.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+
+        try {
+            return treeBuilder.getValue(false);
+        } catch (InterruptedException ignored) {
+            return 0;
+        }
     }
 
     private static InputStream getCompressorInputStream(InputStream inputStream) throws CompressorException {

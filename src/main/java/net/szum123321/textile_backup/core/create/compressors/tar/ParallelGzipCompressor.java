@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2020  Szum123321
+ * Copyright (C)  2022   Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core.create.compressors.tar;
 
-import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import org.anarres.parallelgzip.ParallelGZIPOutputStream;
 
 import java.io.*;
@@ -33,7 +33,7 @@ public class ParallelGzipCompressor extends AbstractTarArchiver {
 	}
 
 	@Override
-	protected OutputStream getCompressorOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) throws IOException {
+	protected OutputStream getCompressorOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException {
 		executorService = Executors.newFixedThreadPool(coreLimit);
 
 		return new ParallelGZIPOutputStream(stream, executorService);

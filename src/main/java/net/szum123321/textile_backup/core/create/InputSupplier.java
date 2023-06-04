@@ -16,21 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.create.compressors.tar;
+package net.szum123321.textile_backup.core.create;
 
-import net.szum123321.textile_backup.core.create.ExecutableBackup;
-import org.at4j.comp.bzip2.BZip2OutputStream;
-import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
+import org.apache.commons.compress.parallel.InputStreamSupplier;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Optional;
 
-public class ParallelBZip2Compressor extends AbstractTarArchiver {
-	public static ParallelBZip2Compressor getInstance() {
-		return new ParallelBZip2Compressor();
-	}
+public interface InputSupplier extends InputStreamSupplier {
+    InputStream getInputStream() throws IOException;
+    //If an entry is virtual (a.k.a. there is no actual file to open, only input stream)
+    Optional<Path> getPath();
+    String getName();
 
-	@Override
-	protected OutputStream getCompressorOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException {
-		return new BZip2OutputStream(stream, new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit));
-	}
+    long size() throws IOException;
 }

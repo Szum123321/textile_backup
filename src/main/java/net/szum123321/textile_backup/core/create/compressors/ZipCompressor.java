@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2020  Szum123321
+ * Copyright (C)  2022   Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@ package net.szum123321.textile_backup.core.create.compressors;
 
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.Utilities;
-import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
+import net.szum123321.textile_backup.core.create.InputSupplier;
 import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -42,7 +43,7 @@ public class ZipCompressor extends AbstractCompressor {
     }
 
     @Override
-    protected OutputStream createArchiveOutputStream(OutputStream stream, BackupContext ctx, int coreLimit) {
+    protected OutputStream createArchiveOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) {
         ZipArchiveOutputStream arc =  new ZipArchiveOutputStream(stream);
 
         arc.setMethod(ZipArchiveOutputStream.DEFLATED);
@@ -54,15 +55,23 @@ public class ZipCompressor extends AbstractCompressor {
     }
 
     @Override
-    protected void addEntry(Path file, String entryName, OutputStream arc) throws IOException {
-        try (InputStream fileInputStream = Files.newInputStream(file)){
-            ZipArchiveEntry entry = (ZipArchiveEntry)((ZipArchiveOutputStream)arc).createArchiveEntry(file, entryName);
+    protected void addEntry(InputSupplier input, OutputStream arc) throws IOException {
+        try (InputStream fileInputStream = input.getInputStream()) {
+            ZipArchiveEntry entry;
 
-            if(isDotDat(file.getFileName().toString())) {
+            if(input.getPath().isEmpty()) {
+                entry = new ZipArchiveEntry(input.getName());
                 entry.setMethod(ZipEntry.STORED);
-                entry.setSize(Files.size(file));
-                entry.setCompressedSize(Files.size(file));
-                entry.setCrc(getCRC(file));
+                entry.setSize(input.size());
+            } else {
+                Path file = input.getPath().get();
+                entry = (ZipArchiveEntry) ((ZipArchiveOutputStream) arc).createArchiveEntry(file, input.getName());
+                if (isDotDat(file.toString())) {
+                    entry.setMethod(ZipEntry.STORED);
+                    entry.setSize(Files.size(file));
+                    entry.setCompressedSize(Files.size(file));
+                    entry.setCrc(getCRC(file));
+                } else entry.setMethod(ZipEntry.DEFLATED);
             }
 
             ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);

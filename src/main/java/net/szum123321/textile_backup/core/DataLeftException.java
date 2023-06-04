@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2021  Szum123321
+ * Copyright (C)  2022   Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 package net.szum123321.textile_backup.core;
 
-public interface LivingServer {
-    boolean isAlive();
+import java.io.IOException;
+
+public class DataLeftException extends IOException {
+    public DataLeftException(long n) { super("Input stream closed with " + n + " bytes left!"); }
 }

@@ -1,6 +1,6 @@
 /*
  * A simple backup mod for Fabric
- * Copyright (C) 2021 Szum123321
+ * Copyright (C)  2022   Szum123321
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.szum123321.textile_backup.core.Utilities;
-import net.szum123321.textile_backup.core.create.BackupContext;
+import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,7 +94,7 @@ public class TextileLogger {
             else if(level.intLevel() <= Level.WARN.intLevel()) text.formatted(Formatting.RED);
             else text.formatted(Formatting.WHITE);
 
-            source.sendFeedback(prefixText.copy().append(text), false);
+            source.sendFeedback(() -> prefixText.copy().append(text), false);
 
             return true;
         } else {
@@ -112,7 +112,7 @@ public class TextileLogger {
         sendFeedback(Level.INFO, source, msg, args);
     }
 
-    public void sendInfo(BackupContext context, String msg, Object... args) {
+    public void sendInfo(ExecutableBackup context, String msg, Object... args) {
         sendInfo(context.commandSource(), msg, args);
     }
 
@@ -120,7 +120,8 @@ public class TextileLogger {
         sendFeedback(Level.ERROR, source, msg, args);
     }
 
-    public void sendError(BackupContext context, String msg, Object... args) {
+
+    public void sendError(ExecutableBackup context, String msg, Object... args) {
         sendError(context.commandSource(), msg, args);
     }
 
@@ -134,7 +135,7 @@ public class TextileLogger {
         sendToPlayerAndLog(Level.INFO, source, msg, args);
     }
 
-    public void sendInfoAL(BackupContext context, String msg, Object... args) {
+    public void sendInfoAL(ExecutableBackup context, String msg, Object... args) {
         sendInfoAL(context.commandSource(), msg, args);
     }
 
@@ -142,7 +143,7 @@ public class TextileLogger {
         sendToPlayerAndLog(Level.ERROR, source, msg, args);
     }
 
-    public void sendErrorAL(BackupContext context, String msg, Object... args) {
+    public void sendErrorAL(ExecutableBackup context, String msg, Object... args) {
         sendErrorAL(context.commandSource(), msg, args);
     }
 }

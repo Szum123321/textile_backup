@@ -16,21 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.szum123321.textile_backup.core.create.compressors.tar;
+package net.szum123321.textile_backup.core.digest;
 
-import net.szum123321.textile_backup.core.create.ExecutableBackup;
-import org.at4j.comp.bzip2.BZip2OutputStream;
-import org.at4j.comp.bzip2.BZip2OutputStreamSettings;
+public interface Hash {
 
-import java.io.*;
+    void update(int b);
 
-public class ParallelBZip2Compressor extends AbstractTarArchiver {
-	public static ParallelBZip2Compressor getInstance() {
-		return new ParallelBZip2Compressor();
-	}
+    void update(long b);
 
-	@Override
-	protected OutputStream getCompressorOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException {
-		return new BZip2OutputStream(stream, new BZip2OutputStreamSettings().setNumberOfEncoderThreads(coreLimit));
-	}
+    default void update(byte[] b) { update(b, 0, b.length); }
+
+    void update(byte[] b, int off, int len);
+
+    long getValue();
 }
