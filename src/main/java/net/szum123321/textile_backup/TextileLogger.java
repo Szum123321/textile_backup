@@ -94,7 +94,7 @@ public class TextileLogger {
             else if(level.intLevel() <= Level.WARN.intLevel()) text.formatted(Formatting.RED);
             else text.formatted(Formatting.WHITE);
 
-            source.sendFeedback(prefixText.copy().append(text), false);
+            source.sendFeedback(() -> prefixText.copy().append(text), false);
 
             return true;
         } else {

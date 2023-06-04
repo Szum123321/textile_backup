@@ -115,8 +115,6 @@ public class ConfigPOJO implements ConfigData {
             \nAvailable formats are:
             ZIP - normal zip archive using standard deflate compression
             GZIP - tar.gz using gzip compression
-            BZIP2 - tar.bz2 archive using bzip2 compression
-            LZMA - tar.xz using lzma compression
             TAR - .tar with no compression
             """)
     @ConfigEntry.Gui.Tooltip()
