@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
-public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, String version) implements Serializable {
+public record CompressionStatus(long treeHash, Map<String, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, String version) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
 
     public Optional<String> validate(long hash, RestoreContext ctx) throws RuntimeException {
@@ -80,8 +80,8 @@ public record CompressionStatus(long treeHash, Map<Path, Exception> brokenFiles,
         if(brokenFiles.isEmpty()) builder.append("[]");
         else {
             builder.append("[\n");
-            for(Path i: brokenFiles.keySet()) {
-                builder.append(i.toString())
+            for(String i: brokenFiles.keySet()) {
+                builder.append(i)
                         .append(":");
 
                 ByteArrayOutputStream o = new ByteArrayOutputStream();
