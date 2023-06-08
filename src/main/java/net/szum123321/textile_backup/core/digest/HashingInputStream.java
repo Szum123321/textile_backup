@@ -52,7 +52,12 @@ public class HashingInputStream extends FilterInputStream {
 
     @Override
     public int read(byte @NotNull [] b, int off, int len) throws IOException {
-        int i = in.read(b, off, len);
+        int i;
+        try {
+             i = in.read(b, off, len);
+        } catch(IOException e) {
+            throw new IOException("An exception occurred while trying to access: [" + path.toString() + "]", e);
+        }
         if(i != -1) {
             hash.update(b, off, i);
             bytesWritten += i;
@@ -62,7 +67,12 @@ public class HashingInputStream extends FilterInputStream {
 
     @Override
     public int read() throws IOException {
-        int i = in.read();
+        int i;
+        try {
+            i = in.read();
+        } catch(IOException e) {
+            throw new IOException("An exception occurred while trying to access: [" + path.toString() + "]", e);
+        }
         if(i != -1) {
             hash.update(i);
             bytesWritten++;
