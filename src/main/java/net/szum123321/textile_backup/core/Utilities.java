@@ -115,9 +115,11 @@ public class Utilities {
 	}
 
 	public static boolean isBlacklisted(Path path) {
-		if (path.getFileName().equals("session.lock")) return true;
+		log.info(path.getFileName().toString());
+		if (path.getFileName().equals(Path.of("session.lock"))) return true;
+		log.info(path.getFileName().toString());
 
-		if(path.getFileName().endsWith(CompressionStatus.DATA_FILENAME)) return true;
+		if(path.getFileName().equals(Path.of(CompressionStatus.DATA_FILENAME))) return true;
 
 		return config.get().fileBlacklist.stream().anyMatch(path::startsWith);
 	}
