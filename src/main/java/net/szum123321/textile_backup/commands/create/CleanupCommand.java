@@ -37,7 +37,7 @@ public class CleanupCommand {
     private static int execute(ServerCommandSource source) {
         log.sendInfo(
                 source,
-                "Deleted: {} files.",
+                "删除了: {} 文件.",
                 new Cleanup(source, Utilities.getLevelName(source.getServer())).call()
         );
 

@@ -40,15 +40,15 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
     public void announce() {
         if(config.get().broadcastBackupStart) {
             Utilities.notifyPlayers(server,
-                    "Warning! Server backup will begin shortly. You may experience some lag."
+                    "警告！服务器备份即将开始。您可能会遇到一些延迟."
             );
         } else {
-            log.sendInfoAL(this, "Warning! Server backup will begin shortly. You may experience some lag.");
+            log.sendInfoAL(this, "Something went wrong while deleting: {}.");
         }
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("Backup started ");
+        builder.append("备份开始 ");
 
         builder.append(initiator.getPrefix());
 
@@ -65,13 +65,13 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
     @Override
     public Void call() throws Exception {
         if (save) { //save the world
-            log.sendInfoAL(this, "Saving server...");
+            log.sendInfoAL(this, "保存世界中...");
             server.saveAll(true, true, false);
         }
 
         Path outFile = Utilities.getBackupRootPath(Utilities.getLevelName(server)).resolve(getFileName());
 
-        log.trace("Outfile is: {}", outFile);
+        log.trace("输出备份文件为: {}", outFile);
 
         try {
             //I think I should synchronise these two next calls...
@@ -80,11 +80,11 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
             Globals.INSTANCE.updateTMPFSFlag(server);
 
-            log.sendInfoAL(this, "Starting backup");
+            log.sendInfoAL(this, "开始备份");
 
             Path world = Utilities.getWorldFolder(server);
 
-            log.trace("Minecraft world is: {}", world);
+            log.trace("Minecraft 存档目录: {}", world);
 
             Files.createDirectories(outFile.getParent());
             Files.createFile(outFile);
@@ -95,15 +95,15 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
             else
                 coreCount = Math.min(config.get().compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
 
-            log.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
+            log.trace("正在使用{}个线程对{}进行压缩。可用核心数：{}", coreCount, Runtime.getRuntime().availableProcessors());
 
             switch (config.get().format) {
                 case ZIP -> {
                     if (coreCount > 1 && !Globals.INSTANCE.disableTMPFS()) {
-                        log.trace("Using PARALLEL Zip Compressor. Threads: {}", coreCount);
+                        log.trace("使用并行压缩器进行压缩。线程数：{}", coreCount);
                         ParallelZipCompressor.getInstance().createArchive(world, outFile, this, coreCount);
                     } else {
-                        log.trace("Using REGULAR Zip Compressor.");
+                        log.trace("使用普通的Zip压缩器进行压缩 (单线程)");
                         ZipCompressor.getInstance().createArchive(world, outFile, this, coreCount);
                     }
                 }
@@ -113,23 +113,23 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
             if(cleanup) new Cleanup(commandSource, Utilities.getLevelName(server)).call();
 
-            if (config.get().broadcastBackupDone) Utilities.notifyPlayers(server, "Done!");
-            else log.sendInfoAL(this, "Done!");
+            if (config.get().broadcastBackupDone) Utilities.notifyPlayers(server, "完成!");
+            else log.sendInfoAL(this, "完成!");
 
         } catch (Throwable e) {
             //ExecutorService swallows exception, so I need to catch everything
-            log.error("An exception occurred when trying to create a new backup file!", e);
+            log.error("在尝试创建新的备份文件时发生了异常！", e);
 
             if (ConfigHelper.INSTANCE.get().integrityVerificationMode.isStrict()) {
                 try {
                     Files.delete(outFile);
                 } catch (IOException ex) {
-                    log.error("An exception occurred while trying go delete: {}", outFile, ex);
+                    log.error("在尝试删除{}时发生了异常！", outFile, ex);
                 }
             }
 
             if (initiator == ActionInitiator.Player)
-                log.sendError(this, "An exception occurred when trying to create new backup file!");
+                log.sendError(this, "在尝试创建新的备份文件时发生了异常！");
 
             throw e;
         } finally {
@@ -215,11 +215,11 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
         public ExecutableBackup build() {
             if (guessInitiator) {
                 initiator = Utilities.wasSentByPlayer(commandSource) ? ActionInitiator.Player : ActionInitiator.ServerConsole;
-            } else if (initiator == null) throw new NoSuchElementException("No initiator provided!");
+            } else if (initiator == null) throw new NoSuchElementException("未提供发起者！");
 
             if (server == null) {
                 if (commandSource != null) setServer(commandSource.getServer());
-                else throw new RuntimeException("Neither MinecraftServer or ServerCommandSource were provided!");
+                else throw new RuntimeException("未提供MinecraftServer或ServerCommandSource！");
             }
 
             ExecutableBackup v =  new ExecutableBackup(server, commandSource, initiator, save, cleanup, comment, LocalDateTime.now());

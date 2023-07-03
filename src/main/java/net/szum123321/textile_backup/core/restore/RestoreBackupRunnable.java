@@ -54,7 +54,7 @@ public class RestoreBackupRunnable implements Runnable {
     public void run() {
         Globals.INSTANCE.globalShutdownBackupFlag.set(false);
 
-        log.info("Shutting down server...");
+        log.info("关闭服务器...");
 
         ctx.server().stop(false);
 
@@ -67,7 +67,7 @@ public class RestoreBackupRunnable implements Runnable {
                     ctx.restoreableFile().getFile().getFileName().toString()
             );
         } catch (IOException e) {
-            log.error("An exception occurred while unpacking backup", e);
+            log.error("在解压备份时发生了异常.", e);
             return;
         }
 
@@ -93,7 +93,7 @@ public class RestoreBackupRunnable implements Runnable {
         new Thread(waitForShutdown, "Server shutdown wait thread").start();
 
         try {
-            log.info("Starting decompression...");
+            log.info("开始解压...");
 
             long hash;
 
@@ -102,7 +102,7 @@ public class RestoreBackupRunnable implements Runnable {
             else
                 hash = GenericTarDecompressor.decompress(ctx.restoreableFile().getFile(), tmp);
 
-            log.info("Waiting for server to fully terminate...");
+            log.info("等待服务器完全终止...");
 
             //locks until the backup is finished and the server is dead
             waitForShutdown.get();
@@ -110,11 +110,11 @@ public class RestoreBackupRunnable implements Runnable {
             Optional<String> errorMsg;
 
             if(Files.notExists(CompressionStatus.resolveStatusFilename(tmp))) {
-                errorMsg = Optional.of("Status file not found!");
+                errorMsg = Optional.of("未找到状态文件!");
             } else {
                 CompressionStatus status = CompressionStatus.readFromFile(tmp);
 
-                log.info("Status: {}", status);
+                log.info("状态: {}", status);
 
                 Files.delete(tmp.resolve(CompressionStatus.DATA_FILENAME));
 
@@ -122,8 +122,8 @@ public class RestoreBackupRunnable implements Runnable {
             }
 
             if(errorMsg.isEmpty() || !config.get().integrityVerificationMode.verify()) {
-                if (errorMsg.isEmpty()) log.info("Backup valid. Restoring");
-                else log.info("Backup is damaged, but verification is disabled [{}]. Restoring", errorMsg.get());
+                if (errorMsg.isEmpty()) log.info("备份验证有效, 正在恢复.");
+                else log.info("备份已损坏，但验证已禁用[{}]。正在恢复. ", errorMsg.get());
 
                 //Disables write lock to override world file
                 ((MinecraftServerSessionAccessor) ctx.server()).getSession().close();
@@ -132,7 +132,7 @@ public class RestoreBackupRunnable implements Runnable {
                 Files.move(tmp, worldFile);
 
                 if (config.get().deleteOldBackupAfterRestore) {
-                    log.info("Deleting restored backup file");
+                    log.info("正在删除恢复的备份文件.");
                     Files.delete(ctx.restoreableFile().getFile());
                 }
             } else {
@@ -140,7 +140,7 @@ public class RestoreBackupRunnable implements Runnable {
             }
 
         } catch (Exception e) {
-            log.error("An exception occurred while trying to restore a backup!", e);
+            log.error("在尝试恢复备份时发生了异常！", e);
         } finally {
             //Regardless of what happened, we should still clean up
             if(Files.exists(tmp)) {
@@ -153,6 +153,6 @@ public class RestoreBackupRunnable implements Runnable {
         //in case we're playing on client
         Globals.INSTANCE.globalShutdownBackupFlag.set(true);
 
-        log.info("Done!");
+        log.info("完成!");
     }
 }

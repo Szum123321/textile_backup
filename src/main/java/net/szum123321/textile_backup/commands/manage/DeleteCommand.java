@@ -61,26 +61,26 @@ public class DeleteCommand {
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer()));
 
         RestoreableFile.applyOnFiles(root, Optional.empty(),
-                e -> log.sendErrorAL(source, "An exception occurred while trying to delete a file!", e),
+                e -> log.sendErrorAL(source, "在尝试删除备份文件时发生了异常！", e),
                 stream -> stream.filter(f -> f.getCreationTime().equals(dateTime)).map(RestoreableFile::getFile).findFirst()
                 ).ifPresentOrElse(file -> {
                     if(Globals.INSTANCE.getLockedFile().filter(p -> p == file).isEmpty()) {
                         try {
                             Files.delete((Path) file);
-                            log.sendInfo(source, "File {} successfully deleted!", file);
+                            log.sendInfo(source, "备份: {} 被成功删除!", file);
 
                             if(Utilities.wasSentByPlayer(source))
-                                log.info("Player {} deleted {}.", source.getPlayer().getName(), file);
+                                log.info("玩家 {} 删除了备份: {}.", source.getPlayer().getName(), file);
                         } catch (IOException e) {
-                            log.sendError(source, "Something went wrong while deleting file!");
+                            log.sendError(source, "在尝试删除备份文件时发生了异常！");
                         }
                     } else {
-                        log.sendError(source, "Couldn't delete the file because it's being restored right now.");
-                        log.sendHint(source, "If you want to abort restoration then use: /backup killR");
+                        log.sendError(source, "由于备份正在恢复中，无法删除该文件.");
+                        log.sendHint(source, "如果您想中止恢复过程，请使用以下命令：/backup killR");
                     }
                 }, () -> {
-                    log.sendInfo(source, "Couldn't find file by this name.");
-                    log.sendInfo(source, "Maybe try /backup list");
+                    log.sendInfo(source, "根据您提供的文件名找不到相应的文件.");
+                    log.sendInfo(source, "也许您可以试试: /backup list");
                 }
         );
         return 0;

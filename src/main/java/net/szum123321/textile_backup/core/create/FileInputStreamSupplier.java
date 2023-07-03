@@ -62,7 +62,7 @@ public record FileInputStreamSupplier(Path path, String name, FileTreeHashBuilde
         try {
             return getInputStream();
         } catch (IOException e) {
-            log.error("An exception occurred while trying to create an input stream from file: {}!", path.toString(), e);
+            log.error("尝试从文件{}创建输入流时发生了异常！", path.toString(), e);
         }
 
         return null;

@@ -41,7 +41,7 @@ public class RestoreHelper {
 
         Optional<RestoreableFile> optionalFile =
                 RestoreableFile.applyOnFiles(root, Optional.empty(),
-                        e -> log.error("An exception occurred while trying to lock the file!", e),
+                        e -> log.error("在尝试锁定文件时发生了异常！", e),
                         s -> s.filter(rf -> rf.getCreationTime().equals(backupTime))
                                 .findFirst());
 
@@ -63,13 +63,12 @@ public class RestoreHelper {
 
     public static AwaitThread create(RestoreContext ctx) {
         if(ctx.initiator() == ActionInitiator.Player)
-            log.info("Backup restoration was initiated by: {}", ctx.commandSource().getName());
+            log.info("备份恢复由以下玩家发起：{}", ctx.commandSource().getName());
         else
-            log.info("Backup restoration was initiated form Server Console");
-
+            log.info("备份恢复由服务器控制台发起");
         Utilities.notifyPlayers(
                 ctx.server(),
-                "Warning! The server is going to shut down in " + config.get().restoreDelay + " seconds!"
+                "警告！服务器将在" + config.get().restoreDelay + "秒后关闭！"
         );
 
         return new AwaitThread(
@@ -82,7 +81,7 @@ public class RestoreHelper {
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
 
         return RestoreableFile.applyOnFiles(root, new LinkedList<>(),
-                e -> log.error("Error while listing available backups", e),
+                e -> log.error("列出可用备份时发生错误.", e),
                 s -> s.sorted().collect(Collectors.toCollection(LinkedList::new)));
     }
 }

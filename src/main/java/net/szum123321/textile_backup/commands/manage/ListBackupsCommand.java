@@ -37,14 +37,14 @@ public class ListBackupsCommand {
                     var backups = RestoreHelper.getAvailableBackups(ctx.getSource().getServer());
 
                     if(backups.size() == 0) {
-                        builder.append("There a no backups available for this world.");
+                        builder.append("该世界没有可用的备份文件. ");
                     } else if(backups.size() == 1) {
-                        builder.append("There is only one backup available: ");
+                        builder.append("只有一个可用的备份文件： ");
                         builder.append(backups.get(0).toString());
                     } else {
                         backups.sort(null);
                         Iterator<RestoreableFile> iterator = backups.iterator();
-                        builder.append("Available backups:\n");
+                        builder.append("可用的备份文件:\n");
 
                         builder.append(iterator.next());
 

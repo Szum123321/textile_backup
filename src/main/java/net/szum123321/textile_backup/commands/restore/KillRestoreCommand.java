@@ -33,7 +33,7 @@ public class KillRestoreCommand {
         return CommandManager.literal("killR")
                 .executes(ctx -> {
                     if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isEmpty()) {
-                        log.sendInfo(ctx.getSource(), "Failed to stop backup restoration");
+                        log.sendInfo(ctx.getSource(), "无法停止备份恢复过程");
                         return -1;
                     }
 
@@ -43,13 +43,13 @@ public class KillRestoreCommand {
                     Globals.INSTANCE.globalShutdownBackupFlag.set(true);
                     Globals.INSTANCE.setLockedFile(null);
 
-                    log.info("{} cancelled backup restoration.", Utilities.wasSentByPlayer(ctx.getSource()) ?
+                    log.info("{} 备份恢复操作已被取消", Utilities.wasSentByPlayer(ctx.getSource()) ?
                             "Player: " + ctx.getSource().getName() :
                             "SERVER"
                     );
 
                     if(Utilities.wasSentByPlayer(ctx.getSource()))
-                        log.sendInfo(ctx.getSource(), "Backup restoration successfully stopped.");
+                        log.sendInfo(ctx.getSource(), "备份恢复已成功停止. ");
 
                     return 1;
                 });

@@ -94,16 +94,16 @@ public class Globals {
 
         try {
             if(!executorService.awaitTermination(timeout, TimeUnit.MICROSECONDS)) {
-                log.error("Timeout occurred while waiting for currently running backups to finish!");
+                log.error("在等待当前运行的备份完成时发生了超时!");
                 executorService.shutdownNow().stream()
                        // .filter(r -> r instanceof ExecutableBackup)
                        // .map(r -> (ExecutableBackup)r)
                         .forEach(r -> log.error("Dropping: {}", r.toString()));
                 if(!executorService.awaitTermination(1000, TimeUnit.MICROSECONDS))
-                    log.error("Couldn't shut down the executor!");
+                    log.error("无法关闭执行器！");
             }
         } catch (InterruptedException e) {
-            log.error("An exception occurred!", e);
+            log.error("发生了一个异常！(灾难性的错误)", e);
         }
 
     }
@@ -124,12 +124,12 @@ public class Globals {
                 FileUtils.sizeOfDirectory(Utilities.getWorldFolder(server).toFile()) >=
                         tmp_dir.toFile().getUsableSpace()
         ) {
-            log.error("Not enough space left in TMP directory! ({})", tmp_dir);
+            log.error("TMP(临时)文件目录没有可用空间 ({})", tmp_dir);
             disableTMPFiles = true;
         }
 
         if(!Files.isWritable(tmp_dir)) {
-            log.error("TMP filesystem ({}) is read-only!", tmp_dir);
+            log.error("TMP(临时)文件目录（{}）是只读的", tmp_dir);
             disableTMPFiles = true;
         }
 

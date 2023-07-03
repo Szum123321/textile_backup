@@ -49,7 +49,7 @@ public class WhitelistCommand {
 	}
 
 	private static int help(ServerCommandSource source){
-		log.sendInfo(source, "Available command are: add [player], remove [player], list.");
+		log.sendInfo(source, "可用的命令有: add [player], remove [player], list.");
 
 		return 1;
 	}
@@ -57,7 +57,7 @@ public class WhitelistCommand {
 	private static int executeList(ServerCommandSource source){
 		StringBuilder builder = new StringBuilder();
 
-		builder.append("Currently on the whitelist are: ");
+		builder.append("目前在白名单的有: ");
 
 		for(String name : config.get().playerWhitelist){
 			builder.append(name);
@@ -73,24 +73,24 @@ public class WhitelistCommand {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(config.get().playerWhitelist.contains(player.getEntityName())) {
-			log.sendInfo(ctx.getSource(), "Player: {} is already whitelisted.", player.getEntityName());
+			log.sendInfo(ctx.getSource(), "玩家: {} 已经在白名单列表里.", player.getEntityName());
 		} else {
 			config.get().playerWhitelist.add(player.getEntityName());
 			config.save();
 
 			StringBuilder builder = new StringBuilder();
 
-			builder.append("Player: ");
+			builder.append("玩家: ");
 			builder.append(player.getEntityName());
-			builder.append(" added to the whitelist");
+			builder.append(" 被添加的白名单");
 
 			if(config.get().playerBlacklist.contains(player.getEntityName())){
 				config.get().playerBlacklist.remove(player.getEntityName());
 				config.save();
-				builder.append(" and removed form the blacklist");
+				builder.append(" 并且被移除黑名单");
 			}
 
-			builder.append(" successfully.");
+			builder.append(" 成功.");
 
 			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
@@ -104,14 +104,14 @@ public class WhitelistCommand {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
 		if(!config.get().playerWhitelist.contains(player.getEntityName())) {
-			log.sendInfo(ctx.getSource(), "Player: {} newer was whitelisted.", player.getEntityName());
+			log.sendInfo(ctx.getSource(), "玩家: {} 还从未被列入白名单.", player.getEntityName());
 		} else {
 			config.get().playerWhitelist.remove(player.getEntityName());
 			config.save();
 
 			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
-			log.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getEntityName());
+			log.sendInfo(ctx.getSource(), "玩家: {} 被移除白名单成功!", player.getEntityName());
 		}
 
 		return 1;

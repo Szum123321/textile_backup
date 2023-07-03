@@ -68,7 +68,7 @@ public class GenericTarDecompressor {
             throw new IOException(e);
         }
 
-        log.info("Decompression took {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+        log.info("解压缩耗时{}秒. ", Utilities.formatDuration(Duration.between(start, Instant.now())));
 
         try {
             return treeBuilder.getValue(false);

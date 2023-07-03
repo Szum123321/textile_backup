@@ -58,7 +58,7 @@ public class Cleanup implements Callable<Integer> {
 			final long now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
 			deletedFiles += RestoreableFile.applyOnFiles(root, 0L,
-					e -> log.error("An exception occurred while trying to delete old files!", e),
+					e -> log.error("尝试删除旧文件时发生异常！", e),
 					stream -> stream.filter(f -> now - f.getCreationTime().toEpochSecond(ZoneOffset.UTC) > config.get().maxAge)
 							.filter(f -> deleteFile(f.getFile(), ctx))
 							.count()
@@ -72,7 +72,7 @@ public class Cleanup implements Callable<Integer> {
 		long n = counts[0], size = counts[1];
 
 		var it = RestoreableFile.applyOnFiles(root, null,
-				e -> log.error("An exception occurred while trying to delete old files!", e),
+				e -> log.error("尝试删除旧文件时发生异常！", e),
 				s -> s.sorted().toList().iterator());
 
 		if(Objects.isNull(it)) return deletedFiles;
@@ -104,13 +104,13 @@ public class Cleanup implements Callable<Integer> {
 				try {
 					size += Files.size(f.getFile());
 				} catch (IOException e) {
-					log.error("Couldn't get size of " + f.getFile(), e);
+					log.error("无法获取文件的大小 " + f.getFile(), e);
 					continue;
 				}
 				n++;
 			}
 		} catch (IOException e) {
-			log.error("Error while counting files!", e);
+			log.error("在计算文件数量时发生错误！", e);
 		}
 
 		return new long[]{n, size};
@@ -128,8 +128,8 @@ public class Cleanup implements Callable<Integer> {
 			Files.delete(f);
 			log.sendInfoAL(ctx, "Deleted: {}", f);
 		} catch (IOException e) {
-			if(Utilities.wasSentByPlayer(ctx)) log.sendError(ctx, "Something went wrong while deleting: {}.", f);
-			log.error("Something went wrong while deleting: {}.", f, e);
+			if(Utilities.wasSentByPlayer(ctx)) log.sendError(ctx, "删除时发生了错误：{}.", f);
+			log.error("删除时发生了错误：{}.", f, e);
 			return false;
 		}
 		return true;

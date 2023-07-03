@@ -63,10 +63,10 @@ public class RestoreBackupCommand {
                 ).executes(context -> {
                     ServerCommandSource source = context.getSource();
 
-                    log.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
-                    log.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
-                    log.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
-                    log.sendInfo(source, "You may also type '/backup restore latest' to restore the freshest backup");
+                    log.sendInfo(source, "要恢复给定的备份，您必须以以下格式提供准确的创建时间：");
+                    log.sendInfo(source, "[年]-[月]-[日]_[小时].[分钟].[秒]");
+                    log.sendInfo(source, "示例：/backup restore 2020-08-05_10.58.33");
+                    log.sendInfo(source, "您还可以输入 '/backup restore latest' 来恢复最新的备份。");
 
                     return 1;
                 });
@@ -74,7 +74,7 @@ public class RestoreBackupCommand {
 
     private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
         if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isPresent()) {
-            log.sendInfo(source, "Someone has already started another restoration.");
+            log.sendInfo(source, "已经有其他人开始了另一个恢复操作。");
 
             return -1;
         }
@@ -96,10 +96,10 @@ public class RestoreBackupCommand {
         }
 
         if(backupFile.isEmpty()) {
-            log.sendInfo(source, "No file created on {} was found!", dateTime.format(Globals.defaultDateTimeFormatter));
+            log.sendInfo(source, "在{}上没有找到创建的文件！", dateTime.format(Globals.defaultDateTimeFormatter));
             return -1;
         } else {
-            log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
+            log.info("找到要恢复的文件：{}", backupFile.get().getFile().getFileName().toString());
 
             Globals.INSTANCE.setAwaitThread(
                     RestoreHelper.create(

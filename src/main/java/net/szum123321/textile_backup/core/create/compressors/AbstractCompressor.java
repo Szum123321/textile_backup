@@ -76,7 +76,7 @@ public abstract class AbstractCompressor {
                     fileHashBuilder.update(file, 0, 0);
                     //In Permissive mode we allow partial backups
                     if (ConfigHelper.INSTANCE.get().integrityVerificationMode.isStrict()) throw e;
-                    else log.sendErrorAL(ctx, "An exception occurred while trying to compress: {}",
+                    else log.sendErrorAL(ctx, "在尝试压缩{}时发生了异常！",
                             inputFile.relativize(file).toString(), e
                     );
                 }
@@ -103,7 +103,7 @@ public abstract class AbstractCompressor {
             close();
         }
 
-        log.sendInfoAL(ctx, "Compression took: {} seconds.", Utilities.formatDuration(Duration.between(start, Instant.now())));
+        log.sendInfoAL(ctx, "压缩耗时：{}秒. ", Utilities.formatDuration(Duration.between(start, Instant.now())));
     }
 
     protected abstract OutputStream createArchiveOutputStream(OutputStream stream, ExecutableBackup ctx, int coreLimit) throws IOException;

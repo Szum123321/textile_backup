@@ -59,11 +59,11 @@ public class FileTreeHashBuilder {
     public long getValue(boolean lock) throws InterruptedException {
         long leftover = latch.getCount();
         if(lock) latch.await();
-        else if(leftover != 0) log.warn("Finishing with {} files unprocessed!", leftover);
+        else if(leftover != 0) log.warn("处理中，剩余{}个文件未处理！", leftover);
 
         var hasher = Globals.CHECKSUM_SUPPLIER.get();
 
-        log.debug("Closing: files: {}, bytes {}, raw hash {}", filesProcessed, filesTotalSize, hash);
+        log.debug("文件数：{}，字节数：{}，原始哈希值：{}", filesProcessed, filesTotalSize, hash);
         hasher.update(hash);
         hasher.update(filesProcessed);
         hasher.update(filesTotalSize);

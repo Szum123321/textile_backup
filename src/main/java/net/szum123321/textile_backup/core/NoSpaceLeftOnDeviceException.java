@@ -25,6 +25,6 @@ import java.io.IOException;
  */
 public class NoSpaceLeftOnDeviceException extends IOException {
     public NoSpaceLeftOnDeviceException(Throwable cause) {
-        super("The underlying filesystem has ran out of available space.\nSee: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems", cause);
+        super("底层文件系统的可用空间已耗尽. \nSee: https://github.com/Szum123321/textile_backup/wiki/ZIP-Problems", cause);
     }
 }

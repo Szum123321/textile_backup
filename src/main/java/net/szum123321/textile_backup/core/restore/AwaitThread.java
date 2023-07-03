@@ -42,13 +42,13 @@ public class AwaitThread extends Thread {
 
     @Override
     public void run() {
-        log.info("Countdown begins... Waiting {} second.", delay);
+        log.info("开始倒计时...等待{}秒.", delay);
 
         // 𝄞 This is final count down! Tu ruru Tu, Tu Ru Tu Tu ♪
         try {
             Thread.sleep(delay * 1000L);
         } catch (InterruptedException e) {
-            log.info("Backup restoration cancelled.");
+            log.info("备份恢复已取消.");
             return;
         }
 
