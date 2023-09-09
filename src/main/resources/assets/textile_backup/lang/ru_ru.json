@@ -1,0 +1,63 @@
+{
+  "text.autoconfig.textile_backup.title": "Настройки Textile Backup",
+
+  "text.autoconfig.textile_backup.category.default": "Общие",
+  "text.autoconfig.textile_backup.category.Create": "Настройки резервного копирования",
+  "text.autoconfig.textile_backup.category.Restore": "Восстанавление",
+  "text.autoconfig.textile_backup.category.Manage": "Управление",
+
+  "text.autoconfig.textile_backup.option.backupInterval": "Интервал резервного копирования",
+  "text.autoconfig.textile_backup.option.backupInterval.@Tooltip": "Время между каждым автоматическим резервным копированием (в секундах)",
+
+  "text.autoconfig.textile_backup.option.restoreDelay": "Задержка восстановления",
+  "text.autoconfig.textile_backup.option.restoreDelay.@Tooltip": "В секундах",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupStart": "Объявлять о запуске резервного копирования",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupDone": "Объявлять о выполнении резервного копирования",
+
+  "text.autoconfig.textile_backup.option.doBackupsOnEmptyServer": "Создавать автоматические резервные копии на пустом сервере",
+
+  "text.autoconfig.textile_backup.option.shutdownBackup": "Сделайте резервную копию при выключении",
+
+  "text.autoconfig.textile_backup.option.backupOldWorlds": "Делать резервные копии старых миров",
+
+  "text.autoconfig.textile_backup.option.perWorldBackup": "Используйте отдельные папки для разных миров",
+
+  "text.autoconfig.textile_backup.option.backupDirectoryPath": "Путь к папке резервного копирования",
+
+  "text.autoconfig.textile_backup.option.fileBlacklist": "Файлы, занесённые в черный список",
+
+  "text.autoconfig.textile_backup.option.deleteOldBackupAfterRestore": "Удалить восстановленную резервную копию",
+
+  "text.autoconfig.textile_backup.option.backupsToKeep": "Количество сохраняемых резервных копий",
+
+  "text.autoconfig.textile_backup.option.maxAge": "Максимальный срок хранения резервной копии",
+  "text.autoconfig.textile_backup.option.maxAge.@Tooltip": "В секундах с момента создания",
+
+  "text.autoconfig.textile_backup.option.maxSize": "Максимальный размер папки резервного копирования",
+  "text.autoconfig.textile_backup.option.maxSize.@Tooltip": "В килобайтах",
+
+  "text.autoconfig.textile_backup.option.compression": "Уровень сжатия",
+  "text.autoconfig.textile_backup.option.compression.@Tooltip": "Влияет только на zip-файл",
+
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit": "Максимальное количество ядер, используемых для сжатия",
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit.@Tooltip": "Установите в 0, чтобы использовать все доступные ядра",
+
+  "text.autoconfig.textile_backup.option.format": "Формат архивирования и сжатия",
+  "text.autoconfig.textile_backup.option.format.@Tooltip": "Справка: https://github.com/Szum123321/textile_backup/wiki/Configuration#format",
+
+  "text.autoconfig.textile_backup.option.integrityVerificationMode": "Проверять целостность резервной копии",
+  "text.autoconfig.textile_backup.option.integrityVerificationMode.@Tooltip": "НЕ МЕНЯЙТЕСЬ, пока полностью не осознаёте последствия",
+
+  "text.autoconfig.textile_backup.option.permissionLevel": "Минимальный уровень разрешения оператора",
+
+  "text.autoconfig.textile_backup.option.alwaysSingleplayerAllowed": "Всегда разрешайть в одиночной игре",
+
+  "text.autoconfig.textile_backup.option.playerWhitelist": "Белый список администраторов",
+
+  "text.autoconfig.textile_backup.option.playerBlacklist": "Чёрный список администраторов",
+
+  "text.autoconfig.textile_backup.option.dateTimeFormat": "Формат даты и времени",
+  "text.autoconfig.textile_backup.option.dateTimeFormat.@Tooltip": "Справка: https://github.com/Szum123321/textile_backup/wiki/Date-time-format"
+}
