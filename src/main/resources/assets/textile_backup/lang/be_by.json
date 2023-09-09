@@ -1,0 +1,63 @@
+{
+  "text.autoconfig.textile_backup.title": "Налады Textile Backup",
+
+  "text.autoconfig.textile_backup.category.default": "Агульнае",
+  "text.autoconfig.textile_backup.category.Create": "Налады рэзервнага капіравання",
+  "text.autoconfig.textile_backup.category.Restore": "Узнавіць",
+  "text.autoconfig.textile_backup.category.Manage": "Кіраванне",
+
+  "text.autoconfig.textile_backup.option.backupInterval": "Інтэрвал рэзервнага капіравання",
+  "text.autoconfig.textile_backup.option.backupInterval.@Tooltip": "Час паміж аўтаматычным рэзервным капіраваннем (у секундах)",
+
+  "text.autoconfig.textile_backup.option.restoreDelay": "Затрымка ўзнаўлення",
+  "text.autoconfig.textile_backup.option.restoreDelay.@Tooltip": "У секундах",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupStart": "Аб'яўленне аб пачатку рэзервнага капіравання",
+
+  "text.autoconfig.textile_backup.option.broadcastBackupDone": "Аб'яўленне аб заканчэнні рэзервнага капіравання",
+
+  "text.autoconfig.textile_backup.option.doBackupsOnEmptyServer": "Рабіць аўтаматычныя рэзервныя копіі на пусты сервер",
+
+  "text.autoconfig.textile_backup.option.shutdownBackup": "Рабіць рэзервныя копіі на выхадзе з свету",
+
+  "text.autoconfig.textile_backup.option.backupOldWorlds": "Рабіць рэзервныя копіі для старых светаў",
+
+  "text.autoconfig.textile_backup.option.perWorldBackup": "Выкарыстоўваць розныя папкі для розных светаў",
+
+  "text.autoconfig.textile_backup.option.backupDirectoryPath": "Шлях да папкі копій",
+
+  "text.autoconfig.textile_backup.option.fileBlacklist": "Файлы, занесеныя ў чорны спіс",
+
+  "text.autoconfig.textile_backup.option.deleteOldBackupAfterRestore": "Выдаліць узноўленныя копіі",
+
+  "text.autoconfig.textile_backup.option.backupsToKeep": "Колькасць рэзернвых копій для захавання",
+
+  "text.autoconfig.textile_backup.option.maxAge": "Максімальны ўзрост копій",
+  "text.autoconfig.textile_backup.option.maxAge.@Tooltip": "У секундах пасля стварэння",
+
+  "text.autoconfig.textile_backup.option.maxSize": "Максімальны памер папкі з рэзервнымі копіямі",
+  "text.autoconfig.textile_backup.option.maxSize.@Tooltip": "У КБ",
+
+  "text.autoconfig.textile_backup.option.compression": "Узровень сціскання",
+  "text.autoconfig.textile_backup.option.compression.@Tooltip": "Паўплывае толькі на zip",
+
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit": "Максімальная колькасць ядзер, выкарыстоўваемых для сціскання",
+  "text.autoconfig.textile_backup.option.compressionCoreCountLimit.@Tooltip": "Устанавіце 0, каб выкарыстоўваць усе",
+
+  "text.autoconfig.textile_backup.option.format": "Фармат архівацыі і сціскання",
+  "text.autoconfig.textile_backup.option.format.@Tooltip": "Глядзіце: https://github.com/Szum123321/textile_backup/wiki/Configuration#format",
+
+  "text.autoconfig.textile_backup.option.integrityVerificationMode": "Праверка цэласнасці рэзервных копій",
+  "text.autoconfig.textile_backup.option.integrityVerificationMode.@Tooltip": "НЕ РАБІЦЕ ЗМЯНЕННЯЎ, калі не ведаеце, што робіце",
+
+  "text.autoconfig.textile_backup.option.permissionLevel": "Мінімальны узровень дазволу",
+
+  "text.autoconfig.textile_backup.option.alwaysSingleplayerAllowed": "Заўсёды дазваляць у адзіночных светах",
+
+  "text.autoconfig.textile_backup.option.playerWhitelist": "Белы спіс адміністратара",
+
+  "text.autoconfig.textile_backup.option.playerBlacklist": "Чорны спіс адміністратара",
+
+  "text.autoconfig.textile_backup.option.dateTimeFormat": "Фармат даты і часу",
+  "text.autoconfig.textile_backup.option.dateTimeFormat.@Tooltip": "Глядзіце: https://github.com/Szum123321/textile_backup/wiki/Date-time-format"
+}
