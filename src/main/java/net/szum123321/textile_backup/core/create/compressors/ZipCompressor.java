@@ -61,8 +61,20 @@ public class ZipCompressor extends AbstractCompressor {
 
             if(input.getPath().isEmpty()) {
                 entry = new ZipArchiveEntry(input.getName());
+                
+                //It's basically just
+                byte[] buff = new byte[(int)input.size()];
+                int len = input.getInputStream().read(buff);
+                Checksum sum = new CRC32();
+                sum.update(buff, 0, len);
+                entry.setCrc(sum.getValue());
+
                 entry.setMethod(ZipEntry.STORED);
                 entry.setSize(input.size());
+
+                ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);
+
+                arc.write(buff, 0, len);
             } else {
                 Path file = input.getPath().get();
                 entry = (ZipArchiveEntry) ((ZipArchiveOutputStream) arc).createArchiveEntry(file, input.getName());
@@ -72,11 +84,11 @@ public class ZipCompressor extends AbstractCompressor {
                     entry.setCompressedSize(Files.size(file));
                     entry.setCrc(getCRC(file));
                 } else entry.setMethod(ZipEntry.DEFLATED);
+
+                ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);
+
+                IOUtils.copy(fileInputStream, arc);
             }
-
-            ((ZipArchiveOutputStream)arc).putArchiveEntry(entry);
-
-            IOUtils.copy(fileInputStream, arc);
 
             ((ZipArchiveOutputStream)arc).closeArchiveEntry();
         }
