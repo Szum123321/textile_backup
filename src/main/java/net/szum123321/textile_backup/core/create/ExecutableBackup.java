@@ -64,11 +64,6 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
     }
     @Override
     public Void call() throws Exception {
-        if (save) { //save the world
-            log.sendInfoAL(this, "Saving server...");
-            server.saveAll(true, true, false);
-        }
-
         Path outFile = Utilities.getBackupRootPath(Utilities.getLevelName(server)).resolve(getFileName());
 
         log.trace("Outfile is: {}", outFile);
@@ -76,8 +71,8 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
         try {
             //I think I should synchronise these two next calls...
             Utilities.disableWorldSaving(server);
-            Globals.INSTANCE.disableWatchdog = true;
 
+            Globals.INSTANCE.disableWatchdog = true;
             Globals.INSTANCE.updateTMPFSFlag(server);
 
             log.sendInfoAL(this, "Starting backup");
@@ -225,6 +220,14 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
             ExecutableBackup v =  new ExecutableBackup(server, commandSource, initiator, save, cleanup, comment, LocalDateTime.now());
 
             if(announce) v.announce();
+
+            if (save) { //save the world
+                // We need to flush everything as next thing we'll be copying all the files.
+                // this is mostly the reason for #81 - minecraft doesn't flush during scheduled saves.
+                log.sendInfoAL(this.commandSource, "Saving server...");
+                server.saveAll(true, true, false);
+            }
+
             return v;
         }
     }
