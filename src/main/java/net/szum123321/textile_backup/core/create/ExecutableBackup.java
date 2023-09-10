@@ -9,6 +9,7 @@ import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.Cleanup;
 import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.WorldSavingState;
 import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
 import net.szum123321.textile_backup.core.create.compressors.ZipCompressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
@@ -20,7 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 public record ExecutableBackup(@NotNull MinecraftServer server,
                             ServerCommandSource commandSource,
@@ -68,11 +71,24 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
         log.trace("Outfile is: {}", outFile);
 
-        try {
-            //I think I should synchronise these two next calls...
-            Utilities.disableWorldSaving(server);
+        AtomicReference<Optional<WorldSavingState>> state = new AtomicReference<>(Optional.empty());
 
-            Globals.INSTANCE.disableWatchdog = true;
+        try {
+            //Globals.INSTANCE.disableWatchdog = true;
+            //I think I should synchronise these two next calls...
+
+            //Execute following call on the server executor
+            server.submitAndJoin(() -> {
+                if (save) { //save the world
+                    // We need to flush everything as next thing we'll be copying all the files.
+                    // this is mostly the reason for #81 - minecraft doesn't flush during scheduled saves.
+                    log.sendInfoAL(this.commandSource, "Saving server...");
+
+                    server.saveAll(true, true, false);
+                }
+                state.set(Optional.of(WorldSavingState.disable(server)));
+            });
+
             Globals.INSTANCE.updateTMPFSFlag(server);
 
             log.sendInfoAL(this, "Starting backup");
@@ -128,8 +144,11 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
             throw e;
         } finally {
-            Utilities.enableWorldSaving(server);
-            Globals.INSTANCE.disableWatchdog = false;
+            if (state.get().isPresent()) {
+                state.get().get().enable(server);
+            }
+            //Utilities.enableWorldSaving(server);
+            //Globals.INSTANCE.disableWatchdog = false;
         }
 
         return null;
@@ -220,13 +239,6 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
             ExecutableBackup v =  new ExecutableBackup(server, commandSource, initiator, save, cleanup, comment, LocalDateTime.now());
 
             if(announce) v.announce();
-
-            if (save) { //save the world
-                // We need to flush everything as next thing we'll be copying all the files.
-                // this is mostly the reason for #81 - minecraft doesn't flush during scheduled saves.
-                log.sendInfoAL(this.commandSource, "Saving server...");
-                server.saveAll(true, true, false);
-            }
 
             return v;
         }
