@@ -61,7 +61,7 @@ public class ZipCompressor extends AbstractCompressor {
 
             if(input.getPath().isEmpty()) {
                 entry = new ZipArchiveEntry(input.getName());
-                
+
                 //It's basically just
                 byte[] buff = new byte[(int)input.size()];
                 int len = input.getInputStream().read(buff);
