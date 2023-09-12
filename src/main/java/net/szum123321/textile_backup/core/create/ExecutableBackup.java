@@ -13,6 +13,7 @@ import net.szum123321.textile_backup.core.WorldSavingState;
 import net.szum123321.textile_backup.core.create.compressors.ParallelZipCompressor;
 import net.szum123321.textile_backup.core.create.compressors.ZipCompressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.AbstractTarArchiver;
+import net.szum123321.textile_backup.core.create.compressors.tar.ParallelBZip2Compressor;
 import net.szum123321.textile_backup.core.create.compressors.tar.ParallelGzipCompressor;
 import org.jetbrains.annotations.NotNull;
 
@@ -118,6 +119,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
                         ZipCompressor.getInstance().createArchive(world, outFile, this, coreCount);
                     }
                 }
+                case BZIP2 -> ParallelBZip2Compressor.getInstance().createArchive(world, outFile, this, coreCount);
                 case GZIP -> ParallelGzipCompressor.getInstance().createArchive(world, outFile, this, coreCount);
                 case TAR -> new AbstractTarArchiver().createArchive(world, outFile, this, coreCount);
             }
