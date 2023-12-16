@@ -72,20 +72,20 @@ public class WhitelistCommand {
 	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(config.get().playerWhitelist.contains(player.getEntityName())) {
-			log.sendInfo(ctx.getSource(), "Player: {} is already whitelisted.", player.getEntityName());
+		if(config.get().playerWhitelist.contains(player.getNameForScoreboard())) {
+			log.sendInfo(ctx.getSource(), "Player: {} is already whitelisted.", player.getNameForScoreboard());
 		} else {
-			config.get().playerWhitelist.add(player.getEntityName());
+			config.get().playerWhitelist.add(player.getNameForScoreboard());
 			config.save();
 
 			StringBuilder builder = new StringBuilder();
 
 			builder.append("Player: ");
-			builder.append(player.getEntityName());
+			builder.append(player.getNameForScoreboard());
 			builder.append(" added to the whitelist");
 
-			if(config.get().playerBlacklist.contains(player.getEntityName())){
-				config.get().playerBlacklist.remove(player.getEntityName());
+			if(config.get().playerBlacklist.contains(player.getNameForScoreboard())){
+				config.get().playerBlacklist.remove(player.getNameForScoreboard());
 				config.save();
 				builder.append(" and removed form the blacklist");
 			}
@@ -103,15 +103,15 @@ public class WhitelistCommand {
 	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-		if(!config.get().playerWhitelist.contains(player.getEntityName())) {
-			log.sendInfo(ctx.getSource(), "Player: {} newer was whitelisted.", player.getEntityName());
+		if(!config.get().playerWhitelist.contains(player.getNameForScoreboard())) {
+			log.sendInfo(ctx.getSource(), "Player: {} newer was whitelisted.", player.getNameForScoreboard());
 		} else {
-			config.get().playerWhitelist.remove(player.getEntityName());
+			config.get().playerWhitelist.remove(player.getNameForScoreboard());
 			config.save();
 
 			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
 
-			log.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getEntityName());
+			log.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getNameForScoreboard());
 		}
 
 		return 1;

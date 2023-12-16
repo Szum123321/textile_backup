@@ -41,7 +41,6 @@ import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
 import net.szum123321.textile_backup.core.create.ExecutableBackup;
-import net.szum123321.textile_backup.test.BalticHashTest;
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_NAME = "Textile Backup";
@@ -92,9 +91,9 @@ public class TextileBackup implements ModInitializer {
                 LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
                         .requires((ctx) -> {
                                     try {
-                                        return ((config.get().playerWhitelist.contains(ctx.getEntityOrThrow().getEntityName()) ||
+                                        return ((config.get().playerWhitelist.contains(ctx.getEntityOrThrow().getNameForScoreboard()) ||
                                                 ctx.hasPermissionLevel(config.get().permissionLevel)) &&
-                                                !config.get().playerBlacklist.contains(ctx.getEntityOrThrow().getEntityName())) ||
+                                                !config.get().playerBlacklist.contains(ctx.getEntityOrThrow().getNameForScoreboard())) ||
                                                 (ctx.getServer().isSingleplayer() &&
                                                         config.get().alwaysSingleplayerAllowed);
                                     } catch (Exception ignored) { //Command was called from server console.
