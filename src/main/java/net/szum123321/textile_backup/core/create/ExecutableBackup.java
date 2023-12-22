@@ -75,7 +75,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
         AtomicReference<Optional<WorldSavingState>> state = new AtomicReference<>(Optional.empty());
 
         try {
-            //Globals.INSTANCE.disableWatchdog = true;
+            Globals.INSTANCE.disableWatchdog = true;
             //I think I should synchronise these two next calls...
 
             //Execute following call on the server executor
@@ -149,8 +149,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
             if (state.get().isPresent()) {
                 state.get().get().enable(server);
             }
-            //Utilities.enableWorldSaving(server);
-            //Globals.INSTANCE.disableWatchdog = false;
+            Globals.INSTANCE.disableWatchdog = false;
         }
 
         return null;
