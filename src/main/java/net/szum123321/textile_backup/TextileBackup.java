@@ -27,6 +27,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
@@ -60,6 +61,10 @@ public class TextileBackup implements ModInitializer {
         log.info("Starting Textile Backup {} by Szum123321", Globals.INSTANCE.getCombinedVersionString());
 
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
+
+        var comp_list = FabricLoader.getInstance().getEntrypointContainers(TextileBackupApi.TEXTILE_API_ID, TextileBackupApi.class)
+                .stream().peek(entry -> log.info("Enabling compatibility: {}", entry.getProvider().getMetadata().getName()))
+                .map(EntrypointContainer::getEntrypoint).toList();
 
         ServerTickEvents.END_SERVER_TICK.register(BackupScheduler::tick);
 
