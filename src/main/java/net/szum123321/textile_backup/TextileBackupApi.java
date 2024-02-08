@@ -10,12 +10,18 @@ import java.util.concurrent.Future;
 public interface TextileBackupApi {
     String TEXTILE_API_ID = "textile_api";
 
-    Future<Lock> tryLock(BackupMetadata meta) throws RuntimeException;
+    Future<TextileLock> tryLock(TextileBackupMetadata meta) throws TextileLockException;
 
-    interface Lock {
+    interface TextileLock extends AutoCloseable {
+        default void close() {release();}
+
         void release();
     }
-    interface BackupMetadata {
+
+    class TextileLockException extends RuntimeException {
+
+    }
+    interface TextileBackupMetadata {
         boolean shouldSave();
         Optional<ServerCommandSource> getCommandSource();
 

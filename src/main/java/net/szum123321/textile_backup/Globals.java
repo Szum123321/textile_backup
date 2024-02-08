@@ -31,6 +31,7 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -41,35 +42,16 @@ import java.util.function.Supplier;
 import java.util.zip.CRC32;
 
 public class Globals {
-    public static final Globals INSTANCE = new Globals();
+    public static Globals INSTANCE;// = new Globals();
+
+    static void setInstance(Globals instance) {
+        INSTANCE = instance;
+    }
     private static final TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     public static final DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
-    public static final Supplier<Hash> CHECKSUM_SUPPLIER = BalticHash::new;/*() -> new Hash() {
-        private final CRC32 crc = new CRC32();
+    public static final Supplier<Hash> CHECKSUM_SUPPLIER = BalticHash::new;
 
-        @Override
-        public void update ( int b){
-            crc.update(b);
-        }
-
-        @Override
-        public void update ( long b) {
-            ByteBuffer v = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
-            v.putLong(b);
-            crc.update(v.array());
-        }
-
-        @Override
-        public void update ( byte[] b, int off, int len){
-            crc.update(b, off, len);
-        }
-
-        @Override
-        public long getValue () {
-            return crc.getValue();
-        }
-    };*/
-
+    public final List<TextileBackupApi> COMPAT_MODULES;
     private ExecutorService executorService = null;//TODO: AAAAAAAAAAAAAAA MEMORY LEAK!!!!!!!!!
     public final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
     public boolean disableWatchdog = false;
@@ -79,7 +61,9 @@ public class Globals {
 
     private String combinedVersionString;
 
-    private Globals() {}
+    public Globals(List<TextileBackupApi> compatModules) {
+        COMPAT_MODULES = compatModules;
+    }
 
     public ExecutorService getQueueExecutor() { return executorService; }
 

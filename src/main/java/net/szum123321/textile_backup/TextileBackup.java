@@ -66,6 +66,8 @@ public class TextileBackup implements ModInitializer {
                 .stream().peek(entry -> log.info("Enabling compatibility: {}", entry.getProvider().getMetadata().getName()))
                 .map(EntrypointContainer::getEntrypoint).toList();
 
+        Globals.setInstance(new Globals(comp_list));
+
         ServerTickEvents.END_SERVER_TICK.register(BackupScheduler::tick);
 
         //Restart Executor Service in single-player

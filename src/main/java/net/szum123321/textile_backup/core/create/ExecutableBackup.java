@@ -4,6 +4,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
+import net.szum123321.textile_backup.TextileBackupApi;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
@@ -32,7 +33,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
                             boolean save,
                             boolean cleanup,
                             String comment,
-                            LocalDateTime startDate) implements Callable<Void> {
+                            LocalDateTime startDate) implements Callable<Void>, TextileBackupApi.TextileBackupMetadata {
 
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
@@ -74,7 +75,11 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
         AtomicReference<Optional<WorldSavingState>> state = new AtomicReference<>(Optional.empty());
 
-        try {
+        try (var ignored = Globals.INSTANCE.COMPAT_MODULES.stream().map(v -> {try {
+            return v.tryLock(this).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }})) {
             Globals.INSTANCE.disableWatchdog = true;
             //I think I should synchronise these two next calls...
 
@@ -160,6 +165,32 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
                 (comment != null ? "#" + comment.replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
                 config.get().format.getCompleteString();
     }
+
+    @Override
+    public boolean shouldSave() {
+        return save;
+    }
+
+    @Override
+    public Optional<ServerCommandSource> getCommandSource() {
+        return Optional.ofNullable(commandSource);
+    }
+
+    @Override
+    public ActionInitiator getActonInitiator() {
+        return initiator;
+    }
+
+    @Override
+    public String getComment() {
+        return comment;
+    }
+
+    @Override
+    public LocalDateTime getStartTime() {
+        return startDate;
+    }
+
     public static class Builder {
         private MinecraftServer server;
         private ServerCommandSource commandSource;
