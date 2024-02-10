@@ -31,6 +31,9 @@
     ],
     "modmenu": [
       "net.szum123321.textile_backup.client.ModMenuEntry"
+    ],
+    "textile_api":[
+      "net.szum123321.textile_backup.api.TestTextileBackup"
     ]
   },
   "mixins": [
