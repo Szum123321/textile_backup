@@ -19,6 +19,7 @@
 package net.szum123321.textile_backup;
 
 import net.minecraft.server.MinecraftServer;
+import net.szum123321.textile_backup.api.TextileBackupApi;
 import net.szum123321.textile_backup.core.digest.BalticHash;
 import net.szum123321.textile_backup.core.digest.Hash;
 import net.szum123321.textile_backup.core.Utilities;
@@ -26,8 +27,6 @@ import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.restore.AwaitThread;
 import org.apache.commons.io.FileUtils;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
@@ -39,7 +38,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-import java.util.zip.CRC32;
 
 public class Globals {
     public static Globals INSTANCE;// = new Globals();
@@ -47,7 +45,7 @@ public class Globals {
     static void setInstance(Globals instance) {
         INSTANCE = instance;
     }
-    private static final TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+    private static final TextileLogger log = new TextileLogger(net.szum123321.textile_backup.TextileBackup.MOD_NAME);
     public static final DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
     public static final Supplier<Hash> CHECKSUM_SUPPLIER = BalticHash::new;
 
@@ -59,10 +57,11 @@ public class Globals {
     private AwaitThread restoreAwaitThread = null;
     private Path lockedPath = null;
 
-    private String combinedVersionString;
+    private final String combinedVersionString;
 
-    public Globals(List<TextileBackupApi> compatModules) {
+    public Globals(List<TextileBackupApi> compatModules, String combinedVersionString) {
         COMPAT_MODULES = compatModules;
+        this.combinedVersionString = combinedVersionString;
     }
 
     public ExecutorService getQueueExecutor() { return executorService; }
@@ -122,9 +121,5 @@ public class Globals {
 
     public String getCombinedVersionString() {
         return combinedVersionString;
-    }
-
-    public void setCombinedVersionString(String combinedVersionString) {
-        this.combinedVersionString = combinedVersionString;
     }
 }

@@ -29,6 +29,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.szum123321.textile_backup.api.TextileBackupApi;
 import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
 import net.szum123321.textile_backup.commands.manage.BlacklistCommand;
@@ -52,21 +53,21 @@ public class TextileBackup implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Globals.INSTANCE.setCombinedVersionString(
-                FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion().getFriendlyString() +
-                        ":" +
-                        FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().getMetadata().getVersion().getFriendlyString()
-        );
+        var comp_list = FabricLoader.getInstance().getEntrypointContainers(TextileBackupApi.TEXTILE_API_ID, TextileBackupApi.class)
+                .stream().peek(entry -> log.info("Enabling compatibility: {}", entry.getProvider().getMetadata().getName()))
+                .map(EntrypointContainer::getEntrypoint).toList();
+
+        String combined_name = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion().getFriendlyString() +
+                ":" +
+                FabricLoader.getInstance().getModContainer("minecraft").orElseThrow().getMetadata().getVersion().getFriendlyString();
+
+        Globals.setInstance(new Globals(comp_list, combined_name));
 
         log.info("Starting Textile Backup {} by Szum123321", Globals.INSTANCE.getCombinedVersionString());
 
         ConfigHelper.updateInstance(AutoConfig.register(ConfigPOJO.class, JanksonConfigSerializer::new));
 
-        var comp_list = FabricLoader.getInstance().getEntrypointContainers(TextileBackupApi.TEXTILE_API_ID, TextileBackupApi.class)
-                .stream().peek(entry -> log.info("Enabling compatibility: {}", entry.getProvider().getMetadata().getName()))
-                .map(EntrypointContainer::getEntrypoint).toList();
 
-        Globals.setInstance(new Globals(comp_list));
 
         ServerTickEvents.END_SERVER_TICK.register(BackupScheduler::tick);
 

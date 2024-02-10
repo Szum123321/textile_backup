@@ -3,8 +3,7 @@ package net.szum123321.textile_backup.core.create;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Globals;
-import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.TextileBackupApi;
+import net.szum123321.textile_backup.api.TextileBackupApi;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
 import net.szum123321.textile_backup.core.ActionInitiator;
@@ -22,8 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -35,7 +33,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
                             String comment,
                             LocalDateTime startDate) implements Callable<Void>, TextileBackupApi.TextileBackupMetadata {
 
-    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
+    private final static TextileLogger log = new TextileLogger(net.szum123321.textile_backup.TextileBackup.MOD_NAME);
     private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
     public boolean startedByPlayer() {
@@ -75,11 +73,14 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
         AtomicReference<Optional<WorldSavingState>> state = new AtomicReference<>(Optional.empty());
 
-        try (var ignored = Globals.INSTANCE.COMPAT_MODULES.stream().map(v -> {try {
-            return v.tryLock(this).get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }})) {
+        //This is fucking ugly
+        try (var ignored = new ClosingList<>(Globals.INSTANCE.COMPAT_MODULES.parallelStream().map(v -> {
+            try {
+                return v.tryLock(this);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).toList())) {
             Globals.INSTANCE.disableWatchdog = true;
             //I think I should synchronise these two next calls...
 
@@ -164,6 +165,18 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
         return Utilities.getDateTimeFormatter().format(startDate) +
                 (comment != null ? "#" + comment.replaceAll("[\\\\/:*?\"<>|#]", "") : "") +
                 config.get().format.getCompleteString();
+    }
+
+    private static class ClosingList<T extends AutoCloseable> extends ArrayList<T > implements AutoCloseable {
+
+        public ClosingList(Collection<? extends T> c) { super(c); }
+
+        @Override
+        public void close() throws Exception {
+            for(T i: this) {
+                i.close();
+            }
+        }
     }
 
     @Override
