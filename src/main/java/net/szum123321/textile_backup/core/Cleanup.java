@@ -123,7 +123,7 @@ public class Cleanup implements Callable<Integer> {
 
 	//1 -> ok, 0 -> err
 	private boolean deleteFile(Path f, ServerCommandSource ctx) {
-		if(Globals.INSTANCE.getLockedFile().filter(p -> p == f).isPresent()) return false;
+		if(Globals.INSTANCE.restoreAwaiter.getFile().filter(p -> p == f).isPresent()) return false;
 		try {
 			Files.delete(f);
 			log.sendInfoAL(ctx, "Deleted: {}", f);

@@ -32,16 +32,10 @@ public class KillRestoreCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("killR")
                 .executes(ctx -> {
-                    if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isEmpty()) {
-                        log.sendInfo(ctx.getSource(), "Failed to stop backup restoration");
-                        return -1;
-                    }
+                    Globals.INSTANCE.restoreAwaiter.cancel();
 
-                    AwaitThread thread = Globals.INSTANCE.getAwaitThread().get();
-
-                    thread.interrupt();
                     Globals.INSTANCE.globalShutdownBackupFlag.set(true);
-                    Globals.INSTANCE.setLockedFile(null);
+                    //Globals.INSTANCE.setLockedFile(null);
 
                     log.info("{} cancelled backup restoration.", Utilities.wasSentByPlayer(ctx.getSource()) ?
                             "Player: " + ctx.getSource().getName() :

@@ -30,18 +30,18 @@ import java.util.Optional;
 
 public record CompressionStatus(long treeHash, Map<String, Exception> brokenFiles, LocalDateTime date, long startTimestamp, long finishTimestamp, String version) implements Serializable {
     public static final String DATA_FILENAME = "textile_status.data";
-
-    public Optional<String> validate(long hash, RestoreContext ctx) throws RuntimeException {
+    
+    public Optional<String> validate(long hash, RestoreableFile ctx) throws RuntimeException {
         if(hash != treeHash)
             return Optional.of("Tree Hash mismatch!\n  Expected: " + hex(treeHash) + ", got: " + hex(hash));
 
         if(!brokenFiles.isEmpty()) return Optional.of("Damaged files present! ^");
 
-        if(ctx.restoreableFile().getCreationTime().equals(date))
+        if(ctx.getCreationTime().equals(date))
             return Optional.of(
                     "Creation date mismatch!\n   Expected: " +
                             date.format(DateTimeFormatter.ISO_DATE_TIME) + ", got: " +
-                            ctx.restoreableFile().getCreationTime().format(DateTimeFormatter.ISO_DATE_TIME)
+                            ctx.getCreationTime().format(DateTimeFormatter.ISO_DATE_TIME)
             );
 
         return Optional.empty();

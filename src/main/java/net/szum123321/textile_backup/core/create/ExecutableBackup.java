@@ -72,7 +72,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
         log.trace("Outfile is: {}", outFile);
 
-        AtomicReference<Optional<WorldSavingState>> state = new AtomicReference<>(Optional.empty());
+        AtomicReference<Optional<WorldSavingState>> world_saving_state = new AtomicReference<>(Optional.empty());
 
         try {
             Globals.INSTANCE.disableWatchdog = true;
@@ -87,7 +87,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
                     server.saveAll(true, true, false);
                 }
-                state.set(Optional.of(WorldSavingState.disable(server)));
+                world_saving_state.set(Optional.of(WorldSavingState.disable(server)));
             });
 
             Globals.INSTANCE.updateTMPFSFlag(server);
@@ -101,11 +101,8 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
             Files.createDirectories(outFile.getParent());
             Files.createFile(outFile);
 
-            int coreCount;
-
-            if (config.get().compressionCoreCountLimit <= 0) coreCount = Runtime.getRuntime().availableProcessors();
-            else
-                coreCount = Math.min(config.get().compressionCoreCountLimit, Runtime.getRuntime().availableProcessors());
+            int coreCount = Runtime.getRuntime().availableProcessors();
+            if (config.get().compressionCoreCountLimit > 0) coreCount = Math.min(config.get().compressionCoreCountLimit, coreCount);
 
             log.trace("Running compression on {} threads. Available cores: {}", coreCount, Runtime.getRuntime().availableProcessors());
 
@@ -146,9 +143,8 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
 
             throw e;
         } finally {
-            if (state.get().isPresent()) {
-                state.get().get().enable(server);
-            }
+            Globals.INSTANCE.ACTIVE_BACKUP_COUNTER.decrementAndGet();
+            world_saving_state.get().ifPresent(s -> s.enable(server));
             Globals.INSTANCE.disableWatchdog = false;
         }
 
