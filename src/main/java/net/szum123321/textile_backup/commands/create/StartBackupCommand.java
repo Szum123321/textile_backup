@@ -23,15 +23,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Globals;
-import net.szum123321.textile_backup.TextileBackup;
-import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.create.ExecutableBackup;
 
 import javax.annotation.Nullable;
 
 public class StartBackupCommand {
-    private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
-
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
         return CommandManager.literal("start")
                 .then(CommandManager.argument("comment", StringArgumentType.string())

@@ -18,8 +18,6 @@
 
 package net.szum123321.textile_backup.core;
 
-import net.szum123321.textile_backup.core.restore.RestoreContext;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;

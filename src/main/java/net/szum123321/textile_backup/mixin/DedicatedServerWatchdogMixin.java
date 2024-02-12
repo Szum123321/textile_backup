@@ -31,7 +31,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
  */
 @Mixin(DedicatedServerWatchdog.class)
 public class DedicatedServerWatchdogMixin {
-
     @ModifyVariable(method = "run()V", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/util/Util;getMeasuringTimeNano()J"), ordinal = 0, name = "l")
     private long redirectedCall(long original) {
         return Globals.INSTANCE.disableWatchdog ? Util.getMeasuringTimeNano() : original;

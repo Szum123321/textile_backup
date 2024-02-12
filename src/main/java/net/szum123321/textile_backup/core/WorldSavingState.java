@@ -8,13 +8,7 @@ import net.minecraft.world.World;
 import java.util.HashSet;
 import java.util.Set;
 
-public class WorldSavingState {
-	private final Set<RegistryKey<World>> data;
-
-	private WorldSavingState(Set<RegistryKey<World>> data) {
-		this.data = data;
-	}
-
+public record WorldSavingState (Set<RegistryKey<World>> data) {
 	public static WorldSavingState disable(MinecraftServer server) {
 		Set<RegistryKey<World>> data = new HashSet<>();
 
