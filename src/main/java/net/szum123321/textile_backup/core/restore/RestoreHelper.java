@@ -19,64 +19,17 @@
 package net.szum123321.textile_backup.core.restore;
 
 import net.minecraft.server.MinecraftServer;
-import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
-import net.szum123321.textile_backup.config.ConfigHelper;
-import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.Utilities;
 
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class RestoreHelper {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
-    private final static ConfigHelper config = ConfigHelper.INSTANCE;
-
-    public static Optional<RestoreableFile> findFileAndLockIfPresent(LocalDateTime backupTime, MinecraftServer server) {
-        Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));
-
-        Optional<RestoreableFile> optionalFile =
-                RestoreableFile.applyOnFiles(root, Optional.empty(),
-                        e -> log.error("An exception occurred while trying to lock the file!", e),
-                        s -> s.filter(rf -> rf.getCreationTime().equals(backupTime))
-                                .findFirst());
-
-        optionalFile.ifPresent(r -> Globals.INSTANCE.setLockedFile(r.getFile()));
-
-        return optionalFile;
-    }
-
-    public static Optional<RestoreableFile> getLatestAndLockIfPresent( MinecraftServer server) {
-        var available = RestoreHelper.getAvailableBackups(server);
-
-        if(available.isEmpty()) return Optional.empty();
-        else {
-            var latest = available.getLast();
-            Globals.INSTANCE.setLockedFile(latest.getFile());
-            return Optional.of(latest);
-        }
-    }
-
-    public static AwaitThread create(RestoreContext ctx) {
-        if(ctx.initiator() == ActionInitiator.Player)
-            log.info("Backup restoration was initiated by: {}", ctx.commandSource().getName());
-        else
-            log.info("Backup restoration was initiated form Server Console");
-
-        Utilities.notifyPlayers(
-                ctx.server(),
-                "Warning! The server is going to shut down in " + config.get().restoreDelay + " seconds!"
-        );
-
-        return new AwaitThread(
-                config.get().restoreDelay,
-                new RestoreBackupRunnable(ctx)
-        );
-    }
 
     public static LinkedList<RestoreableFile> getAvailableBackups(MinecraftServer server) {
         Path root = Utilities.getBackupRootPath(Utilities.getLevelName(server));

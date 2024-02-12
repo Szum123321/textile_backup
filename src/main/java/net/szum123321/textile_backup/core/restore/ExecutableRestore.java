@@ -1,5 +1,6 @@
 package net.szum123321.textile_backup.core.restore;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Globals;
@@ -131,5 +132,47 @@ public record ExecutableRestore(RestoreableFile restoreableFile,
         Globals.INSTANCE.globalShutdownBackupFlag.set(true);
 
         log.info("Done!");
+    }
+
+    public static final class Builder {
+        private RestoreableFile file;
+        private MinecraftServer server;
+        private String comment;
+        private ServerCommandSource serverCommandSource;
+
+        private Builder() {
+        }
+
+        public static ExecutableRestore.Builder newRestoreContextBuilder() {
+            return new ExecutableRestore.Builder();
+        }
+
+        public ExecutableRestore.Builder setFile(RestoreableFile file) {
+            this.file = file;
+            return this;
+        }
+
+        public ExecutableRestore.Builder setServer(MinecraftServer server) {
+            this.server = server;
+            return this;
+        }
+
+        public ExecutableRestore.Builder setComment(@Nullable String comment) {
+            this.comment = comment;
+            return this;
+        }
+
+        public ExecutableRestore.Builder setCommandSource(ServerCommandSource commandSource) {
+            this.serverCommandSource = commandSource;
+            return this;
+        }
+
+        public ExecutableRestore build() {
+            if (server == null) server = serverCommandSource.getServer();
+
+            ActionInitiator initiator = serverCommandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
+
+            return new ExecutableRestore(file, server, comment, initiator, serverCommandSource);
+        }
     }
 }

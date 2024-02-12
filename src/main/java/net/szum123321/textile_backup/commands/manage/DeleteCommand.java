@@ -64,7 +64,7 @@ public class DeleteCommand {
                 e -> log.sendErrorAL(source, "An exception occurred while trying to delete a file!", e),
                 stream -> stream.filter(f -> f.getCreationTime().equals(dateTime)).map(RestoreableFile::getFile).findFirst()
                 ).ifPresentOrElse(file -> {
-                    if(Globals.INSTANCE.getLockedFile().filter(p -> p == file).isEmpty()) {
+                    if(Globals.INSTANCE.restoreAwaiter.getFile().filter(p -> p == file).isEmpty()) {
                         try {
                             Files.delete((Path) file);
                             log.sendInfo(source, "File {} successfully deleted!", file);

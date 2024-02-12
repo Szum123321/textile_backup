@@ -56,13 +56,13 @@ public class RestoreableFile implements Comparable<RestoreableFile> {
     }
 
     //removes repetition of the files stream thingy with awfully large lambdas
-    public static <T> T applyOnFiles(Path root, T def, Consumer<IOException> errorConsumer, Function<Stream<RestoreableFile>, T> streamConsumer) {
+    public static <T> T applyOnFiles(Path root, T default_value, Consumer<IOException> errorConsumer, Function<Stream<RestoreableFile>, T> streamConsumer) {
         try (Stream<Path> stream = Files.list(root)) {
             return streamConsumer.apply(stream.flatMap(f -> RestoreableFile.build(f).stream()));
         } catch (IOException e) {
             errorConsumer.accept(e);
         }
-        return def;
+        return default_value;
     }
 
     public static Optional<RestoreableFile> build(Path file) throws NoSuchElementException {

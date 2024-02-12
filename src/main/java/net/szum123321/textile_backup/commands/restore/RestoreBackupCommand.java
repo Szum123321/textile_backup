@@ -29,17 +29,20 @@ import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.commands.CommandExceptions;
 import net.szum123321.textile_backup.commands.FileSuggestionProvider;
+import net.szum123321.textile_backup.config.ConfigHelper;
+import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.RestoreableFile;
-import net.szum123321.textile_backup.core.restore.RestoreContext;
-import net.szum123321.textile_backup.core.restore.RestoreHelper;
+import net.szum123321.textile_backup.core.Utilities;
+import net.szum123321.textile_backup.core.restore.ExecutableRestore;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Objects;
+import java.util.Comparator;
 import java.util.Optional;
 
 public class RestoreBackupCommand {
+    private final static String MSG_ALEARDY_RUNNING = "A restore action is already running. You might cancel it with backup killR";
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
     public static LiteralArgumentBuilder<ServerCommandSource> register() {
@@ -66,52 +69,70 @@ public class RestoreBackupCommand {
                     log.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
                     log.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
                     log.sendInfo(source, "Example: /backup restore 2020-08-05_10.58.33");
-                    log.sendInfo(source, "You may also type '/backup restore latest' to restore the freshest backup");
+                    log.sendInfo(source, "You may also type '/backup restore latest' to restore the newest backup");
 
                     return 1;
                 });
     }
 
     private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
-        if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isPresent()) {
-            log.sendInfo(source, "Someone has already started another restoration.");
+        if(Globals.INSTANCE.restoreAwaiter.isRunning()) {
+            log.sendInfo(source, MSG_ALEARDY_RUNNING);
 
             return -1;
         }
 
-        LocalDateTime dateTime;
         Optional<RestoreableFile> backupFile;
 
-        if(Objects.equals(file, "latest")) {
-            backupFile = RestoreHelper.getLatestAndLockIfPresent(source.getServer());
-            dateTime = backupFile.map(RestoreableFile::getCreationTime).orElse(LocalDateTime.now());
+        if (file.equals("latest")) {
+            backupFile = RestoreableFile.applyOnFiles(
+                    Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer())),
+                    Optional.empty(),
+                    e -> log.error("Error while listing available backups", e),
+                    s-> s.max(Comparator.naturalOrder())
+            );
         } else {
+            LocalDateTime dateTime;
+
             try {
                 dateTime = LocalDateTime.from(Globals.defaultDateTimeFormatter.parse(file));
             } catch (DateTimeParseException e) {
                 throw CommandExceptions.DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE.create(e);
             }
 
-            backupFile = RestoreHelper.findFileAndLockIfPresent(dateTime, source.getServer());
+            backupFile = RestoreableFile.applyOnFiles(
+                    Utilities.getBackupRootPath(Utilities.getLevelName(source.getServer())),
+                    Optional.empty(),
+                    e -> log.error("Error while listing available backups", e),
+                    s -> s.filter(rf -> rf.getCreationTime().equals(dateTime)).sorted().findFirst()
+            );
         }
 
         if(backupFile.isEmpty()) {
-            log.sendInfo(source, "No file created on {} was found!", dateTime.format(Globals.defaultDateTimeFormatter));
+            log.sendInfo(source, "No file found!");
             return -1;
         } else {
             log.info("Found file to restore {}", backupFile.get().getFile().getFileName().toString());
 
-            Globals.INSTANCE.setAwaitThread(
-                    RestoreHelper.create(
-                            RestoreContext.Builder.newRestoreContextBuilder()
-                                    .setCommandSource(source)
-                                    .setFile(backupFile.get())
-                                    .setComment(comment)
-                                    .build()
-                    )
+            var restorable = ExecutableRestore.Builder.newRestoreContextBuilder()
+                    .setFile(backupFile.get()).setCommandSource(source).setComment(comment).build();
+
+            if(restorable.initiator() == ActionInitiator.Player)
+                log.info("Backup restoration was initiated by: {}", restorable.commandSource().getName());
+            else
+                log.info("Backup restoration was initiated form Server Console");
+
+            Utilities.notifyPlayers(
+                    restorable.server(),
+                    "Warning! The server is going to shut down in " + ConfigHelper.INSTANCE.get().restoreDelay + " seconds!"
             );
 
-            Globals.INSTANCE.getAwaitThread().get().start();
+            try {
+                Globals.INSTANCE.restoreAwaiter.schedule(restorable);
+            } catch (Globals.Waiter.CollisionException e) {
+                log.sendInfo(source, MSG_ALEARDY_RUNNING);
+                return -1;
+            }
 
             return 1;
         }

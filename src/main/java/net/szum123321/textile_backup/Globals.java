@@ -50,8 +50,6 @@ public class Globals {
     public final AtomicBoolean globalShutdownBackupFlag = new AtomicBoolean(true);
     public boolean disableWatchdog = false;
     private boolean disableTMPFiles = false;
-    //private AwaitThread restoreAwaitThread = null;
-    //private Path lockedPath = null;
 
     public Waiter restoreAwaiter = new Waiter();
 
@@ -73,9 +71,7 @@ public class Globals {
         try {
             if (!executorService.awaitTermination(timeout, TimeUnit.MICROSECONDS)) {
                 log.error("Timeout occurred while waiting for currently running backups to finish!");
-                executorService.shutdownNow().stream()
-                        // .filter(r -> r instanceof ExecutableBackup)
-                        // .map(r -> (ExecutableBackup)r)
+                executorService.shutdownNow()
                         .forEach(r -> log.error("Dropping: {}", r.toString()));
                 if (!executorService.awaitTermination(1000, TimeUnit.MICROSECONDS))
                     log.error("Couldn't shut down the executor!");
@@ -121,8 +117,8 @@ public class Globals {
         private ExecutableRestore state = null;
         private Thread delayThread = null;
 
-        public synchronized void schedule(ExecutableRestore executable) {
-            if (Objects.isNull(state)) throw new RuntimeException();
+        public synchronized void schedule(ExecutableRestore executable) throws CollisionException {
+            if (Objects.nonNull(delayThread)) throw new CollisionException();
             state = executable;
 
             delayThread = new AwaitThread(ConfigHelper.INSTANCE.get().restoreDelay, executable, () -> {
@@ -136,22 +132,22 @@ public class Globals {
         }
 
         public synchronized void cancel() {
-            if (!Objects.isNull(state)) {
-                delayThread.interrupt();
-
-                state = null;
-                delayThread = null;
-            }
+            if (Objects.nonNull(delayThread)) delayThread.interrupt();
         }
 
         public boolean isRunning() {
-            return delayThread != null && delayThread.isAlive();
+            return Objects.nonNull(delayThread) && delayThread.isAlive();
         }
 
         public Optional<Path> getFile() {
             return Optional.ofNullable(state).map(v -> v.restoreableFile().getFile());
         }
 
+        public static class CollisionException extends Exception {
+            public CollisionException() {
+
+            }
+        }
         public static class AwaitThread extends Thread {
             private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
             private final static AtomicInteger threadCounter = new AtomicInteger(0);
