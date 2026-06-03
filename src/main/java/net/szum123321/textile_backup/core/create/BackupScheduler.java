@@ -47,7 +47,7 @@ public class BackupScheduler {
         if(config.get().backupInterval < 1) return;
         long now = Instant.now().getEpochSecond();
 
-        if(config.get().doBackupsOnEmptyServer || server.getPlayerManager().getCurrentPlayerCount() > 0) {
+        if(config.get().doBackupsOnEmptyServer || server.getPlayerCount() > 0) {
             //Either just run backup with no one playing or there's at least one player
             if(scheduled) {
                 if(nextBackup <= now) {
@@ -70,7 +70,7 @@ public class BackupScheduler {
                 nextBackup = now + config.get().backupInterval;
                 scheduled = true;
             }
-        } else if(!config.get().doBackupsOnEmptyServer && server.getPlayerManager().getCurrentPlayerCount() == 0) {
+        } else if(!config.get().doBackupsOnEmptyServer && server.getPlayerCount() == 0) {
             //Do the final backup. No one's on-line and doBackupsOnEmptyServer == false
             if(scheduled && nextBackup <= now) {
                 //Verify we hadn't done the final one, and it's time to do so

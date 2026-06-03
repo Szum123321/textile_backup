@@ -18,10 +18,10 @@
 
 package net.szum123321.textile_backup;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.szum123321.textile_backup.core.Utilities;
 import net.szum123321.textile_backup.core.create.ExecutableBackup;
 import org.apache.logging.log4j.Level;
@@ -41,16 +41,16 @@ public class TextileLogger {
     private final Logger logger;
 
     private final String prefix;
-    private final MutableText prefixText;
+    private final MutableComponent prefixText;
 
     public TextileLogger(String prefix) {
         this.messageFactory = ParameterizedMessageFactory.INSTANCE;
         this.logger = LogManager.getLogger(StackLocatorUtil.getCallerClass(2), messageFactory);
         this.prefix = "[" + prefix + "]" + " ";
-        this.prefixText = Text.literal(this.prefix).styled(style -> style.withColor(0x5B23DA));
+        this.prefixText = Component.literal(this.prefix).withStyle(style -> style.withColor(0x5B23DA));
     }
 
-    public MutableText getPrefixText() {
+    public MutableComponent getPrefixText() {
         return prefixText.copy();
     }
 
@@ -86,15 +86,15 @@ public class TextileLogger {
         log(Level.FATAL, msg, data);
     }
 
-    boolean sendFeedback(Level level, ServerCommandSource source, String msg, Object... args) {
+    boolean sendFeedback(Level level, CommandSourceStack source, String msg, Object... args) {
         if(source != null && Utilities.wasSentByPlayer(source)) {
-            MutableText text = Text.literal(messageFactory.newMessage(msg, args).getFormattedMessage());
+            MutableComponent text = Component.literal(messageFactory.newMessage(msg, args).getFormattedMessage());
 
-            if(level.intLevel() == Level.TRACE.intLevel()) text.formatted(Formatting.GREEN);
-            else if(level.intLevel() <= Level.WARN.intLevel()) text.formatted(Formatting.RED);
-            else text.formatted(Formatting.WHITE);
+            if(level.intLevel() == Level.TRACE.intLevel()) text.withStyle(ChatFormatting.GREEN);
+            else if(level.intLevel() <= Level.WARN.intLevel()) text.withStyle(ChatFormatting.RED);
+            else text.withStyle(ChatFormatting.WHITE);
 
-            source.sendFeedback(() -> prefixText.copy().append(text), false);
+            source.sendSuccess(() -> prefixText.copy().append(text), false);
 
             return true;
         } else {
@@ -104,11 +104,11 @@ public class TextileLogger {
         }
     }
 
-    public void sendHint(ServerCommandSource source, String msg, Object... args) {
+    public void sendHint(CommandSourceStack source, String msg, Object... args) {
         sendFeedback(Level.TRACE, source, msg, args);
     }
 
-    public void sendInfo(ServerCommandSource source, String msg, Object... args) {
+    public void sendInfo(CommandSourceStack source, String msg, Object... args) {
         sendFeedback(Level.INFO, source, msg, args);
     }
 
@@ -116,7 +116,7 @@ public class TextileLogger {
         sendInfo(context.commandSource(), msg, args);
     }
 
-    public void sendError(ServerCommandSource source, String msg, Object... args) {
+    public void sendError(CommandSourceStack source, String msg, Object... args) {
         sendFeedback(Level.ERROR, source, msg, args);
     }
 
@@ -125,13 +125,13 @@ public class TextileLogger {
         sendError(context.commandSource(), msg, args);
     }
 
-    public void sendToPlayerAndLog(Level level, ServerCommandSource source, String msg, Object... args) {
+    public void sendToPlayerAndLog(Level level, CommandSourceStack source, String msg, Object... args) {
         if(sendFeedback(level, source, msg, args))
             log(level, msg, args);
     }
 
     //send info and log
-    public void sendInfoAL(ServerCommandSource source, String msg, Object... args) {
+    public void sendInfoAL(CommandSourceStack source, String msg, Object... args) {
         sendToPlayerAndLog(Level.INFO, source, msg, args);
     }
 
@@ -139,7 +139,7 @@ public class TextileLogger {
         sendInfoAL(context.commandSource(), msg, args);
     }
 
-    public void sendErrorAL(ServerCommandSource source, String msg, Object... args) {
+    public void sendErrorAL(CommandSourceStack source, String msg, Object... args) {
         sendToPlayerAndLog(Level.ERROR, source, msg, args);
     }
 

@@ -19,8 +19,8 @@
 package net.szum123321.textile_backup.commands.restore;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
@@ -29,8 +29,8 @@ import net.szum123321.textile_backup.core.restore.AwaitThread;
 
 public class KillRestoreCommand {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
-    public static LiteralArgumentBuilder<ServerCommandSource> register() {
-        return CommandManager.literal("killR")
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
+        return Commands.literal("killR")
                 .executes(ctx -> {
                     if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isEmpty()) {
                         log.sendInfo(ctx.getSource(), "Failed to stop backup restoration");
@@ -44,7 +44,7 @@ public class KillRestoreCommand {
                     Globals.INSTANCE.setLockedFile(null);
 
                     log.info("{} cancelled backup restoration.", Utilities.wasSentByPlayer(ctx.getSource()) ?
-                            "Player: " + ctx.getSource().getName() :
+                            "Player: " + ctx.getSource().getTextName() :
                             "SERVER"
                     );
 

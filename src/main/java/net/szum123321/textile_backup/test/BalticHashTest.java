@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.test;
 
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.RandomSource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.digest.BalticHash;
@@ -28,7 +28,7 @@ public class BalticHashTest {
     final static int TEST_LEN = 21377; //simple prime
     public static void run() throws RuntimeException {
         log.info("Running hash test");
-        Random r = Random.create(2137);
+        RandomSource r = RandomSource.create(2137);
         long x = 0;
 
         byte[] data = new byte[TEST_LEN];
@@ -42,17 +42,17 @@ public class BalticHashTest {
         log.info("Test passed");
     }
 
-    static long randomHash(byte[] data, Random r) {
+    static long randomHash(byte[] data, RandomSource r) {
         int n = data.length;
 
         BalticHash h = new BalticHash();
 
-        int m = r.nextBetween(1, n);
+        int m = r.nextIntBetweenInclusive(1, n);
 
         int nn = n, p = 0;
 
         for(int i = 0; i < m; i++) {
-            int k = r.nextBetween(1, nn - (m - i - 1));
+            int k = r.nextIntBetweenInclusive(1, nn - (m - i - 1));
             h.update(data, p, k);
             p += k;
             nn -= k;

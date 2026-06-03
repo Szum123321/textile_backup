@@ -21,9 +21,8 @@ package net.szum123321.textile_backup.commands.restore;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
@@ -42,18 +41,18 @@ import java.util.Optional;
 public class RestoreBackupCommand {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static LiteralArgumentBuilder<ServerCommandSource> register() {
-        return CommandManager.literal("restore")
-                .then(CommandManager.argument("file", StringArgumentType.word())
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
+        return Commands.literal("restore")
+                .then(Commands.argument("file", StringArgumentType.word())
                             .suggests(FileSuggestionProvider.Instance())
                         .executes(ctx -> execute(
                                 StringArgumentType.getString(ctx, "file"),
                                 null,
                                 ctx.getSource()
                         ))
-                ).then(CommandManager.argument("file", StringArgumentType.word())
+                ).then(Commands.argument("file", StringArgumentType.word())
                         .suggests(FileSuggestionProvider.Instance())
-                        .then(CommandManager.argument("comment", StringArgumentType.word())
+                        .then(Commands.argument("comment", StringArgumentType.word())
                                 .executes(ctx -> execute(
                                         StringArgumentType.getString(ctx, "file"),
                                         StringArgumentType.getString(ctx, "comment"),
@@ -61,7 +60,7 @@ public class RestoreBackupCommand {
                                         ))
                         )
                 ).executes(context -> {
-                    ServerCommandSource source = context.getSource();
+                    CommandSourceStack source = context.getSource();
 
                     log.sendInfo(source, "To restore given backup you have to provide exact creation time in format:");
                     log.sendInfo(source, "[YEAR]-[MONTH]-[DAY]_[HOUR].[MINUTE].[SECOND]");
@@ -72,7 +71,7 @@ public class RestoreBackupCommand {
                 });
     }
 
-    private static int execute(String file, @Nullable String comment, ServerCommandSource source) throws CommandSyntaxException {
+    private static int execute(String file, @Nullable String comment, CommandSourceStack source) throws CommandSyntaxException {
         if(Globals.INSTANCE.getAwaitThread().filter(Thread::isAlive).isPresent()) {
             log.sendInfo(source, "Someone has already started another restoration.");
 

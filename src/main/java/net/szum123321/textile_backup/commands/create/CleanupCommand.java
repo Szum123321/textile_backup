@@ -19,8 +19,8 @@
 package net.szum123321.textile_backup.commands.create;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.core.Cleanup;
@@ -29,12 +29,12 @@ import net.szum123321.textile_backup.core.Utilities;
 public class CleanupCommand {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static LiteralArgumentBuilder<ServerCommandSource> register() {
-        return CommandManager.literal("cleanup")
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
+        return Commands.literal("cleanup")
                 .executes(ctx -> execute(ctx.getSource()));
     }
 
-    private static int execute(ServerCommandSource source) {
+    private static int execute(CommandSourceStack source) {
         log.sendInfo(
                 source,
                 "Deleted: {} files.",

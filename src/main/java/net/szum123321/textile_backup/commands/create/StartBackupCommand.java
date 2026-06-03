@@ -20,8 +20,8 @@ package net.szum123321.textile_backup.commands.create;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
@@ -32,14 +32,14 @@ import javax.annotation.Nullable;
 public class StartBackupCommand {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static LiteralArgumentBuilder<ServerCommandSource> register() {
-        return CommandManager.literal("start")
-                .then(CommandManager.argument("comment", StringArgumentType.string())
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
+        return Commands.literal("start")
+                .then(Commands.argument("comment", StringArgumentType.string())
                         .executes(ctx -> execute(ctx.getSource(), StringArgumentType.getString(ctx, "comment")))
                 ).executes(ctx -> execute(ctx.getSource(), null));
     }
 
-    private static int execute(ServerCommandSource source, @Nullable String comment) {
+    private static int execute(CommandSourceStack source, @Nullable String comment) {
         Globals.INSTANCE.getQueueExecutor().submit(
                 ExecutableBackup.Builder
                         .newBackupContextBuilder()

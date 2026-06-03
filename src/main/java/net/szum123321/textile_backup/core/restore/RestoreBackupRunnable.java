@@ -56,14 +56,14 @@ public class RestoreBackupRunnable implements Runnable {
 
         log.info("Shutting down server...");
 
-        ctx.server().stop(false);
+        ctx.server().halt(false);
 
         Path worldFile = Utilities.getWorldFolder(ctx.server()),
                 tmp;
 
         try {
             tmp = Files.createTempDirectory(
-                    ctx.server().getRunDirectory().toAbsolutePath(),
+                    ctx.server().getServerDirectory().toAbsolutePath(),
                     ctx.restoreableFile().getFile().getFileName().toString()
             );
         } catch (IOException e) {
@@ -74,7 +74,7 @@ public class RestoreBackupRunnable implements Runnable {
         //By making a separate thread we can start unpacking an old backup instantly
         //Let the server shut down gracefully, and wait for the old world backup to complete
         FutureTask<Void> waitForShutdown = new FutureTask<>(() -> {
-            ctx.server().getThread().join(); //wait for server thread to die and save all its state
+            ctx.server().getRunningThread().join(); //wait for server thread to die and save all its state
 
             if(config.get().backupOldWorlds) {
                 return ExecutableBackup.Builder
@@ -126,7 +126,7 @@ public class RestoreBackupRunnable implements Runnable {
                 else log.info("Backup is damaged, but verification is disabled [{}]. Restoring", errorMsg.get());
 
                 //Disables write lock to override world file
-                ((MinecraftServerSessionAccessor) ctx.server()).getSession().close();
+                ((MinecraftServerSessionAccessor) ctx.server()).getStorageSource().close();
 
                 Utilities.deleteDirectory(worldFile);
                 Files.move(tmp, worldFile);

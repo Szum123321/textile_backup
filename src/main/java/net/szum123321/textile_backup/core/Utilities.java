@@ -18,13 +18,14 @@
 
 package net.szum123321.textile_backup.core;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
@@ -45,23 +46,23 @@ public class Utilities {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
 	//I'm keeping this wrapper function for easier backporting
-	public static boolean wasSentByPlayer(ServerCommandSource source) { return source.isExecutedByPlayer(); }
+	public static boolean wasSentByPlayer(CommandSourceStack source) { return source.isPlayer(); }
 
 	public static void notifyPlayers(@NotNull MinecraftServer server, String msg) {
-		MutableText message = log.getPrefixText();
-		message.append(Text.literal(msg).formatted(Formatting.WHITE));
+		MutableComponent message = log.getPrefixText();
+		message.append(Component.literal(msg).withStyle(ChatFormatting.WHITE));
 
-		server.getPlayerManager().broadcast(message, false);
+		server.getPlayerList().broadcastSystemMessage(message, false);
 	}
 
 	public static String getLevelName(MinecraftServer server) {
-		return 	((MinecraftServerSessionAccessor)server).getSession().getDirectoryName();
+		return 	((MinecraftServerSessionAccessor)server).getStorageSource().getLevelId();
 	}
 
 	public static Path getWorldFolder(MinecraftServer server) {
 		return ((MinecraftServerSessionAccessor)server)
-				.getSession()
-				.getWorldDirectory(World.OVERWORLD);
+			.getStorageSource().getLevelPath(LevelResource.ROOT).toAbsolutePath().normalize();
+			//.getDimensionPath(Level.OVERWORLD);
 	}
 
 	public static void deleteDirectory(Path path) throws IOException {
@@ -81,16 +82,16 @@ public class Utilities {
 	}
 
 	public static void disableWorldSaving(MinecraftServer server) {
-		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld != null && !serverWorld.savingDisabled)
-				serverWorld.savingDisabled = true;
+		for (ServerLevel serverWorld : server.getAllLevels()) {
+			if (serverWorld != null && !serverWorld.noSave)
+				serverWorld.noSave = true;
 		}
 	}
 
 	public static void enableWorldSaving(MinecraftServer server) {
-		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld != null && serverWorld.savingDisabled)
-				serverWorld.savingDisabled = false;
+		for (ServerLevel serverWorld : server.getAllLevels()) {
+			if (serverWorld != null && serverWorld.noSave)
+				serverWorld.noSave = false;
 		}
 	}
 

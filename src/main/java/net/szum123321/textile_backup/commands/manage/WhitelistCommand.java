@@ -21,10 +21,10 @@ package net.szum123321.textile_backup.commands.manage;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.level.ServerPlayer;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
 import net.szum123321.textile_backup.config.ConfigHelper;
@@ -33,28 +33,28 @@ public class WhitelistCommand {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
-	public static LiteralArgumentBuilder<ServerCommandSource> register(){
-		return CommandManager.literal("whitelist")
-				.then(CommandManager.literal("add")
-						.then(CommandManager.argument("player", EntityArgumentType.player())
+	public static LiteralArgumentBuilder<CommandSourceStack> register(){
+		return Commands.literal("whitelist")
+				.then(Commands.literal("add")
+						.then(Commands.argument("player", EntityArgument.player())
 								.executes(WhitelistCommand::executeAdd)
 						)
-				).then(CommandManager.literal("remove")
-						.then(CommandManager.argument("player", EntityArgumentType.player())
+				).then(Commands.literal("remove")
+						.then(Commands.argument("player", EntityArgument.player())
 								.executes(WhitelistCommand::executeRemove)
 						)
-				).then(CommandManager.literal("list")
+				).then(Commands.literal("list")
 						.executes(ctx -> executeList(ctx.getSource()))
 				).executes(ctx -> help(ctx.getSource()));
 	}
 
-	private static int help(ServerCommandSource source){
+	private static int help(CommandSourceStack source){
 		log.sendInfo(source, "Available command are: add [player], remove [player], list.");
 
 		return 1;
 	}
 
-	private static int executeList(ServerCommandSource source){
+	private static int executeList(CommandSourceStack source){
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("Currently on the whitelist are: ");
@@ -69,30 +69,30 @@ public class WhitelistCommand {
 		return 1;
 	}
 
-	private static int executeAdd(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+	private static int executeAdd(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
 
-		if(config.get().playerWhitelist.contains(player.getNameForScoreboard())) {
-			log.sendInfo(ctx.getSource(), "Player: {} is already whitelisted.", player.getNameForScoreboard());
+		if(config.get().playerWhitelist.contains(player.getScoreboardName())) {
+			log.sendInfo(ctx.getSource(), "Player: {} is already whitelisted.", player.getScoreboardName());
 		} else {
-			config.get().playerWhitelist.add(player.getNameForScoreboard());
+			config.get().playerWhitelist.add(player.getScoreboardName());
 			config.save();
 
 			StringBuilder builder = new StringBuilder();
 
 			builder.append("Player: ");
-			builder.append(player.getNameForScoreboard());
+			builder.append(player.getScoreboardName());
 			builder.append(" added to the whitelist");
 
-			if(config.get().playerBlacklist.contains(player.getNameForScoreboard())){
-				config.get().playerBlacklist.remove(player.getNameForScoreboard());
+			if(config.get().playerBlacklist.contains(player.getScoreboardName())){
+				config.get().playerBlacklist.remove(player.getScoreboardName());
 				config.save();
 				builder.append(" and removed form the blacklist");
 			}
 
 			builder.append(" successfully.");
 
-			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommands().sendCommands(player);
 
 			log.sendInfo(ctx.getSource(), builder.toString());
 		}
@@ -100,18 +100,18 @@ public class WhitelistCommand {
 		return 1;
 	}
 
-	private static int executeRemove(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-		ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+	private static int executeRemove(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
 
-		if(!config.get().playerWhitelist.contains(player.getNameForScoreboard())) {
-			log.sendInfo(ctx.getSource(), "Player: {} newer was whitelisted.", player.getNameForScoreboard());
+		if(!config.get().playerWhitelist.contains(player.getScoreboardName())) {
+			log.sendInfo(ctx.getSource(), "Player: {} newer was whitelisted.", player.getScoreboardName());
 		} else {
-			config.get().playerWhitelist.remove(player.getNameForScoreboard());
+			config.get().playerWhitelist.remove(player.getScoreboardName());
 			config.save();
 
-			ctx.getSource().getServer().getCommandManager().sendCommandTree(player);
+			ctx.getSource().getServer().getCommands().sendCommands(player);
 
-			log.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getNameForScoreboard());
+			log.sendInfo(ctx.getSource(), "Player: {} removed from the whitelist successfully.", player.getScoreboardName());
 		}
 
 		return 1;

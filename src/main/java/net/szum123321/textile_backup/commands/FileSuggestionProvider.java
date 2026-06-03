@@ -23,7 +23,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.core.RestoreableFile;
 import net.szum123321.textile_backup.core.Utilities;
@@ -31,13 +31,13 @@ import net.szum123321.textile_backup.core.restore.RestoreHelper;
 
 import java.util.concurrent.CompletableFuture;
 
-public final class FileSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
+public final class FileSuggestionProvider implements SuggestionProvider<CommandSourceStack> {
     private static final FileSuggestionProvider INSTANCE = new FileSuggestionProvider();
 
     public static FileSuggestionProvider Instance() { return INSTANCE; }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
+    public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {
         String remaining = builder.getRemaining();
 
         var files = RestoreHelper.getAvailableBackups(ctx.getSource().getServer());

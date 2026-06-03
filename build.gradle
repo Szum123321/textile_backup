@@ -1,38 +1,42 @@
 plugins {
-	id 'fabric-loom' version '1.6-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
 	id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+java {
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
 
-archivesBaseName = project.archives_base_name
-version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
+base {
+	archivesName = project.archives_base_name
+}
+
+version = "${project.mod_version}-${project.minecraft_version}"
 group = project.maven_group
 
 repositories {
-	maven { url 'https://jitpack.io' }
-	maven { url "https://maven.shedaniel.me/" }
-	maven { url "https://maven.terraformersmc.com/releases/" }
+	maven { url = 'https://jitpack.io' }
+	maven { url = 'https://maven.shedaniel.me/' }
+	maven { url = 'https://maven.terraformersmc.com/releases/' }
 	mavenCentral()
 }
 
 dependencies {
 	//to change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation  "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation  "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	//General config library
-	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}") {
+	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
 
 	//Mod menu
-	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
+	implementation ("com.terraformersmc:modmenu:${project.modmenu_version}")
 
 	//General compression library
 	implementation "org.apache.commons:commons-compress:1.26.1"
@@ -74,7 +78,7 @@ java {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
+		rename { "${it}_${project.archives_base_name}"}
 	}
 
 	from("Copyright_Notice")
@@ -84,11 +88,11 @@ publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			// add all the jars that should be included when publishing to maven
-			artifact(remapJar) {
-				builtBy remapJar
+			artifact(jar) {
+				builtBy jar
 			}
 			artifact(sourcesJar) {
-				builtBy remapSourcesJar
+				builtBy sourcesJar
 			}
 		}
 	}

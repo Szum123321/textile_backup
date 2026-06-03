@@ -18,9 +18,9 @@
 
 package net.szum123321.textile_backup.core.restore;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.world.entity.player.Player;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.RestoreableFile;
 
@@ -30,12 +30,12 @@ public record RestoreContext(RestoreableFile restoreableFile,
                              MinecraftServer server,
                              @Nullable String comment,
                              ActionInitiator initiator,
-                             ServerCommandSource commandSource) {
+                             CommandSourceStack commandSource) {
     public static final class Builder {
         private RestoreableFile file;
         private MinecraftServer server;
         private String comment;
-        private ServerCommandSource serverCommandSource;
+        private CommandSourceStack serverCommandSource;
 
         private Builder() {
         }
@@ -59,7 +59,7 @@ public record RestoreContext(RestoreableFile restoreableFile,
             return this;
         }
 
-        public Builder setCommandSource(ServerCommandSource commandSource) {
+        public Builder setCommandSource(CommandSourceStack commandSource) {
             this.serverCommandSource = commandSource;
             return this;
         }
@@ -67,7 +67,7 @@ public record RestoreContext(RestoreableFile restoreableFile,
         public RestoreContext build() {
             if (server == null) server = serverCommandSource.getServer();
 
-            ActionInitiator initiator = serverCommandSource.getEntity() instanceof PlayerEntity ? ActionInitiator.Player : ActionInitiator.ServerConsole;
+            ActionInitiator initiator = serverCommandSource.getEntity() instanceof Player ? ActionInitiator.Player : ActionInitiator.ServerConsole;
 
             return new RestoreContext(file, server, comment, initiator, serverCommandSource);
         }

@@ -19,16 +19,15 @@
 package net.szum123321.textile_backup.commands;
 
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.text.Text;
-import net.minecraft.text.MutableText;
-
 import java.time.format.DateTimeParseException;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public class CommandExceptions {
     public static final DynamicCommandExceptionType DATE_TIME_PARSE_COMMAND_EXCEPTION_TYPE = new DynamicCommandExceptionType(o -> {
         DateTimeParseException e = (DateTimeParseException)o;
 
-        MutableText message = Text.literal("An exception occurred while trying to parse:\n")
+        MutableComponent message = Component.literal("An exception occurred while trying to parse:\n")
                 .append(e.getParsedString())
                 .append("\n");
 

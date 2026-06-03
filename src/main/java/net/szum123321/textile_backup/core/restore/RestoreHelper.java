@@ -63,7 +63,7 @@ public class RestoreHelper {
 
     public static AwaitThread create(RestoreContext ctx) {
         if(ctx.initiator() == ActionInitiator.Player)
-            log.info("Backup restoration was initiated by: {}", ctx.commandSource().getName());
+            log.info("Backup restoration was initiated by: {}", ctx.commandSource().getTextName());
         else
             log.info("Backup restoration was initiated form Server Console");
 

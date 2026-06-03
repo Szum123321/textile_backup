@@ -1,7 +1,7 @@
 package net.szum123321.textile_backup.core.create;
 
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 public record ExecutableBackup(@NotNull MinecraftServer server,
-                            ServerCommandSource commandSource,
+                            CommandSourceStack commandSource,
                             ActionInitiator initiator,
                             boolean save,
                             boolean cleanup,
@@ -79,13 +79,13 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
             //I think I should synchronise these two next calls...
 
             //Execute following call on the server executor
-            server.submitAndJoin(() -> {
+            server.executeBlocking(() -> {
                 if (save) { //save the world
                     // We need to flush everything as next thing we'll be copying all the files.
                     // this is mostly the reason for #81 - minecraft doesn't flush during scheduled saves.
                     log.sendInfoAL(this.commandSource, "Saving server...");
 
-                    server.saveAll(true, true, false);
+                    server.saveEverything(true, true, false);
                 }
                 state.set(Optional.of(WorldSavingState.disable(server)));
             });
@@ -162,7 +162,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
     }
     public static class Builder {
         private MinecraftServer server;
-        private ServerCommandSource commandSource;
+        private CommandSourceStack commandSource;
         private ActionInitiator initiator;
         private boolean save;
         private boolean cleanup;
@@ -187,7 +187,7 @@ public record ExecutableBackup(@NotNull MinecraftServer server,
             return new ExecutableBackup.Builder();
         }
 
-        public ExecutableBackup.Builder setCommandSource(ServerCommandSource commandSource) {
+        public ExecutableBackup.Builder setCommandSource(CommandSourceStack commandSource) {
             this.commandSource = commandSource;
             return this;
         }

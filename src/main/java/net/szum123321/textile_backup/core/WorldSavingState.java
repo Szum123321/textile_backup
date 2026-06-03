@@ -1,35 +1,34 @@
 package net.szum123321.textile_backup.core;
 
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import java.util.HashSet;
 import java.util.Set;
 
 public class WorldSavingState {
-	private final Set<RegistryKey<World>> data;
+	private final Set<ResourceKey<Level>> data;
 
-	private WorldSavingState(Set<RegistryKey<World>> data) {
+	private WorldSavingState(Set<ResourceKey<Level>> data) {
 		this.data = data;
 	}
 
 	public static WorldSavingState disable(MinecraftServer server) {
-		Set<RegistryKey<World>> data = new HashSet<>();
+		Set<ResourceKey<Level>> data = new HashSet<>();
 
-		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld == null || serverWorld.savingDisabled) continue;
-			serverWorld.savingDisabled = true;
-			data.add(serverWorld.getRegistryKey());
+		for (ServerLevel serverWorld : server.getAllLevels()) {
+			if (serverWorld == null || serverWorld.noSave) continue;
+			serverWorld.noSave = true;
+			data.add(serverWorld.dimension());
 		}
 		return new WorldSavingState(data);
 	}
 
 	public void enable(MinecraftServer server) {
-		for (ServerWorld serverWorld : server.getWorlds()) {
-			if (serverWorld != null && data.contains(serverWorld.getRegistryKey()))
-				serverWorld.savingDisabled = false;
+		for (ServerLevel serverWorld : server.getAllLevels()) {
+			if (serverWorld != null && data.contains(serverWorld.dimension()))
+				serverWorld.noSave = false;
 		}
 	}
 }

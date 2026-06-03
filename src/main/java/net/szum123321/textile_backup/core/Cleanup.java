@@ -18,7 +18,7 @@
 
 package net.szum123321.textile_backup.core;
 
-import  net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
@@ -40,10 +40,10 @@ public class Cleanup implements Callable<Integer> {
 	private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 	private final static ConfigHelper config = ConfigHelper.INSTANCE;
 
-	private final ServerCommandSource ctx;
+	private final CommandSourceStack ctx;
 	private final String worldName;
 
-	public Cleanup(ServerCommandSource ctx, String worldName) {
+	public Cleanup(CommandSourceStack ctx, String worldName) {
 		this.ctx = ctx;
 		this.worldName = worldName;
 	}
@@ -122,7 +122,7 @@ public class Cleanup implements Callable<Integer> {
 	}
 
 	//1 -> ok, 0 -> err
-	private boolean deleteFile(Path f, ServerCommandSource ctx) {
+	private boolean deleteFile(Path f, CommandSourceStack ctx) {
 		if(Globals.INSTANCE.getLockedFile().filter(p -> p == f).isPresent()) return false;
 		try {
 			Files.delete(f);

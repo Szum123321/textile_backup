@@ -27,7 +27,9 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.permissions.Permission.HasCommandLevel;
+import net.minecraft.server.permissions.PermissionLevel;
 import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
 import net.szum123321.textile_backup.commands.manage.BlacklistCommand;
@@ -41,6 +43,7 @@ import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
 import net.szum123321.textile_backup.core.create.ExecutableBackup;
+
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_NAME = "Textile Backup";
@@ -88,12 +91,13 @@ public class TextileBackup implements ModInitializer {
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(
-                LiteralArgumentBuilder.<ServerCommandSource>literal("backup")
+                LiteralArgumentBuilder.<CommandSourceStack>literal("backup")
                         .requires((ctx) -> {
                                     try {
-                                        return ((config.get().playerWhitelist.contains(ctx.getEntityOrThrow().getNameForScoreboard()) ||
-                                                ctx.hasPermissionLevel(config.get().permissionLevel)) &&
-                                                !config.get().playerBlacklist.contains(ctx.getEntityOrThrow().getNameForScoreboard())) ||
+                                        return ((config.get().playerWhitelist.contains(ctx.getEntityOrException().getScoreboardName()) ||
+                                                ctx.permissions().hasPermission(
+                                                    new HasCommandLevel(PermissionLevel.byId(config.get().permissionLevel)))) &&
+                                                !config.get().playerBlacklist.contains(ctx.getEntityOrException().getScoreboardName())) ||
                                                 (ctx.getServer().isSingleplayer() &&
                                                         config.get().alwaysSingleplayerAllowed);
                                     } catch (Exception ignored) { //Command was called from server console.

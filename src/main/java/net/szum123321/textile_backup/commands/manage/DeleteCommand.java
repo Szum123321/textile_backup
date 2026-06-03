@@ -21,8 +21,8 @@ package net.szum123321.textile_backup.commands.manage;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.szum123321.textile_backup.Globals;
 import net.szum123321.textile_backup.TextileBackup;
 import net.szum123321.textile_backup.TextileLogger;
@@ -41,15 +41,15 @@ import java.util.Optional;
 public class DeleteCommand {
     private final static TextileLogger log = new TextileLogger(TextileBackup.MOD_NAME);
 
-    public static LiteralArgumentBuilder<ServerCommandSource> register() {
-        return CommandManager.literal("delete")
-                .then(CommandManager.argument("file", StringArgumentType.word())
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
+        return Commands.literal("delete")
+                .then(Commands.argument("file", StringArgumentType.word())
                         .suggests(FileSuggestionProvider.Instance())
                         .executes(ctx -> execute(ctx.getSource(), StringArgumentType.getString(ctx, "file")))
                 );
     }
 
-    private static int execute(ServerCommandSource source, String fileName) throws CommandSyntaxException {
+    private static int execute(CommandSourceStack source, String fileName) throws CommandSyntaxException {
         LocalDateTime dateTime;
 
         try {
