@@ -28,6 +28,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.command.permission.Permission.Level;
+import net.minecraft.command.permission.PermissionLevel;
 import net.szum123321.textile_backup.commands.create.CleanupCommand;
 import net.szum123321.textile_backup.commands.create.StartBackupCommand;
 import net.szum123321.textile_backup.commands.manage.BlacklistCommand;
@@ -41,6 +43,7 @@ import net.szum123321.textile_backup.config.ConfigPOJO;
 import net.szum123321.textile_backup.core.ActionInitiator;
 import net.szum123321.textile_backup.core.create.BackupScheduler;
 import net.szum123321.textile_backup.core.create.ExecutableBackup;
+
 
 public class TextileBackup implements ModInitializer {
     public static final String MOD_NAME = "Textile Backup";
@@ -92,7 +95,8 @@ public class TextileBackup implements ModInitializer {
                         .requires((ctx) -> {
                                     try {
                                         return ((config.get().playerWhitelist.contains(ctx.getEntityOrThrow().getNameForScoreboard()) ||
-                                                ctx.hasPermissionLevel(config.get().permissionLevel)) &&
+                                                ctx.getPermissions().hasPermission(
+                                                    new Level(PermissionLevel.fromLevel(config.get().permissionLevel)))) &&
                                                 !config.get().playerBlacklist.contains(ctx.getEntityOrThrow().getNameForScoreboard())) ||
                                                 (ctx.getServer().isSingleplayer() &&
                                                         config.get().alwaysSingleplayerAllowed);

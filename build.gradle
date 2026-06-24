@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.6-SNAPSHOT'
+	id 'fabric-loom' version '1.13-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -7,7 +7,7 @@ sourceCompatibility = JavaVersion.VERSION_21
 targetCompatibility = JavaVersion.VERSION_21
 
 archivesBaseName = project.archives_base_name
-version = "${project.mod_version}-${getMcMinor(project.minecraft_version)}"
+version = "${project.mod_version}-${project.minecraft_version}"
 group = project.maven_group
 
 repositories {
